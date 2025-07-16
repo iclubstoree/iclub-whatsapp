@@ -1,2195 +1,1772 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel ICLUB - Sistema Unificado</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: Arial, sans-serif;
-            background: #f9f9f9;
-            min-height: 100vh;
-        }
-        
-        /* Header com menu de seleção */
-        .header {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .loja-selector {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .loja-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid rgba(255,255,255,0.3);
-            padding: 8px 16px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        .loja-btn:hover {
-            background: rgba(255,255,255,0.3);
-            border-color: rgba(255,255,255,0.5);
-        }
-        
-        .loja-btn.active {
-            background: white;
-            color: #28a745;
-            border-color: white;
-        }
-        
-        /* Container principal */
-        .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .section {
-            background: white;
-            padding: 25px;
-            margin-bottom: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        
-        .section h2 {
-            margin-top: 0;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        /* Sistema de Login */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .login-box {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border: 1px solid #e9ecef;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .login-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-        
-        .login-box h2 {
-            color: #28a745;
-            margin-bottom: 10px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .login-box p {
-            color: #6c757d;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        .login-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .login-input:focus {
-            border-color: #28a745;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-        }
-        
-        .login-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-        
-        .login-btn:hover {
-            background: linear-gradient(135deg, #218838, #17a2b8);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-        }
-        
-        .login-error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid #f5c6cb;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .login-cancel {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .login-cancel:hover {
-            background: #545b62;
-        }
-        
-        /* Seção Configuração - Visual Moderno */
-        #secao-configuracao {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            min-height: 100vh;
-            padding: 20px 0;
-        }
-        
-        #secao-configuracao .section {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        #secao-configuracao .section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-        
-        #secao-configuracao .section h2 {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        #secao-configuracao .section h2::before {
-            content: "📤";
-            background: none;
-            -webkit-text-fill-color: initial;
-            color: #28a745;
-            font-size: 32px;
-        }
-        
-        #secao-configuracao .section h3 {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        /* Upload Area */
-        .upload-area {
-            border: 2px dashed #28a745;
-            border-radius: 20px;
-            padding: 50px;
-            text-align: center;
-            background: linear-gradient(145deg, #ffffff, #f8fff8);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upload-area:hover {
-            border-color: #20c997;
-            background: linear-gradient(145deg, #f8fff8, #e8f5e8);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.2);
-        }
-        
-        .upload-area.file-selected {
-            border-color: #20c997;
-            background: linear-gradient(145deg, #e8f5e8, #d4edda);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-        }
-        
-        .upload-icon {
-            font-size: 64px;
-            margin-bottom: 25px;
-            display: block;
-            filter: drop-shadow(0 4px 8px rgba(40, 167, 69, 0.3));
-            transition: all 0.3s ease;
-        }
-        
-        .upload-area:hover .upload-icon {
-            transform: scale(1.1);
-        }
-        
-        .upload-text {
-            font-size: 18px;
-            color: #495057;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        
-        .upload-text strong {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: bold;
-        }
-        
-        .file-name {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            color: #155724;
-            padding: 15px 25px;
-            border-radius: 15px;
-            margin: 20px 0;
-            font-weight: bold;
-            font-size: 16px;
-            display: none;
-            box-shadow: 0 4px 15px rgba(21, 87, 36, 0.2);
-            border: 1px solid #b3d4b3;
-        }
-        
-        .file-input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-        }
-        
-        /* Botões Upload Modernos */
-        .upload-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 18px 35px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 25px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upload-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .upload-btn:hover::before {
-            left: 100%;
-        }
-        
-        .upload-btn:hover {
-            background: linear-gradient(135deg, #1e7e34, #17a2b8);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-        }
-        
-        .upload-btn:disabled {
-            background: linear-gradient(135deg, #6c757d, #495057) !important;
-            cursor: not-allowed !important;
-            transform: none !important;
-            box-shadow: none !important;
-            opacity: 0.6;
-        }
-        
-        /* Meta Config Boxes Modernos */
-        .meta-config-box {
-            border: 1px solid #e9ecef;
-            border-radius: 20px;
-            padding: 30px;
-            margin-top: 25px;
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .meta-config-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-        
-        .meta-config-box h3 {
-            margin-top: 0;
-            color: white;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            padding: 15px 25px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            font-size: 22px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-        
-        .meta-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
-        
-        .meta-config-box label {
-            display: block;
-            margin-top: 20px;
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .meta-config-box input[type="number"], 
-        .meta-config-box input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            border: 2px solid #e9ecef;
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            background: white;
-        }
-        
-        .meta-config-box input:focus {
-            border-color: #28a745;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-            background: white;
-        }
-        
-        .meta-config-box input:disabled {
-            background: #f8f9fa;
-            color: #6c757d;
-            border-color: #dee2e6;
-        }
-        
-        .edit-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-top: 25px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-        
-        .edit-btn:hover {
-            background: linear-gradient(135deg, #218838, #17a2b8);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-        }
-        
-        /* Messages Modernos */
-        .success-message, .error-message {
-            padding: 25px 30px;
-            border-radius: 15px;
-            margin-top: 30px;
-            font-weight: 500;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .success-message {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            color: #155724;
-            border: 2px solid #b3d4b3;
-        }
-        
-        .error-message {
-            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-            color: #721c24;
-            border: 2px solid #f1b0b7;
-        }
-        
-        /* Dashboard Lojas */
-        .meta-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .meta-box {
-            flex: 1;
-            min-width: 150px;
-            background-color: #f2f2f2;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .meta-box p {
-            margin: 0 0 10px 0;
-            font-weight: bold;
-            color: #555;
-            font-size: 14px;
-        }
-        
-        .meta-box h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #28a745;
-        }
-        
-        .bar-title {
-            margin: 20px 0 10px 0;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .bar-wrapper {
-            position: relative;
-            background-color: #e0e0e0;
-            border-radius: 25px;
-            height: 30px;
-            margin-bottom: 20px;
-        }
-        
-        .bar-fill {
-            background-color: #28a745;
-            height: 100%;
-            border-radius: 25px;
-            text-align: center;
-            line-height: 30px;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        
-        .bar-label {
-            position: absolute;
-            right: 10px;
-            top: 2px;
-            color: #333;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        
-        /* Template loja - Visual moderno */
-        #template-loja {
-            background: white;
-            min-height: 100vh;
-            padding: 20px 0;
-        }
-        
-        #template-loja .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 40px;
-            margin: 20px auto;
-            max-width: 1000px;
-        }
-        
-        #titulo-loja {
-            color: #28a745;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        /* Meta containers modernos */
-        .meta-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .meta-box {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border: 1px solid #e9ecef;
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .meta-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-        
-        .meta-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
-        }
-        
-        .meta-box p {
-            margin: 0 0 12px 0;
-            font-weight: 600;
-            color: #6c757d;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .meta-box h2 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* Seções com estilo moderno */
-        .section-header {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            margin: 50px 0 30px 0;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-        
-        .section-header h2 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        /* Barras de progresso modernas */
-        .bar-title {
-            margin: 30px 0 15px 0;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .bar-wrapper {
-            position: relative;
-            background: linear-gradient(90deg, #e9ecef, #f8f9fa);
-            border-radius: 25px;
-            height: 40px;
-            margin-bottom: 25px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .bar-fill {
-            background: linear-gradient(90deg, #28a745, #20c997);
-            height: 100%;
-            border-radius: 25px;
-            text-align: center;
-            line-height: 40px;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.6s ease;
-            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-        }
-        
-        .bar-label {
-            position: absolute;
-            right: 15px;
-            top: 8px;
-            color: #495057;
-            font-weight: bold;
-            font-size: 14px;
-            background: rgba(255,255,255,0.9);
-            padding: 4px 8px;
-            border-radius: 12px;
-        }
-        
-        /* Vendedora boxes modernos */
-        .vendedora-box {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-        }
-        
-        .vendedora-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
-        }
-        
-        .vendedora-box p {
-            margin-bottom: 15px;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 16px;
-        }
-        
-        /* Rankings modernos */
-        .ranking-item {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 16px;
-            padding: 20px 24px;
-            margin-bottom: 16px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .ranking-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, #28a745, #20c997);
-        }
-        
-        .ranking-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
-        }
-        
-        .ranking-posicao {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border-radius: 12px;
-            padding: 8px 16px;
-            font-weight: bold;
-            font-size: 12px;
-            margin-right: 20px;
-            flex-shrink: 0;
-            min-width: 80px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .ranking-nome {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 16px;
-            text-transform: capitalize;
-        }
-        
-        .bar-label-clean {
-            position: absolute;
-            right: 15px;
-            top: 8px;
-            color: #495057;
-            font-weight: bold;
-            font-size: 14px;
-            background: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-        }
-        
-        .ranking-valor-clean {
-            color: #000000;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 8px 16px;
-            background: white;
-            border-radius: 12px;
-        }
-        
-        /* Rankings */
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 12px;
-            padding: 15px 18px;
-            margin-bottom: 12px;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-        }
-        
-        .ranking-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
-        }
-        
-        .ranking-posicao {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border-radius: 10px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 11px;
-            margin-right: 18px;
-            flex-shrink: 0;
-            min-width: 65px;
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .ranking-info {
-            flex: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .ranking-nome {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 15px;
-            text-transform: capitalize;
-        }
-        
-        .ranking-valor {
-            background: #e8f5e8;
-            color: #155724;
-            font-weight: bold;
-            font-size: 13px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid #c3e6cb;
-        }
-        
-        /* Hidden sections */
-        .hidden {
-            display: none;
-        }
-        
-        .loading {
-            color: #666;
-            font-style: italic;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        /* Painel Administrativo - Visual Moderno */
-        #secao-administrativo {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            min-height: 100vh;
-            padding: 20px 0;
-        }
-        
-        #secao-administrativo h1 {
-            text-align: center;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 36px;
-            font-weight: bold;
-            margin-bottom: 40px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        
-        #secao-administrativo h1::before {
-            content: "📊";
-            background: none;
-            -webkit-text-fill-color: initial;
-            color: #28a745;
-            font-size: 40px;
-            margin-right: 15px;
-        }
-        
-        /* Cards de status modernos */
-        .admin-last-update, .admin-periodo-vendas {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            color: #155724;
-            padding: 20px 30px;
-            border-radius: 20px;
-            margin-bottom: 25px;
-            text-align: center;
-            font-weight: 600;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .admin-last-update::before, .admin-periodo-vendas::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-        
-        /* Seções administrativas modernas */
-        .admin-section {
-            margin-bottom: 50px;
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .admin-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #28a745, #20c997);
-        }
-        
-        .admin-section h2 {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            border: none;
-            padding: 0;
-            margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .admin-section h2::before {
-            background: none;
-            -webkit-text-fill-color: initial;
-            color: #28a745;
-            font-size: 32px;
-        }
-        
-        .admin-section h3 {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 15px;
-            margin: 30px 0 20px 0;
-            font-size: 20px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .admin-section h4 {
-            background: none;
-            color: #28a745;
-            margin: 25px 0 15px 0;
-            font-size: 18px;
-            padding: 0;
-            border-radius: 0;
-            border: none;
-            font-weight: 600;
-            box-shadow: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* Container para scroll horizontal das tabelas */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-bottom: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            background: white;
-        }
-        
-        /* Tabelas administrativas modernas */
-        .admin-table {
-            width: 100%;
-            min-width: 600px;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 0;
-            border: 1px solid #e9ecef;
-        }
-        
-        .admin-table th {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 18px 15px;
-            text-align: left;
-            font-weight: bold;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            position: relative;
-            white-space: nowrap;
-        }
-        
-        .admin-table th::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.3), transparent);
-        }
-        
-        .admin-table td {
-            padding: 15px;
-            border-bottom: 1px solid #f1f3f4;
-            font-size: 14px;
-            vertical-align: middle;
-            background: white;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        
-        .admin-table tr:hover td {
-            background: linear-gradient(90deg, #f8fff8, #ffffff);
-        }
-        
-        .admin-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .admin-table .loading {
-            text-align: center;
-            font-style: italic;
-            color: #6c757d;
-            padding: 30px;
-            background: #f8f9fa;
-            white-space: normal;
-        }
-        
-        .admin-table .falta-dia {
-            color: #495057;
-            font-weight: bold;
-            border-radius: 8px;
-            padding: 6px 12px;
-            text-align: center;
-        }
-        
-        /* RESPONSIVIDADE MOBILE COMPLETA */
-        @media (max-width: 768px) {
-            /* Header mobile */
-            .header {
-                padding: 15px 0;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                padding: 0 15px;
-            }
-            
-            .logo {
-                font-size: 20px;
-            }
-            
-            .loja-selector {
-                justify-content: center;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-            
-            .loja-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-                border-radius: 20px;
-                margin: 2px;
-            }
-            
-            /* Container mobile */
-            .container {
-                padding: 0 15px;
-                margin: 15px auto;
-            }
-            
-            .section {
-                padding: 20px 15px;
-                margin-bottom: 20px;
-                border-radius: 15px;
-            }
-            
-            /* Tela inicial mobile */
-            #tela-inicial {
-                padding: 30px 15px;
-                min-height: 50vh;
-            }
-            
-            #tela-inicial > div {
-                padding: 30px 20px;
-                max-width: 100%;
-                border-radius: 15px;
-            }
-            
-            #tela-inicial h1 {
-                font-size: 28px !important;
-                margin-bottom: 15px !important;
-            }
-            
-            #tela-inicial p {
-                font-size: 16px !important;
-                margin-bottom: 20px !important;
-            }
-            
-            #tela-inicial > div > div {
-                flex-direction: column;
-                gap: 10px !important;
-                margin-top: 25px !important;
-            }
-            
-            #tela-inicial > div > div > div {
-                padding: 12px 20px !important;
-                font-size: 12px !important;
-            }
-            
-            /* Login mobile */
-            .login-box {
-                padding: 25px 20px;
-                margin: 0 15px;
-                max-width: 100%;
-                border-radius: 15px;
-            }
-            
-            .login-box h2 {
-                font-size: 20px;
-            }
-            
-            .login-input, .login-btn {
-                padding: 12px;
-                font-size: 14px;
-            }
-            
-            /* Configuração mobile */
-            #secao-configuracao {
-                padding: 15px 0;
-            }
-            
-            #secao-configuracao .section {
-                margin: 15px;
-                padding: 20px 15px;
-                border-radius: 15px;
-            }
-            
-            #secao-configuracao .section h2 {
-                font-size: 22px;
-                text-align: center;
-                margin-bottom: 20px;
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            #secao-configuracao .section h3 {
-                font-size: 16px;
-                padding: 12px 20px;
-                text-align: center;
-                border-radius: 12px;
-            }
-            
-            .upload-area {
-                padding: 25px 15px;
-                margin-bottom: 20px;
-                border-radius: 15px;
-            }
-            
-            .upload-icon {
-                font-size: 48px;
-                margin-bottom: 15px;
-            }
-            
-            .upload-text {
-                font-size: 16px;
-                margin-bottom: 15px;
-            }
-            
-            .upload-btn {
-                padding: 15px 25px;
-                font-size: 14px;
-                margin-top: 15px;
-                width: 100%;
-                border-radius: 12px;
-            }
-            
-            .file-name {
-                padding: 12px 20px;
-                font-size: 14px;
-                border-radius: 12px;
-                margin: 15px 0;
-            }
-            
-            /* Meta config mobile */
-            .meta-config-box {
-                padding: 20px 15px;
-                margin-top: 20px;
-                border-radius: 15px;
-            }
-            
-            .meta-config-box h3 {
-                font-size: 18px;
-                padding: 12px 20px;
-                margin-bottom: 20px;
-                text-align: center;
-                border-radius: 12px;
-            }
-            
-            .meta-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            
-            .meta-config-box input {
-                padding: 12px;
-                font-size: 14px;
-                border-radius: 10px;
-            }
-            
-            .edit-btn {
-                padding: 12px 25px;
-                font-size: 12px;
-                width: 100%;
-                margin-top: 20px;
-                border-radius: 10px;
-            }
-            
-            /* Success/Error messages mobile */
-            .success-message, .error-message {
-                padding: 20px 15px;
-                border-radius: 12px;
-                margin-top: 20px;
-                font-size: 14px;
-            }
-            
-            /* Template loja mobile */
-            #template-loja {
-                padding: 15px 0;
-            }
-            
-            #template-loja .container {
-                padding: 20px 15px;
-                margin: 15px auto;
-                border-radius: 15px;
-            }
-            
-            #titulo-loja {
-                font-size: 20px;
-                margin-bottom: 20px;
-            }
-            
-            .section-header {
-                padding: 15px 20px;
-                margin: 25px 0 20px 0;
-                border-radius: 12px;
-            }
-            
-            .section-header h2 {
-                font-size: 16px;
-            }
-            
-            /* Meta containers mobile */
-            .meta-container {
-                grid-template-columns: 1fr;
-                gap: 15px;
-                margin-bottom: 25px;
-            }
-            
-            .meta-box {
-                padding: 20px 15px;
-                border-radius: 12px;
-            }
-            
-            .meta-box p {
-                font-size: 12px;
-                margin-bottom: 8px;
-            }
-            
-            .meta-box h2 {
-                font-size: 20px;
-            }
-            
-            /* Barras mobile */
-            .bar-title {
-                margin: 20px 0 10px 0;
-                font-size: 14px;
-            }
-            
-            .bar-wrapper {
-                height: 35px;
-                margin-bottom: 20px;
-                border-radius: 20px;
-            }
-            
-            .bar-fill {
-                line-height: 35px;
-                font-size: 12px;
-                border-radius: 20px;
-            }
-            
-            .bar-label-clean {
-                top: 6px;
-                right: 10px;
-                font-size: 11px;
-                padding: 3px 6px;
-                border-radius: 8px;
-            }
-            
-            /* Vendedora boxes mobile */
-            .vendedora-box {
-                padding: 15px;
-                margin-bottom: 15px;
-                border-radius: 12px;
-            }
-            
-            .vendedora-box p {
-                font-size: 14px;
-                margin-bottom: 10px;
-            }
-            
-            /* Rankings mobile */
-            .ranking-item {
-                padding: 12px 15px;
-                margin-bottom: 10px;
-                border-radius: 10px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            .ranking-posicao {
-                margin-right: 0;
-                margin-bottom: 5px;
-                min-width: auto;
-                padding: 6px 10px;
-                font-size: 10px;
-                border-radius: 8px;
-            }
-            
-            .ranking-info {
-                width: 100%;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-            
-            .ranking-nome {
-                font-size: 14px;
-            }
-            
-            .ranking-valor-clean {
-                font-size: 12px;
-                padding: 6px 12px;
-                border-radius: 8px;
-            }
-            
-            /* Painel administrativo mobile */
-            #secao-administrativo {
-                padding: 15px 0;
-            }
-            
-            #secao-administrativo h1 {
-                font-size: 22px;
-                margin-bottom: 20px;
-                text-align: center;
-                padding: 0 15px;
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .admin-last-update, .admin-periodo-vendas {
-                margin: 15px;
-                padding: 15px 20px;
-                font-size: 14px;
-                border-radius: 15px;
-                text-align: center;
-            }
-            
-            .admin-section {
-                padding: 20px 15px;
-                margin: 15px;
-                margin-bottom: 25px;
-                border-radius: 15px;
-            }
-            
-            .admin-section h2 {
-                font-size: 18px;
-                text-align: center;
-                margin-bottom: 20px;
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .admin-section h3 {
-                font-size: 14px;
-                padding: 10px 15px;
-                margin: 20px 0 15px 0;
-                text-align: center;
-                border-radius: 12px;
-            }
-            
-            .admin-section h4 {
-                font-size: 12px;
-                margin: 15px 0 10px 0;
-                text-align: center;
-                flex-direction: column;
-                gap: 3px;
-            }
-            
-            /* Tabelas mobile com scroll horizontal */
-            .table-responsive {
-                margin: 10px -15px 20px -15px;
-                border-radius: 0;
-                box-shadow: none;
-                border-left: none;
-                border-right: none;
-            }
-            
-            .admin-table {
-                min-width: 500px;
-                font-size: 11px;
-                margin-bottom: 0;
-                border-radius: 0;
-            }
-            
-            .admin-table th {
-                padding: 10px 8px;
-                font-size: 10px;
-                white-space: nowrap;
-            }
-            
-            .admin-table td {
-                padding: 8px 6px;
-                font-size: 10px;
-                white-space: nowrap;
-            }
-            
-            .admin-table tr:hover td {
-                transform: none;
-                background: white;
-            }
-            
-            .falta-dia {
-                padding: 4px 6px !important;
-                font-size: 9px !important;
-                border-radius: 6px;
-            }
-        }
-        
-        /* Responsividade para telas muito pequenas */
-        @media (max-width: 480px) {
-            .header {
-                padding: 12px 0;
-            }
-            
-            .header-content {
-                padding: 0 10px;
-            }
-            
-            .logo {
-                font-size: 18px;
-            }
-            
-            .loja-btn {
-                padding: 5px 8px;
-                font-size: 10px;
-                margin: 1px;
-            }
-            
-            .container {
-                padding: 0 10px;
-                margin: 10px auto;
-            }
-            
-            .section {
-                padding: 15px 10px;
-                margin-bottom: 15px;
-            }
-            
-            #tela-inicial {
-                padding: 20px 10px;
-            }
-            
-            #tela-inicial > div {
-                padding: 25px 15px;
-            }
-            
-            #tela-inicial h1 {
-                font-size: 24px !important;
-            }
-            
-            .login-box {
-                padding: 20px 15px;
-                margin: 0 10px;
-            }
-            
-            /* Configuração muito pequena */
-            #secao-configuracao .section {
-                margin: 10px;
-                padding: 15px 10px;
-            }
-            
-            .upload-area {
-                padding: 20px 10px;
-                border-radius: 12px;
-            }
-            
-            .upload-icon {
-                font-size: 40px;
-            }
-            
-            .upload-text {
-                font-size: 14px;
-            }
-            
-            .meta-config-box {
-                padding: 15px 10px;
-                border-radius: 12px;
-            }
-            
-            .meta-config-box h3 {
-                font-size: 16px;
-                padding: 10px 15px;
-                border-radius: 10px;
-            }
-            
-            /* Template loja muito pequena */
-            #titulo-loja {
-                font-size: 18px;
-            }
-            
-            .section-header h2 {
-                font-size: 14px;
-            }
-            
-            .meta-box {
-                padding: 15px 10px;
-            }
-            
-            .meta-box h2 {
-                font-size: 18px;
-            }
-            
-            /* Admin muito pequena */
-            .admin-section {
-                padding: 15px 10px;
-                margin: 10px;
-            }
-            
-            .admin-section h2 {
-                font-size: 16px;
-            }
-            
-            .admin-section h3 {
-                font-size: 12px;
-                padding: 8px 12px;
-            }
-            
-            .admin-section h4 {
-                font-size: 11px;
-            }
-            
-            /* Tabelas muito pequenas */
-            .admin-table {
-                min-width: 450px;
-                font-size: 9px;
-            }
-            
-            .admin-table th, .admin-table td {
-                padding: 6px 4px;
-                font-size: 9px;
-            }
-            
-            .falta-dia {
-                padding: 3px 4px !important;
-                font-size: 8px !important;
-            }
-        }
-        
-        /* Ajustes específicos para orientação landscape em mobile */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .header-content {
-                flex-direction: row;
-                justify-content: space-between;
-            }
-            
-            .logo {
-                font-size: 18px;
-            }
-            
-            .loja-selector {
-                gap: 5px;
-            }
-            
-            .loja-btn {
-                padding: 4px 8px;
-                font-size: 10px;
-            }
-            
-            #tela-inicial {
-                padding: 20px 15px;
-            }
-            
-            #tela-inicial h1 {
-                font-size: 24px !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CONTROLE ICLUB SAÍDAS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #8b5cf6;
+      --secondary-color: #a855f7;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --dark-color: #1f2937;
+      --light-bg: #f8fafc;
+      --white: #ffffff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      background: #ffffff;
+      min-height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .main-container {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      margin: 20px auto;
+      padding: 30px;
+      max-width: 1400px;
+    }
+
+    .header-title {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .card-modern {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: none;
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-control, .form-select {
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      padding: 12px 16px;
+      transition: all 0.2s ease;
+      background: var(--light-bg);
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      background: var(--white);
+    }
+
+    .btn-modern {
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+    }
+
+    .btn-primary-modern {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+    }
+
+    .btn-primary-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-success-modern {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+    }
+
+    .btn-success-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-sm-modern {
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .status-section {
+      background: var(--light-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+    }
+
+    .status-atrasadas { border-left-color: var(--danger-color); }
+    .status-vencendo { border-left-color: var(--warning-color); }
+    .status-proximas { border-left-color: #f97316; }
+    .status-recorrentes { border-left-color: var(--success-color); }
+
+    .status-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--success-color);
+    }
+
+    .table-modern {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: none;
+    }
+
+    .table-modern thead {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+    }
+
+    .table-modern th {
+      border: none;
+      padding: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .table-modern td {
+      border: none;
+      padding: 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .table-modern tbody tr:hover {
+      background: var(--light-bg);
+      transition: background 0.2s ease;
+    }
+
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border: none;
+      transition: transform 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .dashboard-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--dark-color);
+      margin-bottom: 5px;
+    }
+
+    .dashboard-label {
+      color: var(--success-color);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .chart-container {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--success-color);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .editor-categoria {
+      background: var(--light-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      border: 2px dashed #d1d5db;
+    }
+
+    .icon-status {
+      font-size: 1.2rem;
+    }
+
+    .badge-modern {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .input-group-modern {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .valor-dourado {
+      background: #ffffff;
+      color: #d4af37;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .valor-total-dourado {
+      background: linear-gradient(135deg, #d4af37, #ffd700);
+      color: #000000;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 15px;
+      box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Modal personalizado */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content-custom {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: var(--shadow-lg);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-title-custom {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-limpar-filtros {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-limpar-filtros:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 16px;
+      }
+      
+      .dashboard-cards {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+      }
+      
+      .dashboard-value {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Header com seleção de loja -->
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">📊 PAINEL ICLUB</div>
-            <div class="loja-selector">
-                <button class="loja-btn" data-loja="configuracao">⚙️ Configuração</button>
-                <button class="loja-btn" data-loja="administrativo">📊 Administrativo</button>
-                <button class="loja-btn" data-loja="castanhal">🏢 Castanhal</button>
-                <button class="loja-btn" data-loja="belem">🏢 Belém</button>
-                <button class="loja-btn" data-loja="mix">🏢 Mix</button>
-                <button id="logoutBtn" class="loja-btn" style="background: rgba(220,53,69,0.8); border-color: rgba(220,53,69,0.8);" title="Limpar todas as sessões">Sair</button>
-            </div>
+  <div class="main-container">
+    <h1 class="header-title">
+      📊 CONTROLE ICLUB SAÍDAS
+    </h1>
+
+    <!-- Formulário de Cadastro -->
+    <div class="card-modern">
+      <h5 class="status-title">
+        Nova Saída
+      </h5>
+      
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Loja</label>
+          <select id="loja" class="form-select"></select>
+          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorLoja()">
+            <i class="fas fa-edit"></i> Editar Lojas
+          </button>
         </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Centro de custo</label>
+          <select id="categoria" class="form-select"></select>
+          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorCategoria()">
+            <i class="fas fa-edit"></i> Editar Centros de custo
+          </button>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Descrição</label>
+          <input type="text" id="descricao" class="form-control" placeholder="Digite a descrição"/>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Valor (R$)</label>
+          <input type="text" id="valor" class="form-control" placeholder="R$ 0,00" oninput="formatarMoeda(this)"/>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Data</label>
+          <input type="date" id="data" class="form-control"/>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Recorrente?</label>
+          <select id="recorrente" class="form-select" onchange="toggleTipoRecorrencia()">
+            <option>Não</option>
+            <option>Sim</option>
+          </select>
+        </div>
+        <div class="col-md-6 col-lg-1" id="colunaTipoRecorrencia" style="display:none;">
+          <label class="form-label fw-bold">Tipo</label>
+          <select id="tipoRecorrencia" class="form-select">
+            <option disabled selected>Selecione</option>
+            <option>Diária</option>
+            <option>Semanal</option>
+            <option>Mensal</option>
+            <option>Anual</option>
+          </select>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Pago?</label>
+          <select id="pago" class="form-select">
+            <option>Sim</option>
+            <option>Não</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-success-modern btn-modern w-100" onclick="adicionarSaida()">
+            <i class="fas fa-plus"></i> Adicionar Saída
+          </button>
+          <div id="mensagemSucesso" class="alert alert-success mt-3" style="display:none;">
+            ✅ Saída adicionada!
+          </div>
+        </div>
+      </div>
+
+      <!-- Editor Loja -->
+      <div id="editor-loja" class="editor-categoria" style="display:none">
+        <div class="input-group-modern">
+          <input type="text" id="novaLoja" placeholder="Nova loja" class="form-control"/>
+          <button class="btn btn-success-modern btn-modern" onclick="adicionarLoja()">
+            Adicionar
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor Categoria -->
+      <div id="editor-categoria" class="editor-categoria" style="display:none">
+        <div class="input-group-modern">
+          <input type="text" id="novaCategoria" placeholder="Novo centro de custo" class="form-control"/>
+          <button class="btn btn-success-modern btn-modern" onclick="adicionarCategoria()">
+            Adicionar
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="container">
-        <!-- Sistema de Login -->
-        <div id="loginOverlay" class="login-overlay hidden">
-            <div class="login-box">
-                <h2 id="loginTitle">🔐 Acesso Restrito</h2>
-                <p id="loginSubtitle">Digite a senha para acessar o painel</p>
-                <input type="password" id="loginPassword" class="login-input" placeholder="Digite a senha..." maxlength="50">
-                <button id="loginBtn" class="login-btn">🔑 ENTRAR</button>
-                <button id="loginCancel" class="login-cancel">Cancelar</button>
-                <div id="loginError" class="login-error">❌ Senha incorreta! Tente novamente.</div>
-            </div>
+    <!-- Filtro Global por Loja -->
+    <div class="card-modern">
+      <h5 class="status-title">
+        Filtros Gerais
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-12">
+          <label class="form-label fw-bold">Visualizar loja:</label>
+          <select id="filtroLojaGlobal" class="form-select" onchange="aplicarFiltroLoja()">
+            <option value="">📊 Todas as lojas (Consolidado)</option>
+          </select>
         </div>
-
-        <!-- Tela inicial vazia -->
-        <div id="tela-inicial" style="text-align: center; padding: 100px 20px; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-            <div style="background: linear-gradient(145deg, #ffffff, #f8f9fa); border-radius: 20px; padding: 60px 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e9ecef; position: relative; overflow: hidden; max-width: 600px;">
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #28a745, #20c997);"></div>
-                <h1 style="background: linear-gradient(135deg, #28a745, #20c997); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 48px; font-weight: bold; margin-bottom: 20px;">📊 PAINEL ICLUB</h1>
-                <p style="color: #6c757d; font-size: 18px; margin-bottom: 30px; line-height: 1.6;">Sistema Unificado de Metas e Vendas</p>
-                <p style="color: #495057; font-size: 16px; font-weight: 500;">Selecione uma seção no menu acima para começar</p>
-                <div style="margin-top: 40px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 15px 25px; border-radius: 12px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">⚙️ Configuração</div>
-                    <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 15px 25px; border-radius: 12px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">📊 Administrativo</div>
-                    <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 15px 25px; border-radius: 12px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">🏢 Lojas</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Seção Configuração (Upload das Planilhas + Metas) -->
-        <div id="secao-configuracao" class="secao-loja hidden">
-            <div class="section">
-                <h2>Upload das Planilhas de Vendas</h2>
-                <p style="color: #666; margin-bottom: 30px;">
-                    📋 Selecione as planilhas Excel (.xlsx) ou CSV (.csv) exportadas do sistema ERP
-                </p>
-                
-                <!-- Upload de Aparelhos -->
-                <div style="margin-bottom: 40px;">
-                    <h3 style="color: white; background: linear-gradient(135deg, #28a745, #20c997); padding: 15px 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); font-size: 18px; font-weight: 600;">📱 Relatório de Aparelhos</h3>
-                    <div class="upload-area" id="uploadAreaAparelhos">
-                        <input type="file" id="uploadFileAparelhos" class="file-input" accept=".xlsx,.xls,.csv">
-                        <div class="upload-icon">📱</div>
-                        <div class="upload-text">Clique aqui para selecionar a planilha de <strong>APARELHOS</strong></div>
-                        <div class="file-name" id="fileNameAparelhos"></div>
-                    </div>
-                    <button type="button" class="upload-btn" id="btnUploadAparelhos" disabled>
-                        📱 ENVIAR APARELHOS
-                    </button>
-                </div>
-
-                <!-- Upload de Acessórios -->
-                <div style="margin-bottom: 40px;">
-                    <h3 style="color: white; background: linear-gradient(135deg, #28a745, #20c997); padding: 15px 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); font-size: 18px; font-weight: 600;">🎧 Relatório de Acessórios</h3>
-                    <div class="upload-area" id="uploadAreaAcessorios">
-                        <input type="file" id="uploadFileAcessorios" class="file-input" accept=".xlsx,.xls,.csv">
-                        <div class="upload-icon">🎧</div>
-                        <div class="upload-text">Clique aqui para selecionar a planilha de <strong>ACESSÓRIOS</strong></div>
-                        <div class="file-name" id="fileNameAcessorios"></div>
-                    </div>
-                    <button type="button" class="upload-btn" id="btnUploadAcessorios" disabled>
-                        🎧 ENVIAR ACESSÓRIOS
-                    </button>
-                </div>
-
-                <!-- Botão para Processar Ambos -->
-                <div style="text-align: center; margin-top: 30px;">
-                    <button type="button" class="upload-btn" id="btnProcessarTudo" disabled style="background: linear-gradient(45deg, #dc3545, #e74c3c); font-size: 20px; padding: 20px 40px;">
-                        🚀 PROCESSAR E ATUALIZAR TODOS OS PAINÉIS
-                    </button>
-                </div>
-                
-                <div id="successMessage" class="success-message">
-                    ✅ <strong>Upload realizado com sucesso!</strong><br>
-                    <span id="successDetails"></span>
-                </div>
-                
-                <div id="errorMessage" class="error-message">
-                    ❌ <strong>Erro no upload!</strong><br>
-                    <span id="errorText"></span>
-                </div>
-            </div>
-
-            <!-- Configuração de Metas -->
-            <div class="section meta-config-section">
-                <h2>⚙️ Configuração de Metas por Loja</h2>
-                <p style="color: #666; margin-bottom: 20px;">
-                    Configure as metas mensais e individuais para cada loja
-                </p>
-
-                <div class="meta-config-box" id="config-castanhal">
-                    <h3>🏢 Castanhal</h3>
-                    <div class="meta-grid">
-                        <div>
-                            <label>Meta de Aparelhos (Loja)</label>
-                            <input type="number" id="castanhal_meta_aparelhos" disabled value="380">
-                            
-                            <label>Meta por Vendedor - Aparelhos</label>
-                            <input type="number" id="castanhal_meta_vendedor_aparelhos" disabled value="95">
-                        </div>
-                        <div>
-                            <label>Meta de Acessórios - R$ (Loja)</label>
-                            <input type="text" id="castanhal_meta_acessorios" disabled value="54.000">
-                            
-                            <label>Meta por Vendedor - Acessórios R$</label>
-                            <input type="text" id="castanhal_meta_vendedor_acessorios" disabled value="13.500">
-                        </div>
-                    </div>
-                    <button class="edit-btn" id="editCastanhal">Editar Metas</button>
-                </div>
-
-                <div class="meta-config-box" id="config-belem">
-                    <h3>🏢 Belém</h3>
-                    <div class="meta-grid">
-                        <div>
-                            <label>Meta de Aparelhos (Loja)</label>
-                            <input type="number" id="belem_meta_aparelhos" disabled value="250">
-                            
-                            <label>Meta por Vendedor - Aparelhos</label>
-                            <input type="number" id="belem_meta_vendedor_aparelhos" disabled value="83">
-                        </div>
-                        <div>
-                            <label>Meta de Acessórios - R$ (Loja)</label>
-                            <input type="text" id="belem_meta_acessorios" disabled value="20.000">
-                            
-                            <label>Meta por Vendedor - Acessórios R$</label>
-                            <input type="text" id="belem_meta_vendedor_acessorios" disabled value="6.667">
-                        </div>
-                    </div>
-                    <button class="edit-btn" id="editBelem">Editar Metas</button>
-                </div>
-
-                <div class="meta-config-box" id="config-mix">
-                    <h3>🏢 Mix</h3>
-                    <div class="meta-grid">
-                        <div>
-                            <label>Meta de Aparelhos (Loja)</label>
-                            <input type="number" id="mix_meta_aparelhos" disabled value="40">
-                            
-                            <label>Meta por Vendedor - Aparelhos</label>
-                            <input type="number" id="mix_meta_vendedor_aparelhos" disabled value="40">
-                        </div>
-                        <div>
-                            <label>Meta de Acessórios - R$ (Loja)</label>
-                            <input type="text" id="mix_meta_acessorios" disabled value="3.000">
-                            
-                            <label>Meta por Vendedor - Acessórios R$</label>
-                            <input type="text" id="mix_meta_vendedor_acessorios" disabled value="3.000">
-                        </div>
-                    </div>
-                    <button class="edit-btn" id="editMix">Editar Metas</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Seção Administrativo (APENAS Tabelas de Dados) -->
-        <div id="secao-administrativo" class="secao-loja hidden">
-            <h1>PAINEL ADMINISTRATIVO ICLUB</h1>
-
-            <div class="admin-last-update" id="admin_lastUpdate">
-                🕒 Aguardando dados...
-            </div>
-
-            <div class="admin-periodo-vendas" id="admin_periodoVendas">
-                📅 Aguardando período das vendas...
-            </div>
-
-            <div class="admin-section">
-                <h2 style="--emoji: '📊';">Metas Gerais do Mês</h2>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Meta</th>
-                            <th>Vendidos</th>
-                            <th>Faltam por Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_metasGerais">
-                            <tr><td colspan="6" class="loading">Carregando dados...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h2 style="--emoji: '📈';">Metas por Loja</h2>
-                
-                <h3>🏢 Castanhal</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Meta</th>
-                            <th>Vendidos</th>
-                            <th>Faltam por Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_metasCastanhal">
-                            <tr><td colspan="6" class="loading">Carregando dados...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3>🏢 Belém</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Faltam</th>
-                            <th>Faltam por Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_metasBelem">
-                            <tr><td colspan="7" class="loading">Carregando dados...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3>🏢 Mix</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Faltam</th>
-                            <th>Faltam por Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_metasMix">
-                            <tr><td colspan="7" class="loading">Carregando dados...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h2 style="--emoji: '👥';">Vendedoras por Loja</h2>
-                
-                <h3>📱 Vendas de Aparelhos</h3>
-                
-                <h4>🏢 Castanhal - Aparelhos</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Vendedora</th>
-                            <th>Meta</th>
-                            <th>Vendidos</th>
-                            <th>Falta/Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_vendedorasCastanhalAparelhos">
-                            <tr><td colspan="6" class="loading">Carregando vendedoras...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h4>🏢 Belém - Aparelhos</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Vendedora</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Falta/Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_vendedorasBelemAparelhos">
-                            <tr><td colspan="6" class="loading">Carregando vendedoras...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h4>🏢 Mix - Aparelhos</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Vendedora</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Falta/Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_vendedorasMixAparelhos">
-                            <tr><td colspan="6" class="loading">Carregando vendedoras...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3>🎧 Vendas de Acessórios</h3>
-
-                <h4>🏢 Castanhal - Acessórios</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Vendedora</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Falta/Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_vendedorasCastanhalAcessorios">
-                            <tr><td colspan="6" class="loading">Carregando vendedoras...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h4>🏢 Belém - Acessórios</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Vendedora</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Falta/Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_vendedorasBelemAcessorios">
-                            <tr><td colspan="6" class="loading">Carregando vendedoras...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h4>🏢 Mix - Acessórios</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Vendedora</th>
-                            <th>Meta</th>
-                            <th>Vendido</th>
-                            <th>Falta/Dia</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_vendedorasMixAcessorios">
-                            <tr><td colspan="6" class="loading">Carregando vendedoras...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h2 style="--emoji: '🏆';">Ranking de Vendedoras</h2>
-                
-                <h3>📱 Ranking de Aparelhos</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Nome</th>
-                            <th>Loja</th>
-                            <th>Quantidade Vendidos</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_rankingAparelhos">
-                            <tr><td colspan="5" class="loading">Carregando ranking...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3>🎧 Ranking de Acessórios</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Nome</th>
-                            <th>Loja</th>
-                            <th>Quantidade Vendidos</th>
-                            <th>Faturamento</th>
-                            <th>Lucro</th>
-                        </tr>
-                        <tbody id="admin_rankingAcessorios">
-                            <tr><td colspan="5" class="loading">Carregando ranking...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h2 style="--emoji: '🔥';">Top 5 Produtos</h2>
-                
-                <h3>📱 Aparelhos mais vendidos</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Produto</th>
-                            <th>Quantidades Vendidos</th>
-                            <th>Faturamento</th>
-                        </tr>
-                        <tbody id="admin_top5Aparelhos">
-                            <tr><td colspan="3" class="loading">Carregando produtos...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <h3>🎧 Acessórios mais vendidos</h3>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <tr>
-                            <th>Produto</th>
-                            <th>Quantidades Vendidos</th>
-                            <th>Faturamento</th>
-                        </tr>
-                        <tbody id="admin_top5Acessorios">
-                            <tr><td colspan="3" class="loading">Carregando produtos...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Template para Dashboard da Loja -->
-        <div id="template-loja" class="secao-loja hidden">
-            <div class="container">
-                <h1 id="titulo-loja">🏢 METAS ICLUB</h1>
-                
-                <!-- Info de atualização ABAIXO do título -->
-                <div class="admin-last-update" id="loja_lastUpdate" style="margin: 20px 0 10px 0; text-align: center;">
-                    🕒 Aguardando dados...
-                </div>
-
-                <div class="admin-periodo-vendas" id="loja_periodoVendas" style="margin: 10px 0 40px 0; text-align: center;">
-                    📅 Aguardando período das vendas...
-                </div>
-                
-                <!-- SEÇÃO APARELHOS -->
-                <div class="section-header">
-                    <h2>📱 Metas de Aparelhos</h2>
-                </div>
-                
-                <div class="meta-container">
-                    <div class="meta-box">
-                        <p>Meta do mês</p>
-                        <h2 id="metaAparelhosMes">-</h2>
-                    </div>
-                    <div class="meta-box">
-                        <p>Faltam</p>
-                        <h2 id="faltamAparelhos">-</h2>
-                    </div>
-                    <div class="meta-box">
-                        <p>Vendas por dia</p>
-                        <h2 id="vendaDiariaAparelhos">-</h2>
-                    </div>
-                </div>
-
-                <div class="bar-title">📱 Aparelhos Geral</div>
-                <div class="bar-wrapper">
-                    <div class="bar-fill" id="barraAparelhosGeral" style="width:0%;">0</div>
-                    <div class="bar-label-clean" id="labelAparelhosGeral">0</div>
-                </div>
-
-                <div class="bar-title">👤 Aparelhos Vendedoras</div>
-                <div id="vendedorasAparelhos">
-                    <div class="loading">Carregando dados...</div>
-                </div>
-
-                <!-- SEÇÃO ACESSÓRIOS -->
-                <div class="section-header">
-                    <h2>🎧 Metas de Acessórios</h2>
-                </div>
-
-                <div class="meta-container">
-                    <div class="meta-box">
-                        <p>Meta do mês</p>
-                        <h2 id="metaAcessoriosMes">-</h2>
-                    </div>
-                    <div class="meta-box">
-                        <p>Faltam</p>
-                        <h2 id="faltamAcessorios">-</h2>
-                    </div>
-                    <div class="meta-box">
-                        <p>Vendas por dia</p>
-                        <h2 id="vendaDiariaAcessorios">-</h2>
-                    </div>
-                </div>
-
-                <div class="bar-title">🎧 Acessórios Geral</div>
-                <div class="bar-wrapper">
-                    <div class="bar-fill" id="barraAcessoriosGeral" style="width:0%;">R$ 0</div>
-                    <div class="bar-label-clean" id="labelAcessoriosGeral">R$ 0</div>
-                </div>
-
-                <div class="bar-title">👤 Acessórios Vendedoras</div>
-                <div id="vendedorasAcessorios">
-                    <div class="loading">Carregando dados...</div>
-                </div>
-
-                <!-- SEÇÃO RANKINGS -->
-                <div class="section-header">
-                    <h2>🏆 Ranking de Vendedoras</h2>
-                </div>
-
-                <div class="bar-title">📱 Ranking de Aparelhos</div>
-                <div id="rankingAparelhos">
-                    <div class="loading">Carregando ranking...</div>
-                </div>
-
-                <div class="bar-title" style="margin-top: 40px;">🎧 Ranking de Acessórios</div>
-                <div id="rankingAcessorios">
-                    <div class="loading">Carregando ranking...</div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="firebaseConfig.js"></script>
-    <script src="painel.js"></script>
+    <!-- Seções de Status -->
+    <div class="status-section status-atrasadas">
+      <h5 class="status-title">
+        Saídas Atrasadas
+      </h5>
+      <div id="atrasadas"></div>
+    </div>
+
+    <div class="status-section status-vencendo">
+      <h5 class="status-title">
+        Saídas Vencendo Hoje
+      </h5>
+      <div id="vencendoHoje"></div>
+    </div>
+
+    <div class="status-section status-proximas">
+      <h5 class="status-title">
+        Próximas Saídas a Vencer
+      </h5>
+      <div id="proximas"></div>
+    </div>
+
+    <div class="status-section status-recorrentes">
+      <h5 class="status-title">
+        Saídas Recorrentes
+      </h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por loja:</label>
+          <select id="filtroLojaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todas as lojas</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por ano:</label>
+          <select id="filtroAnoRecorrentes" class="form-select" onchange="preencherMesesDoAno()">
+            <option value="">Todos os anos</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por mês:</label>
+          <select id="filtroMesRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todos os meses</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por centro de custo:</label>
+          <div class="d-flex gap-2">
+            <select id="filtroCategoriaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+              <option value="">Todos os centros de custo</option>
+            </select>
+            <button class="btn btn-limpar-filtros" onclick="limparFiltrosRecorrentes()" title="Limpar Filtros">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="previsaoRecorrentes"></div>
+      <div class="valor-total-dourado">
+        <strong>Valor total saídas: <span id="totalSaidasRecorrentes">R$ 0,00</span></strong>
+      </div>
+    </div>
+
+    <!-- Saídas do Mês -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        Saídas do Mês
+      </h4>
+      <div class="table-responsive">
+        <table class="table table-modern">
+          <thead>
+            <tr>
+              <th>Loja</th>
+              <th>Centro de custo</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Data</th>
+              <th>Recorrente</th>
+              <th>Tipo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaSaidas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        Dashboard total saídas do mês
+      </h4>
+      <div class="dashboard-cards">
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalMes">R$ 0,00</div>
+          <div class="dashboard-label">Total do Mês</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalRecorrente">R$ 0,00</div>
+          <div class="dashboard-label">Total Recorrente</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="maiorGasto">R$ 0,00</div>
+          <div class="dashboard-label">Maior Gasto</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="categoriaTopo">-</div>
+          <div class="dashboard-label">Centro de custo Topo</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalSaidas">0</div>
+          <div class="dashboard-label">Total de Saídas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparativo entre Lojas -->
+    <div class="card-modern" id="comparativoLojas">
+      <h4 class="status-title">
+        📊 Comparativo entre Lojas
+      </h4>
+      <div id="tabelaComparativo"></div>
+      
+      <!-- Gráfico Comparativo de Lojas -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico Comparativo por Loja
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 600px; height: 400px;">
+            <canvas id="graficoLojas"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gráfico Centros de Custo por Loja -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico de Centros de Custo por Loja
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 700px; height: 400px;">
+            <canvas id="graficoCentrosCusto"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico por Centro de custo
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 400px; height: 400px;">
+          <canvas id="graficoCategoria"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico por Tipo de Gasto
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 400px; height: 400px;">
+          <canvas id="graficoTipo"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico de Saídas por Mês
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 600px; height: 400px;">
+          <canvas id="graficoMes"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal personalizado -->
+  <div id="modalCustom" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom">
+      <div class="modal-title-custom" id="modalTitulo">Título do Modal</div>
+      <div id="modalTexto" style="margin-bottom: 20px;"></div>
+      <div class="modal-buttons" id="modalBotoes">
+        <!-- Botões serão inseridos aqui -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // painel.js
+    let categorias = ["Aluguel", "Energia", "Internet"];
+    let lojas = ["Loja Centro", "Loja Shopping", "Loja Bairro"];
+    let saidas = [];
+    let saidasPendentes = [];
+    let lojaFiltroAtual = "";
+
+    // Funções de persistência
+    function salvarDados() {
+      const dados = {
+        categorias,
+        lojas,
+        saidas,
+        saidasPendentes
+      };
+      localStorage.setItem('iclubSaidas', JSON.stringify(dados));
+    }
+
+    function carregarDados() {
+      const dadosSalvos = localStorage.getItem('iclubSaidas');
+      if (dadosSalvos) {
+        const dados = JSON.parse(dadosSalvos);
+        categorias = dados.categorias || ["Aluguel", "Energia", "Internet"];
+        lojas = dados.lojas || ["Loja Centro", "Loja Shopping", "Loja Bairro"];
+        saidas = dados.saidas || [];
+        saidasPendentes = dados.saidasPendentes || [];
+      }
+    }
+
+    // Funções do Modal
+    function mostrarModal(titulo, texto, botoes) {
+      document.getElementById('modalTitulo').textContent = titulo;
+      document.getElementById('modalTexto').innerHTML = texto;
+      document.getElementById('modalBotoes').innerHTML = botoes;
+      document.getElementById('modalCustom').style.display = 'flex';
+    }
+
+    function fecharModal() {
+      document.getElementById('modalCustom').style.display = 'none';
+    }
+
+    function limparFiltrosRecorrentes() {
+      document.getElementById("filtroLojaRecorrentes").value = "";
+      document.getElementById("filtroAnoRecorrentes").value = "";
+      document.getElementById("filtroMesRecorrentes").innerHTML = '<option value="">Todos os meses</option>';
+      document.getElementById("filtroCategoriaRecorrentes").value = "";
+      filtrarRecorrentesPorFiltros();
+    }
+
+    function formatarMoedaBR(valor) {
+      return valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    function formatarMoeda(input) {
+      let valor = input.value.replace(/\D/g, ''); // Remove tudo que não é dígito
+      
+      if (valor === '') {
+        input.value = '';
+        return;
+      }
+      
+      // Converte para centavos
+      valor = parseInt(valor);
+      
+      // Formata como moeda
+      const valorFormatado = (valor / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+      
+      input.value = valorFormatado;
+    }
+
+    function extrairValorNumerico(valorFormatado) {
+      if (!valorFormatado) return 0;
+      
+      // Remove símbolos de moeda e converte para número
+      return parseFloat(valorFormatado.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+    }
+
+    function mostrarMensagemSucesso() {
+      const mensagem = document.getElementById("mensagemSucesso");
+      mensagem.style.display = "block";
+      
+      // Esconde a mensagem após 3 segundos
+      setTimeout(() => {
+        mensagem.style.display = "none";
+      }, 3000);
+    }
+
+    function atualizarCategorias() {
+      const select = document.getElementById("categoria");
+      select.innerHTML = "";
+      categorias.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    function atualizarLojas() {
+      const select = document.getElementById("loja");
+      select.innerHTML = "";
+      lojas.forEach(loja => {
+        const option = document.createElement("option");
+        option.value = loja;
+        option.textContent = loja;
+        select.appendChild(option);
+      });
+    }
+
+    function atualizarFiltroLojas() {
+      const select = document.getElementById("filtroLojaGlobal");
+      const opcaoTodas = select.querySelector('option[value=""]');
+      select.innerHTML = "";
+      select.appendChild(opcaoTodas);
+      
+      lojas.forEach(loja => {
+        const option = document.createElement("option");
+        option.value = loja;
+        option.textContent = `🏢 ${loja}`;
+        select.appendChild(option);
+      });
+    }
+
+    function preencherFiltroLojasRecorrentes() {
+      const select = document.getElementById("filtroLojaRecorrentes");
+      select.innerHTML = '<option value="">Todas as lojas</option>';
+      
+      lojas.forEach(loja => {
+        const option = document.createElement("option");
+        option.value = loja;
+        option.textContent = `🏢 ${loja}`;
+        select.appendChild(option);
+      });
+    }
+
+    function mostrarEditorLoja() {
+      const editor = document.getElementById("editor-loja");
+      if (editor.style.display === "none" || editor.style.display === "") {
+        editor.style.display = "block";
+      } else {
+        editor.style.display = "none";
+      }
+    }
+
+    function adicionarLoja() {
+      const nova = document.getElementById("novaLoja").value;
+      if (nova && !lojas.includes(nova)) {
+        lojas.push(nova);
+        atualizarLojas();
+        atualizarFiltroLojas();
+        preencherFiltroLojasRecorrentes();
+        salvarDados();
+      }
+      document.getElementById("novaLoja").value = "";
+    }
+
+    function aplicarFiltroLoja() {
+      lojaFiltroAtual = document.getElementById("filtroLojaGlobal").value;
+      atualizarTodasTabelas();
+      atualizarDashboard();
+      atualizarGraficos();
+      atualizarComparativoLojas();
+    }
+
+    function mostrarEditorCategoria() {
+      const editor = document.getElementById("editor-categoria");
+      if (editor.style.display === "none" || editor.style.display === "") {
+        editor.style.display = "block";
+      } else {
+        editor.style.display = "none";
+      }
+    }
+
+    function toggleTipoRecorrencia() {
+      const recorrente = document.getElementById("recorrente").value;
+      const colunaTipo = document.getElementById("colunaTipoRecorrencia");
+      
+      if (recorrente === "Sim") {
+        colunaTipo.style.display = "block";
+      } else {
+        colunaTipo.style.display = "none";
+      }
+    }
+
+    function preencherFiltroAnos() {
+      const select = document.getElementById("filtroAnoRecorrentes");
+      const anoAtual = new Date().getFullYear();
+      
+      select.innerHTML = '<option value="">Todos os anos</option>';
+      
+      for (let i = 0; i < 5; i++) {
+        const ano = anoAtual + i;
+        const option = document.createElement("option");
+        option.value = ano;
+        option.textContent = ano;
+        select.appendChild(option);
+      }
+      
+      // Definir ano atual como padrão
+      select.value = anoAtual;
+    }
+
+    function preencherMesesDoAno() {
+      const anoSelecionado = document.getElementById("filtroAnoRecorrentes").value;
+      const select = document.getElementById("filtroMesRecorrentes");
+      const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+      
+      select.innerHTML = '<option value="">Todos os meses</option>';
+      
+      if (anoSelecionado) {
+        const mesAtual = new Date().getMonth() + 1; // Mês atual (1-12)
+        
+        for (let i = 0; i < 12; i++) {
+          const mesAno = `${anoSelecionado}-${String(i + 1).padStart(2, '0')}`;
+          const option = document.createElement("option");
+          option.value = mesAno;
+          option.textContent = meses[i];
+          select.appendChild(option);
+        }
+        
+        // Definir mês atual como padrão se for o ano atual
+        if (anoSelecionado == new Date().getFullYear()) {
+          const mesAtualFormatado = `${anoSelecionado}-${String(mesAtual).padStart(2, '0')}`;
+          select.value = mesAtualFormatado;
+        }
+      }
+      
+      filtrarRecorrentesPorFiltros();
+    }
+
+    function preencherFiltroCategorias() {
+      const select = document.getElementById("filtroCategoriaRecorrentes");
+      select.innerHTML = '<option value="">Todos os centros de custo</option>';
+      
+      categorias.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    function filtrarPorLoja(lista) {
+      if (!lojaFiltroAtual) return lista;
+      return lista.filter(s => s.loja === lojaFiltroAtual);
+    }
+
+    function atualizarComparativoLojas() {
+      const container = document.getElementById("tabelaComparativo");
+      
+      if (lojaFiltroAtual) {
+        document.getElementById("comparativoLojas").style.display = "none";
+        return;
+      }
+      
+      document.getElementById("comparativoLojas").style.display = "block";
+      
+      const dadosPorLoja = {};
+      
+      lojas.forEach(loja => {
+        const saidasLoja = saidas.filter(s => s.loja === loja && s.pago === "Sim");
+        const total = saidasLoja.reduce((sum, s) => sum + s.valor, 0);
+        const quantidade = saidasLoja.length;
+        
+        dadosPorLoja[loja] = { total, quantidade };
+      });
+      
+      let html = `
+        <div class="table-responsive">
+          <table class="table table-modern">
+            <thead>
+              <tr>
+                <th>🏢 Loja</th>
+                <th>💰 Total Gasto</th>
+                <th>📊 Quantidade Saídas</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      Object.entries(dadosPorLoja).forEach(([loja, dados]) => {
+        html += `
+          <tr>
+            <td><strong>${loja}</strong></td>
+            <td><span class="valor-dourado">${formatarMoedaBR(dados.total)}</span></td>
+            <td>${dados.quantidade}</td>
+          </tr>
+        `;
+      });
+      
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+      
+      // Atualizar gráfico comparativo de lojas
+      atualizarGraficoLojas(dadosPorLoja);
+      
+      // Atualizar gráfico de centros de custo por loja
+      atualizarGraficoCentrosCusto();
+    }
+
+    function filtrarRecorrentesPorFiltros() {
+      const lojaSelecionada = document.getElementById("filtroLojaRecorrentes").value;
+      const anoSelecionado = document.getElementById("filtroAnoRecorrentes").value;
+      const mesSelecionado = document.getElementById("filtroMesRecorrentes").value;
+      const categoriaSelecionada = document.getElementById("filtroCategoriaRecorrentes").value;
+      const hoje = new Date().toISOString().split('T')[0];
+      
+      let recorrentes = saidasPendentes.filter((s, index, self) => 
+        s.recorrente === "Sim" && s.data > hoje && index === self.findIndex(t => t.id === s.id)
+      );
+      
+      // Aplicar filtro por loja específico das saídas recorrentes
+      if (lojaSelecionada) {
+        recorrentes = recorrentes.filter(s => s.loja === lojaSelecionada);
+      } else if (lojaFiltroAtual) {
+        // Aplicar filtro global se não houver filtro específico
+        recorrentes = recorrentes.filter(s => s.loja === lojaFiltroAtual);
+      }
+      
+      if (anoSelecionado && !mesSelecionado) {
+        recorrentes = recorrentes.filter(s => s.data.startsWith(anoSelecionado));
+      } else if (mesSelecionado) {
+        recorrentes = recorrentes.filter(s => s.data.startsWith(mesSelecionado));
+      }
+      
+      if (categoriaSelecionada) {
+        recorrentes = recorrentes.filter(s => s.categoria === categoriaSelecionada);
+      }
+      
+      // Calcular total filtrado
+      const totalFiltrado = recorrentes.reduce((sum, s) => sum + s.valor, 0);
+      document.getElementById("totalSaidasRecorrentes").textContent = formatarMoedaBR(totalFiltrado);
+      
+      criarTabelaSubcategoria("previsaoRecorrentes", recorrentes);
+    }
+
+    function adicionarCategoria() {
+      const nova = document.getElementById("novaCategoria").value;
+      if (nova && !categorias.includes(nova)) {
+        categorias.push(nova);
+        atualizarCategorias();
+        preencherFiltroCategorias();
+        salvarDados();
+      }
+      document.getElementById("novaCategoria").value = "";
+    }
+
+    function adicionarSaida() {
+      const loja = document.getElementById("loja").value;
+      const categoria = document.getElementById("categoria").value;
+      const descricao = document.getElementById("descricao").value;
+      const valorInput = document.getElementById("valor").value;
+      const valor = extrairValorNumerico(valorInput);
+      const data = document.getElementById("data").value;
+      const recorrente = document.getElementById("recorrente").value;
+      const tipoRecorrencia = document.getElementById("tipoRecorrencia").value;
+      const pago = document.getElementById("pago").value;
+
+      // Validações
+      if (!loja || !categoria || !descricao || !valorInput || !data) {
+        alert("Por favor, preencha todos os campos obrigatórios!");
+        return;
+      }
+
+      if (valor <= 0) {
+        alert("Por favor, insira um valor válido!");
+        return;
+      }
+
+      if (recorrente === "Sim" && (!tipoRecorrencia || tipoRecorrencia === "Selecione")) {
+        alert("Por favor, selecione o tipo de recorrência!");
+        return;
+      }
+
+      const saida = { 
+        id: Date.now() + Math.random() * 1000, 
+        loja,
+        categoria, 
+        descricao, 
+        valor, 
+        data, 
+        recorrente, 
+        tipoRecorrencia: recorrente === "Sim" ? tipoRecorrencia : null, 
+        pago 
+      };
+
+      // Situação 1: Pago=Sim + Recorrente=Não → Saídas do Mês
+      if (pago === "Sim" && recorrente === "Não") {
+        saidas.push(saida);
+      }
+      
+      // Situação 2: Pago=Sim + Recorrente=Sim → Saídas do Mês + Recorrências futuras
+      else if (pago === "Sim" && recorrente === "Sim") {
+        saidas.push(saida);
+        gerarRecorrenciasFuturas(saida);
+      }
+      
+      // Situação 3: Pago=Não → Vai para pendentes
+      else if (pago === "Não") {
+        saidasPendentes.push(saida);
+        if (recorrente === "Sim") {
+          gerarRecorrenciasFuturas(saida);
+        }
+      }
+
+      atualizarTodasTabelas();
+      atualizarDashboard();
+      atualizarGraficos();
+      atualizarComparativoLojas();
+      mostrarMensagemSucesso();
+      salvarDados();
+      
+      // Pergunta se quer adicionar outra saída com a mesma data
+      setTimeout(() => {
+        const titulo = "🚀 Adicionar Outra Saída?";
+        const texto = `Saída adicionada com sucesso!<br><br>
+                       <strong>Deseja adicionar outra saída com a mesma data?</strong><br>
+                       <small>Isso manterá todos os campos preenchidos, exceto Descrição e Valor.</small>`;
+        const botoes = `
+          <button class="btn btn-success-modern btn-modern" onclick="continuarAdicionando()">
+            <i class="fas fa-plus"></i> Sim, Adicionar Outra
+          </button>
+          <button class="btn btn-secondary btn-modern" onclick="finalizarAdicao()">
+            <i class="fas fa-check"></i> Não, Finalizar
+          </button>
+        `;
+        
+        mostrarModal(titulo, texto, botoes);
+      }, 1000);
+    }
+
+    function continuarAdicionando() {
+      limparFormularioRapido();
+      fecharModal();
+      // Foca no campo descrição para agilizar
+      document.getElementById("descricao").focus();
+    }
+
+    function finalizarAdicao() {
+      limparFormulario();
+      fecharModal();
+    }
+
+    function gerarRecorrenciasFuturas(saidaBase) {
+      const dataBase = new Date(saidaBase.data);
+      const hoje = new Date();
+      const tresMesesFuture = new Date();
+      tresMesesFuture.setMonth(hoje.getMonth() + 3);
+
+      for (let i = 1; i <= 12; i++) {
+        let proximaData = new Date(dataBase);
+        
+        if (saidaBase.tipoRecorrencia === "Diária") {
+          proximaData.setDate(dataBase.getDate() + i);
+        } else if (saidaBase.tipoRecorrencia === "Semanal") {
+          proximaData.setDate(dataBase.getDate() + (i * 7));
+        } else if (saidaBase.tipoRecorrencia === "Mensal") {
+          proximaData.setMonth(dataBase.getMonth() + i);
+        } else if (saidaBase.tipoRecorrencia === "Anual") {
+          proximaData.setFullYear(dataBase.getFullYear() + i);
+        }
+
+        if (proximaData <= tresMesesFuture && saidaBase.pago === "Não") {
+          const recorrencia = {
+            ...saidaBase,
+            id: Date.now() + i + Math.random() * 1000,
+            data: proximaData.toISOString().split('T')[0],
+            pago: "Não"
+          };
+          saidasPendentes.push(recorrencia);
+        }
+      }
+    }
+
+    function pagarSaida(id) {
+      const index = saidasPendentes.findIndex(s => s.id === id);
+      if (index !== -1) {
+        const saida = saidasPendentes[index];
+        
+        // Mostrar modal de confirmação
+        const titulo = "✅ Confirmar Pagamento";
+        const texto = `<strong>Descrição:</strong> ${saida.descricao}<br>
+                       <strong>Valor:</strong> ${formatarMoedaBR(saida.valor)}<br>
+                       <strong>Loja:</strong> ${saida.loja}<br><br>
+                       <span style="color: #10b981; font-weight: bold;">🎉 Saída foi realizada com sucesso!</span>`;
+        const botoes = `
+          <button class="btn btn-success-modern btn-modern" onclick="confirmarPagamento(${id})">
+            <i class="fas fa-check"></i> Confirmar
+          </button>
+          <button class="btn btn-secondary btn-modern" onclick="fecharModal()">
+            <i class="fas fa-times"></i> Fechar
+          </button>
+        `;
+        
+        mostrarModal(titulo, texto, botoes);
+      }
+    }
+
+    function confirmarPagamento(id) {
+      const index = saidasPendentes.findIndex(s => s.id === id);
+      if (index !== -1) {
+        const saida = saidasPendentes[index];
+        saida.pago = "Sim";
+        saidas.push(saida);
+        saidasPendentes.splice(index, 1);
+        
+        atualizarTodasTabelas();
+        atualizarDashboard();
+        atualizarGraficos();
+        atualizarComparativoLojas();
+        salvarDados();
+        fecharModal();
+      }
+    }
+
+    function editarSaida(id, origem) {
+      let saida, lista, index;
+      
+      if (origem === 'paga') {
+        index = saidas.findIndex(s => s.id === id);
+        if (index !== -1) {
+          saida = saidas[index];
+          lista = saidas;
+        }
+      } else {
+        index = saidasPendentes.findIndex(s => s.id === id);
+        if (index !== -1) {
+          saida = saidasPendentes[index];
+          lista = saidasPendentes;
+        }
+      }
+      
+      if (!saida) return;
+      
+      // Mostrar modal com opções
+      const titulo = "⚙️ Opções de Edição";
+      const texto = `<strong>Descrição:</strong> ${saida.descricao}<br>
+                     <strong>Valor:</strong> ${formatarMoedaBR(saida.valor)}<br>
+                     <strong>Loja:</strong> ${saida.loja}<br><br>
+                     Escolha uma opção:`;
+      const botoes = `
+        <button class="btn btn-warning btn-modern" onclick="executarEdicao(${id}, '${origem}', 'editar')">
+          <i class="fas fa-edit"></i> Editar
+        </button>
+        <button class="btn btn-danger btn-modern" onclick="executarEdicao(${id}, '${origem}', 'excluir')">
+          <i class="fas fa-trash"></i> Excluir
+        </button>
+        <button class="btn btn-secondary btn-modern" onclick="fecharModal()">
+          <i class="fas fa-times"></i> Fechar
+        </button>
+      `;
+      
+      mostrarModal(titulo, texto, botoes);
+    }
+
+    function executarEdicao(id, origem, acao) {
+      let saida, lista, index;
+      
+      if (origem === 'paga') {
+        index = saidas.findIndex(s => s.id === id);
+        if (index !== -1) {
+          saida = saidas[index];
+          lista = saidas;
+        }
+      } else {
+        index = saidasPendentes.findIndex(s => s.id === id);
+        if (index !== -1) {
+          saida = saidasPendentes[index];
+          lista = saidasPendentes;
+        }
+      }
+      
+      if (!saida) return;
+      
+      if (acao === 'editar') {
+        // Editar - preencher formulário
+        document.getElementById("loja").value = saida.loja;
+        document.getElementById("categoria").value = saida.categoria;
+        document.getElementById("descricao").value = saida.descricao;
+        document.getElementById("valor").value = formatarMoedaBR(saida.valor);
+        document.getElementById("data").value = saida.data;
+        document.getElementById("recorrente").value = saida.recorrente;
+        document.getElementById("pago").value = saida.pago;
+        
+        if (saida.recorrente === "Sim") {
+          document.getElementById("colunaTipoRecorrencia").style.display = "block";
+          document.getElementById("tipoRecorrencia").value = saida.tipoRecorrencia || "";
+        }
+        
+        // Remover a saída original
+        lista.splice(index, 1);
+        
+        fecharModal();
+        alert("Dados carregados no formulário. Faça as alterações e clique em 'Adicionar Saída'");
+        
+      } else if (acao === 'excluir') {
+        // Confirmar exclusão
+        if (confirm(`Tem certeza que deseja EXCLUIR a saída: ${saida.descricao}?`)) {
+          lista.splice(index, 1);
+          fecharModal();
+          alert("Saída excluída com sucesso!");
+        }
+      }
+      
+      atualizarTodasTabelas();
+      atualizarDashboard();
+      atualizarGraficos();
+      atualizarComparativoLojas();
+      salvarDados();
+    }
+
+    function atualizarTodasTabelas() {
+      atualizarTabela();
+      atualizarTabelasSubcategorias();
+    }
+
+    function atualizarTabelasSubcategorias() {
+      const hoje = new Date().toISOString().split('T')[0];
+
+      // Separar saídas por categoria - removendo duplicatas e aplicando filtro por loja
+      const saidasFiltradas = filtrarPorLoja(saidasPendentes);
+      
+      const atrasadas = saidasFiltradas.filter((s, index, self) => 
+        s.data < hoje && index === self.findIndex(t => t.id === s.id)
+      );
+      
+      const vencendoHoje = saidasFiltradas.filter((s, index, self) => 
+        s.data === hoje && index === self.findIndex(t => t.id === s.id)
+      );
+      
+      const proximas = saidasFiltradas.filter((s, index, self) => 
+        s.data > hoje && s.recorrente === "Não" && index === self.findIndex(t => t.id === s.id)
+      );
+
+      criarTabelaSubcategoria("atrasadas", atrasadas);
+      criarTabelaSubcategoria("vencendoHoje", vencendoHoje);
+      criarTabelaSubcategoria("proximas", proximas);
+      
+      // Atualizar saídas recorrentes com filtros
+      filtrarRecorrentesPorFiltros();
+    }
+
+    function criarTabelaSubcategoria(containerId, saidasArray) {
+      const container = document.getElementById(containerId);
+      
+      if (saidasArray.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-4 text-muted">
+            <p class="mb-0">Nenhuma saída encontrada</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div class="table-responsive">
+          <table class="table table-modern">
+            <thead>
+              <tr>
+                <th>Loja</th>
+                <th>Centro de custo</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th>Recorrente</th>
+                <th>Tipo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      saidasArray.forEach(s => {
+        const recorrenteBadge = s.recorrente === 'Sim' 
+          ? '<span class="badge bg-success">Sim</span>' 
+          : '<span class="badge bg-secondary">Não</span>';
+          
+        html += `
+          <tr>
+            <td><strong>🏢 ${s.loja}</strong></td>
+            <td><strong>${s.categoria}</strong></td>
+            <td>${s.descricao}</td>
+            <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+            <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+            <td>${recorrenteBadge}</td>
+            <td>${s.tipoRecorrencia || '-'}</td>
+            <td>
+              <button class="btn btn-success btn-sm-modern me-1" onclick="pagarSaida(${s.id})">
+                Pagar
+              </button>
+              <button class="btn btn-warning btn-sm-modern" onclick="editarSaida(${s.id}, 'pendente')">
+                Editar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function atualizarTabela() {
+      const tbody = document.getElementById("tabelaSaidas");
+      tbody.innerHTML = "";
+      
+      const saidasFiltradas = filtrarPorLoja(saidas);
+      
+      saidasFiltradas.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>🏢 ${s.loja}</strong></td>
+          <td>${s.categoria}</td>
+          <td>${s.descricao}</td>
+          <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+          <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+          <td>${s.recorrente}</td>
+          <td>${s.tipoRecorrencia || '-'}</td>
+          <td>
+            <button class="btn btn-warning btn-sm-modern" onclick="editarSaida(${s.id}, 'paga')">
+              Editar
+            </button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function atualizarDashboard() {
+      const saidasFiltradas = filtrarPorLoja(saidas);
+      
+      let total = 0, totalRec = 0, categoriaTotal = {};
+      saidasFiltradas.forEach(s => {
+        if (s.pago === "Sim") {
+          total += s.valor;
+          if (s.recorrente === "Sim") totalRec += s.valor;
+          categoriaTotal[s.categoria] = (categoriaTotal[s.categoria] || 0) + s.valor;
+        }
+      });
+      
+      document.getElementById("totalMes").textContent = formatarMoedaBR(total);
+      document.getElementById("totalRecorrente").textContent = formatarMoedaBR(totalRec);
+      const maiorCategoria = Object.entries(categoriaTotal).sort((a,b) => b[1]-a[1])[0] || ["-", 0];
+      document.getElementById("categoriaTopo").textContent = maiorCategoria[0];
+      document.getElementById("maiorGasto").textContent = formatarMoedaBR(maiorCategoria[1]);
+      document.getElementById("totalSaidas").textContent = saidasFiltradas.length;
+    }
+
+    function atualizarGraficos() {
+      const saidasFiltradas = filtrarPorLoja(saidas);
+      
+      // Preparar dados para os gráficos
+      const categoriaTotal = {};
+      const tipoTotal = { "Recorrente": 0, "Único": 0 };
+      const mesTotal = {};
+
+      saidasFiltradas.forEach(s => {
+        if (s.pago === "Sim") {
+          // Por categoria
+          categoriaTotal[s.categoria] = (categoriaTotal[s.categoria] || 0) + s.valor;
+          
+          // Por tipo
+          if (s.recorrente === "Sim") {
+            tipoTotal["Recorrente"] += s.valor;
+          } else {
+            tipoTotal["Único"] += s.valor;
+          }
+          
+          // Por mês
+          const mes = s.data.substring(0, 7); // YYYY-MM
+          mesTotal[mes] = (mesTotal[mes] || 0) + s.valor;
+        }
+      });
+
+      // Atualizar gráfico por categoria
+      atualizarGraficoCategoria(categoriaTotal);
+      
+      // Atualizar gráfico por tipo
+      atualizarGraficoTipo(tipoTotal);
+      
+      // Atualizar gráfico por mês
+      atualizarGraficoMes(mesTotal);
+    }
+
+    function atualizarGraficoLojas(dadosPorLoja) {
+      const ctx = document.getElementById('graficoLojas').getContext('2d');
+      
+      if (window.chartLojas) {
+        window.chartLojas.destroy();
+      }
+      
+      // Ordenar lojas por total (maior para menor)
+      const lojasOrdenadas = Object.entries(dadosPorLoja).sort((a, b) => b[1].total - a[1].total);
+      
+      window.chartLojas = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: lojasOrdenadas.map(([loja]) => loja),
+          datasets: [{
+            label: 'Total Gasto (R$)',
+            data: lojasOrdenadas.map(([, dados]) => dados.total),
+            backgroundColor: [
+              '#10b981', // Verde
+              '#0891b2', // Azul
+              '#8b5cf6', // Roxo
+              '#f59e0b', // Amarelo
+              '#ef4444', // Vermelho
+              '#6b7280'  // Cinza
+            ],
+            borderColor: [
+              '#059669',
+              '#0e7490', 
+              '#7c3aed',
+              '#d97706',
+              '#dc2626',
+              '#4b5563'
+            ],
+            borderWidth: 2,
+            borderRadius: 8,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Total: ${formatarMoedaBR(context.parsed.y)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatarMoedaBR(value);
+                }
+              }
+            },
+            x: {
+              ticks: {
+                font: {
+                  weight: 'bold'
+                }
+              }
+            }
+          },
+          elements: {
+            bar: {
+              borderWidth: 2,
+            }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeOutBounce'
+          }
+        }
+      });
+    }
+
+    function atualizarGraficoCentrosCusto() {
+      const ctx = document.getElementById('graficoCentrosCusto').getContext('2d');
+      
+      if (window.chartCentrosCusto) {
+        window.chartCentrosCusto.destroy();
+      }
+      
+      // Preparar dados por loja e centro de custo
+      const dadosPorLoja = {};
+      const coresCentrosCusto = {
+        'Aluguel': '#ef4444',
+        'Energia': '#f59e0b', 
+        'Internet': '#10b981',
+        'Água': '#0891b2',
+        'Telefone': '#8b5cf6',
+        'Material': '#ec4899',
+        'Outros': '#6b7280'
+      };
+      
+      lojas.forEach(loja => {
+        dadosPorLoja[loja] = {};
+        categorias.forEach(categoria => {
+          const saidasCategoria = saidas.filter(s => 
+            s.loja === loja && 
+            s.categoria === categoria && 
+            s.pago === "Sim"
+          );
+          const total = saidasCategoria.reduce((sum, s) => sum + s.valor, 0);
+          dadosPorLoja[loja][categoria] = total;
+        });
+      });
+      
+      // Criar datasets para cada centro de custo
+      const datasets = [];
+      categorias.forEach((categoria, index) => {
+        const data = lojas.map(loja => dadosPorLoja[loja][categoria] || 0);
+        datasets.push({
+          label: categoria,
+          data: data,
+          backgroundColor: coresCentrosCusto[categoria] || `hsl(${index * 60}, 70%, 50%)`,
+          borderColor: coresCentrosCusto[categoria] || `hsl(${index * 60}, 70%, 40%)`,
+          borderWidth: 1
+        });
+      });
+      
+      window.chartCentrosCusto = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: lojas,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            x: {
+              stacked: true,
+              ticks: {
+                font: {
+                  weight: 'bold'
+                }
+              }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatarMoedaBR(value);
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${formatarMoedaBR(context.parsed.y)}`;
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+    }
+
+    function atualizarGraficoCategoria(dados) {
+      const ctx = document.getElementById('graficoCategoria').getContext('2d');
+      
+      if (window.chartCategoria) {
+        window.chartCategoria.destroy();
+      }
+      
+      window.chartCategoria = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(dados),
+          datasets: [{
+            data: Object.values(dados),
+            backgroundColor: [
+              '#ef4444', // Vermelho vibrante
+              '#f59e0b', // Amarelo vibrante
+              '#10b981', // Verde vibrante
+              '#0891b2', // Azul vibrante
+              '#8b5cf6', // Roxo vibrante
+              '#ec4899'  // Rosa vibrante
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    function atualizarGraficoTipo(dados) {
+      const ctx = document.getElementById('graficoTipo').getContext('2d');
+      
+      if (window.chartTipo) {
+        window.chartTipo.destroy();
+      }
+      
+      window.chartTipo = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(dados),
+          datasets: [{
+            data: Object.values(dados),
+            backgroundColor: [
+              '#10b981', // Verde vibrante
+              '#f59e0b'  // Amarelo vibrante
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    function atualizarGraficoMes(dados) {
+      const ctx = document.getElementById('graficoMes').getContext('2d');
+      
+      if (window.chartMes) {
+        window.chartMes.destroy();
+      }
+      
+      window.chartMes = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(dados),
+          datasets: [{
+            label: 'Gastos por Mês (R$)',
+            data: Object.values(dados),
+            backgroundColor: '#10b981',
+            borderColor: '#059669',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatarMoedaBR(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function limparFormulario() {
+      document.getElementById("descricao").value = "";
+      document.getElementById("valor").value = "";
+      document.getElementById("data").value = "";
+      document.getElementById("recorrente").value = "Não";
+      document.getElementById("tipoRecorrencia").selectedIndex = 0;
+      document.getElementById("pago").value = "Sim";
+      
+      // Esconde o campo de tipo de recorrência
+      document.getElementById("colunaTipoRecorrencia").style.display = "none";
+    }
+
+    function limparFormularioRapido() {
+      // Limpa apenas os campos principais, mantém data e configurações
+      document.getElementById("descricao").value = "";
+      document.getElementById("valor").value = "";
+    }
+
+    window.onload = () => {
+      carregarDados();
+      atualizarCategorias();
+      atualizarLojas();
+      atualizarFiltroLojas();
+      preencherFiltroLojasRecorrentes();
+      preencherFiltroAnos();
+      preencherFiltroCategorias();
+      preencherMesesDoAno(); // Carregar com filtros padrão
+      atualizarTodasTabelas();
+      atualizarDashboard();
+      atualizarGraficos();
+      atualizarComparativoLojas();
+    };
+  </script>
 </body>
 </html>
