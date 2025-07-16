@@ -1,6 +1,6 @@
 // ============================================================================
 // netlify/functions/webhook-whatsapp.js
-// WEBHOOK PRINCIPAL - IA + WHATSAPP + FIREBASE
+// WEBHOOK PRINCIPAL - IA + WHATSAPP + FIREBASE - MULTI-USUÁRIO
 // ============================================================================
 
 const admin = require('firebase-admin');
@@ -38,6 +38,57 @@ function initializeFirebase() {
     db = admin.firestore();
     return true;
   }
+}
+
+// ============================================================================
+// SISTEMA DE USUÁRIOS MULTI-WHATSAPP
+// ============================================================================
+const USUARIOS_AUTORIZADOS = {
+  // Adicione aqui os números autorizados
+  '5511999999999': {
+    nome: 'Usuário Principal',
+    email: 'usuario@iclub.com',
+    perfil: 'admin',
+    ativo: true
+  },
+  '5511888888888': {
+    nome: 'Sócia',
+    email: 'socia@iclub.com', 
+    perfil: 'admin',
+    ativo: true
+  },
+  // Adicione mais usuários conforme necessário
+};
+
+function identificarUsuario(numeroTelefone) {
+  // Limpar número (remover caracteres especiais)
+  const numeroLimpo = numeroTelefone.replace(/[^\d]/g, '');
+  
+  // Tentar encontrar usuário por número exato
+  if (USUARIOS_AUTORIZADOS[numeroLimpo]) {
+    return {
+      autorizado: true,
+      usuario: USUARIOS_AUTORIZADOS[numeroLimpo],
+      numeroLimpo: numeroLimpo
+    };
+  }
+  
+  // Tentar encontrar por final do número (últimos 9 dígitos)
+  const finalNumero = numeroLimpo.slice(-9);
+  for (const [numeroAutorizado, dadosUsuario] of Object.entries(USUARIOS_AUTORIZADOS)) {
+    if (numeroAutorizado.slice(-9) === finalNumero) {
+      return {
+        autorizado: true,
+        usuario: dadosUsuario,
+        numeroLimpo: numeroAutorizado
+      };
+    }
+  }
+  
+  return {
+    autorizado: false,
+    numeroLimpo: numeroLimpo
+  };
 }
 
 // ============================================================================
@@ -99,13 +150,14 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const { message, phone, name, from } = requestData;
+    const { message, phone, name, from, source } = requestData;
     
     // Logs para debug
     console.log('📱 Webhook recebido:', {
       message: message?.substring(0, 100),
       phone: phone || from,
       name,
+      source: source || 'manual',
       timestamp: new Date().toISOString()
     });
 
@@ -124,14 +176,35 @@ exports.handler = async (event, context) => {
 
     const numeroTelefone = phone || from || 'unknown';
 
+    // Identificar usuário
+    const identificacao = identificarUsuario(numeroTelefone);
+    
+    // Log da identificação
+    console.log('👤 Identificação do usuário:', {
+      numero: identificacao.numeroLimpo.substring(0, 8) + '***',
+      autorizado: identificacao.autorizado,
+      nome: identificacao.usuario?.nome || 'Desconhecido'
+    });
+
+    // Verificar se usuário está autorizado (apenas para controle)
+    if (!identificacao.autorizado) {
+      console.log('⚠️ Usuário não autorizado, mas processando mesmo assim');
+    }
+
     // Processar mensagem com IA
-    const resultado = await processarMensagemWhatsapp(message, numeroTelefone);
+    const resultado = await processarMensagemWhatsapp(
+      message, 
+      identificacao.numeroLimpo,
+      identificacao.usuario || null,
+      source || 'whatsapp'
+    );
 
     // Log do resultado
     console.log('📊 Resultado processamento:', {
       sucesso: resultado.sucesso,
       categoria: resultado.dados?.categoria,
-      valor: resultado.dados?.valor
+      valor: resultado.dados?.valor,
+      usuario: resultado.dados?.usuarioNome
     });
 
     return {
@@ -141,6 +214,7 @@ exports.handler = async (event, context) => {
         success: resultado.sucesso,
         response: resultado.resposta,
         data: resultado.dados || null,
+        user: identificacao.usuario || null,
         timestamp: new Date().toISOString()
       })
     };
@@ -161,11 +235,16 @@ exports.handler = async (event, context) => {
 };
 
 // ============================================================================
-// PROCESSAMENTO PRINCIPAL
+// PROCESSAMENTO PRINCIPAL MULTI-USUÁRIO
 // ============================================================================
-async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
+async function processarMensagemWhatsapp(mensagem, numeroRemetente, dadosUsuario, origem) {
   try {
-    console.log('🔄 Iniciando processamento:', mensagem.substring(0, 50));
+    console.log('🔄 Iniciando processamento multi-usuário:', {
+      mensagem: mensagem.substring(0, 50),
+      numero: numeroRemetente.substring(0, 8) + '***',
+      usuario: dadosUsuario?.nome || 'Anônimo',
+      origem
+    });
 
     // STEP 1: Interpretar mensagem com IA
     const dadosExtraidos = interpretarMensagemIA(mensagem);
@@ -175,15 +254,15 @@ async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
       return {
         sucesso: false,
         erro: dadosExtraidos.erro,
-        resposta: `❌ ${dadosExtraidos.erro}\n\n💡 *Exemplos válidos:*\n• "Paguei R$ 500 de aluguel hoje"\n• "Gastei R$ 80 de gasolina ontem"\n• "Devo R$ 200 de internet"`
+        resposta: gerarRespostaErro(dadosExtraidos.erro, dadosUsuario)
       };
     }
 
-    // STEP 2: Preparar dados para o Firestore
+    // STEP 2: Preparar dados para o Firestore com informações do usuário
     const timestamp = new Date();
     const saidaProfissional = {
       // IDs únicos
-      id: `whatsapp-${timestamp.getTime()}-${Math.floor(Math.random() * 1000)}`,
+      id: `${origem}-${timestamp.getTime()}-${Math.floor(Math.random() * 1000)}`,
       
       // Dados extraídos pela IA
       categoria: dadosExtraidos.categoria,
@@ -196,8 +275,14 @@ async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
       tipoRecorrencia: dadosExtraidos.tipoRecorrencia,
       pago: dadosExtraidos.pago,
       
+      // Dados do usuário multi-WhatsApp
+      usuarioNumero: numeroRemetente,
+      usuarioNome: dadosUsuario?.nome || 'Usuário Anônimo',
+      usuarioEmail: dadosUsuario?.email || null,
+      usuarioPerfil: dadosUsuario?.perfil || 'usuario',
+      
       // Metadados WhatsApp
-      origem: "whatsapp",
+      origem: origem,
       numeroRemetente: numeroRemetente,
       mensagemOriginal: mensagem,
       confianca: dadosExtraidos.confianca || 0.8,
@@ -207,11 +292,15 @@ async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
       dataProcessamento: timestamp.toISOString(),
       processadoEm: timestamp.toLocaleString('pt-BR', { 
         timeZone: 'America/Sao_Paulo' 
-      })
+      }),
+      
+      // Campos para filtros multi-usuário
+      multiUsuario: true,
+      usuarioId: numeroRemetente // Para facilitar queries
     };
 
     // STEP 3: Salvar no Firestore
-    console.log('💾 Salvando no Firestore...');
+    console.log('💾 Salvando no Firestore com dados multi-usuário...');
     const docRef = await db.collection('saidasProfissional').add(saidaProfissional);
     
     // Atualizar com ID do documento
@@ -219,8 +308,11 @@ async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
     
     console.log('✅ Salvo no Firestore:', docRef.id);
 
-    // STEP 4: Gerar resposta de confirmação
-    const resposta = gerarRespostaConfirmacao(saidaProfissional);
+    // STEP 4: Registrar estatísticas de usuário
+    await registrarEstatisticasUsuario(numeroRemetente, dadosUsuario, saidaProfissional);
+
+    // STEP 5: Gerar resposta de confirmação personalizada
+    const resposta = gerarRespostaConfirmacaoMultiUsuario(saidaProfissional, dadosUsuario);
 
     return {
       sucesso: true,
@@ -229,7 +321,7 @@ async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
     };
 
   } catch (error) {
-    console.error('❌ Erro no processamento:', error);
+    console.error('❌ Erro no processamento multi-usuário:', error);
     
     // Erros específicos
     if (error.code === 'permission-denied') {
@@ -249,7 +341,57 @@ async function processarMensagemWhatsapp(mensagem, numeroRemetente) {
 }
 
 // ============================================================================
-// IA DE INTERPRETAÇÃO DE MENSAGENS
+// SISTEMA DE ESTATÍSTICAS POR USUÁRIO
+// ============================================================================
+async function registrarEstatisticasUsuario(numeroUsuario, dadosUsuario, saida) {
+  try {
+    const mes = saida.data.substring(0, 7); // YYYY-MM
+    const estatisticaId = `${numeroUsuario}-${mes}`;
+    
+    const estatisticaRef = db.collection('estatisticasUsuario').doc(estatisticaId);
+    
+    // Usar transação para atualizar estatísticas
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(estatisticaRef);
+      
+      if (doc.exists) {
+        // Atualizar estatística existente
+        const dados = doc.data();
+        transaction.update(estatisticaRef, {
+          totalSaidas: (dados.totalSaidas || 0) + 1,
+          totalValor: (dados.totalValor || 0) + saida.valor,
+          ultimaAtualizacao: admin.firestore.FieldValue.serverTimestamp(),
+          categorias: {
+            ...dados.categorias,
+            [saida.categoria]: (dados.categorias?.[saida.categoria] || 0) + saida.valor
+          }
+        });
+      } else {
+        // Criar nova estatística
+        transaction.set(estatisticaRef, {
+          usuarioNumero: numeroUsuario,
+          usuarioNome: dadosUsuario?.nome || 'Usuário Anônimo',
+          mes: mes,
+          totalSaidas: 1,
+          totalValor: saida.valor,
+          criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+          ultimaAtualizacao: admin.firestore.FieldValue.serverTimestamp(),
+          categorias: {
+            [saida.categoria]: saida.valor
+          }
+        });
+      }
+    });
+    
+    console.log('📈 Estatísticas de usuário atualizadas');
+    
+  } catch (error) {
+    console.error('⚠️ Erro ao registrar estatísticas (não crítico):', error);
+  }
+}
+
+// ============================================================================
+// IA DE INTERPRETAÇÃO DE MENSAGENS (MANTIDA IGUAL)
 // ============================================================================
 function interpretarMensagemIA(mensagem) {
   try {
@@ -567,9 +709,9 @@ function interpretarMensagemIA(mensagem) {
 }
 
 // ============================================================================
-// GERADOR DE RESPOSTA
+// GERADOR DE RESPOSTA MULTI-USUÁRIO
 // ============================================================================
-function gerarRespostaConfirmacao(saida) {
+function gerarRespostaConfirmacaoMultiUsuario(saida, dadosUsuario) {
   try {
     const dataFormatada = new Date(saida.data + 'T00:00:00').toLocaleDateString('pt-BR');
     const valorFormatado = saida.valor.toLocaleString('pt-BR', {
@@ -601,6 +743,12 @@ function gerarRespostaConfirmacao(saida) {
     const emoji = emojiCategoria[saida.categoria] || '📊';
     
     let resposta = `✅ *Saída registrada com sucesso!*\n\n`;
+    
+    // Saudação personalizada
+    if (dadosUsuario) {
+      resposta += `👋 Olá, *${dadosUsuario.nome}*!\n\n`;
+    }
+    
     resposta += `💰 *Valor:* ${valorFormatado}\n`;
     resposta += `${emoji} *Categoria:* ${saida.categoria}\n`;
     resposta += `📝 *Descrição:* ${saida.descricao}\n`;
@@ -611,20 +759,30 @@ function gerarRespostaConfirmacao(saida) {
       resposta += `🔄 *Recorrência:* ${saida.tipoRecorrencia}\n`;
     }
     
+    // Informações do usuário
+    resposta += `\n👤 *Registrado por:* ${saida.usuarioNome}\n`;
+    resposta += `📱 *Via WhatsApp:* ***${saida.usuarioNumero.slice(-4)}\n`;
+    
     // Adicionar confiança se disponível
     if (saida.confianca) {
       const porcentagem = Math.round(saida.confianca * 100);
       resposta += `🎯 *Confiança IA:* ${porcentagem}%\n`;
     }
     
-    resposta += `\n📱 *Registrado via WhatsApp*`;
-    resposta += `\n⏰ ${saida.processadoEm}`;
-    resposta += `\n\n💡 *Dica:* Acesse o painel web para ver relatórios completos!`;
+    resposta += `⏰ ${saida.processadoEm}`;
+    resposta += `\n\n💡 *Dica:* Dados consolidados no painel compartilhado!`;
+    resposta += `\n🤝 *Sistema multi-usuário* ativo para toda equipe`;
     
     return resposta;
     
   } catch (error) {
-    console.error('❌ Erro ao gerar resposta:', error);
-    return `✅ Saída registrada com sucesso!\n\n💰 Valor: ${saida.valor}\n🏷️ Categoria: ${saida.categoria}\n📱 Via WhatsApp`;
+    console.error('❌ Erro ao gerar resposta multi-usuário:', error);
+    return `✅ Saída registrada com sucesso!\n\n💰 Valor: ${saida.valor}\n🏷️ Categoria: ${saida.categoria}\n👤 Por: ${saida.usuarioNome}\n📱 Via WhatsApp Multi-Usuário`;
   }
+}
+
+function gerarRespostaErro(erro, dadosUsuario) {
+  const saudacao = dadosUsuario ? `Olá, *${dadosUsuario.nome}*!\n\n` : '';
+  
+  return `${saudacao}❌ ${erro}\n\n💡 *Exemplos válidos:*\n• "Paguei R$ 500 de aluguel hoje"\n• "Gastei R$ 80 de gasolina ontem"\n• "Devo R$ 200 de internet"\n\n🤝 *Sistema multi-usuário* iClub`;
 }
