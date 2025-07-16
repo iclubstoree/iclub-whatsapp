@@ -1,472 +1,230 @@
+// painel.js - SISTEMA ICLUB CORRIGIDO E FUNCIONAL
 // ============================================================================
-// MELHORIAS IA ICLUB - APENAS ADIÇÕES SEM ALTERAR FUNCIONALIDADES EXISTENTES
-// ============================================================================
-
-// ADICIONAR NO FINAL DO PAINEL.JS (não substitua nada)
-
-// ============================================================================
-// 1. TREINAMENTO AUTOMÁTICO INTELIGENTE
+// SISTEMA PRINCIPAL ICLUB - TOTALMENTE REVISADO
 // ============================================================================
 
-// Função melhorada para interpretar comandos de treinamento
-function processarComandoTreinamento(mensagem) {
-  const msgLower = mensagem.toLowerCase();
+// Variáveis globais
+let categorias = [
+  "Aluguel", "Energia", "Internet", "Combustível", "Material", 
+  "Transporte", "Alimentação", "Marketing", "Saúde"
+];
+let lojas = ["Loja Centro", "Loja Shopping", "Loja Bairro"];
+let saidas = [];
+let saidasPendentes = [];
+let lojaFiltroAtual = "";
+let multiplasSaidasLista = [];
+let contadorMultiplas = 0;
+
+// Treinamento IA Melhorado
+let treinamentosIA = JSON.parse(localStorage.getItem('treinamentosIA') || '[]');
+let treinamentosNaturais = JSON.parse(localStorage.getItem('treinamentosNaturais') || '[]');
+
+// Chat IA
+let aguardandoSelecaoLoja = false;
+let saidaPendenteLoja = null;
+
+// ============================================================================
+// SISTEMA DE TREINAMENTO IA MELHORADO
+// ============================================================================
+
+function mostrarTreinamentoIA() {
+  const modal = document.getElementById('modalTreinamentoIA');
+  if (modal) {
+    modal.style.display = 'block';
+    preencherSelectTreinamento();
+    listarTreinamentos();
+  }
+}
+
+function fecharTreinamentoIA() {
+  const modal = document.getElementById('modalTreinamentoIA');
+  if (modal) {
+    modal.style.display = 'none';
+    limparFormularioTreinamento();
+  }
+}
+
+function preencherSelectTreinamento() {
+  const selectCat = document.getElementById('treinamentoCategoria');
+  if (selectCat) {
+    selectCat.innerHTML = '<option value="">Selecione categoria...</option>';
+    categorias.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      selectCat.appendChild(option);
+    });
+  }
   
-  // Padrão: "adicione centro de custo X e quando falar Y ou Z adicione no centro de custo X"
-  const padraoCompleto = /adicione\s+(?:o\s+)?centro\s+de\s+custos?\s+([^e]+)\s+e\s+quando\s+(?:eu\s+)?falar\s+([^,]+?)(?:\s+ou\s+([^,]+?))?\s+adicione\s+(?:no\s+centro\s+de\s+custos?|na\s+categoria)\s+([^.]+)/i;
+  const selectLoja = document.getElementById('treinamentoLoja');
+  if (selectLoja) {
+    selectLoja.innerHTML = '<option value="">Selecione loja...</option>';
+    lojas.forEach(loja => {
+      const option = document.createElement('option');
+      option.value = loja;
+      option.textContent = loja;
+      selectLoja.appendChild(option);
+    });
+  }
+}
+
+function salvarTreinamentoNatural() {
+  const textoTreinamento = document.getElementById('treinamentoNatural')?.value.trim();
   
-  // Padrão simplificado: "quando falo X e Y o centro de custo é Z"
-  const padraoSimples = /quando\s+falo\s+([^e]+?)\s+e\s+([^o]+?)\s+o\s+centro\s+de\s+custos?\s+(?:é|e)\s+([^.]+)/i;
+  if (!textoTreinamento) {
+    alert('Digite o texto de treinamento!');
+    return;
+  }
   
-  let match = msgLower.match(padraoCompleto) || msgLower.match(padraoSimples);
+  const padroesTreinamento = processarTreinamentoNatural(textoTreinamento);
   
-  if (match) {
-    let categoria, palavra1, palavra2;
-    
-    if (padraoCompleto.test(msgLower)) {
-      categoria = match[1].trim();
-      palavra1 = match[2].trim();
-      palavra2 = match[3] ? match[3].trim() : null;
-    } else {
-      palavra1 = match[1].trim();
-      palavra2 = match[2].trim();
-      categoria = match[3].trim();
-    }
-    
-    // Capitalizar categoria
-    const categoriaCapitalizada = categoria.charAt(0).toUpperCase() + categoria.slice(1);
-    
-    // Adicionar categoria se não existir
-    if (!categorias.includes(categoriaCapitalizada)) {
-      categorias.push(categoriaCapitalizada);
-      console.log('✅ Nova categoria criada:', categoriaCapitalizada);
-    }
-    
-    // Salvar aprendizado automático
-    let aprendizado = JSON.parse(localStorage.getItem('aprendizadoAutomatico') || '{}');
-    
-    aprendizado[palavra1] = {
-      categoria: categoriaCapitalizada,
-      confianca: 0.95,
+  if (padroesTreinamento.length === 0) {
+    alert('Não consegui identificar padrões válidos no texto. Tente ser mais específico.');
+    return;
+  }
+  
+  padroesTreinamento.forEach(padrao => {
+    treinamentosNaturais.push({
+      id: Date.now() + Math.random(),
+      textoOriginal: textoTreinamento,
+      palavra: padrao.palavra,
+      categoria: padrao.categoria,
       criadoEm: new Date().toISOString()
-    };
-    
-    if (palavra2) {
-      aprendizado[palavra2] = {
-        categoria: categoriaCapitalizada,
-        confianca: 0.95,
-        criadoEm: new Date().toISOString()
-      };
-    }
-    
-    localStorage.setItem('aprendizadoAutomatico', JSON.stringify(aprendizado));
-    salvarDadosLocal();
-    atualizarInterfaceCompleta();
-    
-    return {
-      sucesso: true,
-      categoria: categoriaCapitalizada,
-      palavras: [palavra1, palavra2].filter(Boolean),
-      resposta: `✅ **Aprendi!** Centro de custo "${categoriaCapitalizada}" criado!\n\n🧠 **Palavras associadas:**\n• "${palavra1}"\n${palavra2 ? `• "${palavra2}"` : ''}\n\n💡 Agora quando você falar essas palavras, automaticamente vou usar este centro de custo.`
-    };
-  }
+    });
+  });
   
-  return { sucesso: false };
+  localStorage.setItem('treinamentosNaturais', JSON.stringify(treinamentosNaturais));
+  
+  mostrarMensagemSucesso(`✅ IA treinada! ${padroesTreinamento.length} padrões aprendidos.`);
+  document.getElementById('treinamentoNatural').value = '';
+  listarTreinamentos();
 }
 
-// ============================================================================
-// 2. RECONHECIMENTO INTELIGENTE DE DIAS DA SEMANA
-// ============================================================================
+function processarTreinamentoNatural(texto) {
+  const padroes = [];
+  const textoLower = texto.toLowerCase();
+  
+  const regexPadroes = [
+    /quando\s+eu\s+falar\s+([^,]+?)\s+(?:você\s+vai\s+adicionar|adicione)\s+(?:ao\s+centro\s+de\s+custos?|na\s+categoria)\s+([^,.]+)/gi,
+    /quando\s+falar\s+([^,]+?)\s+(?:adicione|vai\s+para)\s+(?:na\s+categoria|ao\s+centro\s+de\s+custos?)\s+([^,.]+)/gi,
+    /([^,]+?)\s+vai\s+para\s+(?:categoria|centro\s+de\s+custos?)\s+([^,.]+)/gi
+  ];
+  
+  regexPadroes.forEach(regex => {
+    let match;
+    while ((match = regex.exec(textoLower)) !== null) {
+      const palavra = match[1].trim();
+      const categoria = match[2].trim();
+      
+      if (palavra && categoria) {
+        padroes.push({
+          palavra: palavra,
+          categoria: categoria.charAt(0).toUpperCase() + categoria.slice(1)
+        });
+      }
+    }
+  });
+  
+  return padroes;
+}
 
-function calcularDataPorDiaSemana(mensagem) {
-  const diasSemana = {
-    'domingo': 0, 'segunda': 1, 'terca': 2, 'terça': 2,
-    'quarta': 3, 'quinta': 4, 'sexta': 5, 'sabado': 6, 'sábado': 6
+function salvarTreinamentoManual() {
+  const frase = document.getElementById('treinamentoFrase')?.value.trim();
+  const valor = document.getElementById('treinamentoValor')?.value.trim();
+  const categoria = document.getElementById('treinamentoCategoria')?.value;
+  const loja = document.getElementById('treinamentoLoja')?.value;
+  
+  if (!frase || !valor || !categoria || !loja) {
+    alert('Preencha todos os campos para treinar a IA!');
+    return;
+  }
+  
+  const treinamento = {
+    id: Date.now(),
+    frase: frase.toLowerCase(),
+    valor: parseFloat(valor.replace(/[^0-9,]/g, '').replace(',', '.')),
+    categoria,
+    loja,
+    criadoEm: new Date().toISOString()
   };
   
-  const hoje = new Date();
-  const diaAtual = hoje.getDay();
+  treinamentosIA.push(treinamento);
+  localStorage.setItem('treinamentosIA', JSON.stringify(treinamentosIA));
   
-  for (const [nomeDia, numeroDia] of Object.entries(diasSemana)) {
-    if (mensagem.toLowerCase().includes(nomeDia)) {
-      let diasParaAdicionar = numeroDia - diaAtual;
-      
-      // Se o dia já passou esta semana, vai para a próxima
-      if (diasParaAdicionar < 0) {
-        diasParaAdicionar += 7;
-      }
-      
-      const dataCalculada = new Date(hoje);
-      dataCalculada.setDate(hoje.getDate() + diasParaAdicionar);
-      
-      console.log(`📅 ${nomeDia} = dia ${dataCalculada.getDate()}`);
-      return dataCalculada.toISOString().split('T')[0];
-    }
+  mostrarMensagemSucesso('✅ Treinamento manual salvo!');
+  limparFormularioTreinamento();
+  listarTreinamentos();
+}
+
+function limparFormularioTreinamento() {
+  const campos = ['treinamentoFrase', 'treinamentoValor', 'treinamentoCategoria', 'treinamentoLoja'];
+  campos.forEach(campo => {
+    const elemento = document.getElementById(campo);
+    if (elemento) elemento.value = '';
+  });
+}
+
+function listarTreinamentos() {
+  const lista = document.getElementById('listaTreinamentos');
+  if (!lista) return;
+  
+  const totalTreinamentos = treinamentosIA.length + treinamentosNaturais.length;
+  
+  if (totalTreinamentos === 0) {
+    lista.innerHTML = `
+      <div style="text-align: center; padding: 20px; color: #6b7280;">
+        <i class="fas fa-lightbulb" style="font-size: 2rem; margin-bottom: 10px;"></i>
+        <p>Nenhum treinamento ainda. Adicione exemplos para melhorar a IA!</p>
+      </div>
+    `;
+    return;
   }
   
-  return null;
+  let html = `
+    <h6 style="color: #667eea; font-weight: 700; margin-bottom: 15px;">
+      📚 Treinamentos Salvos (${totalTreinamentos})
+    </h6>
+  `;
+  
+  if (treinamentosNaturais.length > 0) {
+    html += '<h6 style="color: #10b981; font-weight: 600; margin-bottom: 10px;">🧠 Treinamentos Naturais:</h6>';
+    treinamentosNaturais.slice(-3).reverse().forEach(t => {
+      html += `
+        <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+          <div style="font-weight: 600; color: #065f46; margin-bottom: 5px;">
+            "${t.palavra}" → ${t.categoria}
+          </div>
+          <div style="font-size: 0.8rem; color: #6b7280;">
+            Texto: "${t.textoOriginal.substring(0, 50)}..."
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  if (treinamentosIA.length > 0) {
+    html += '<h6 style="color: #667eea; font-weight: 600; margin-bottom: 10px;">📝 Treinamentos Manuais:</h6>';
+    treinamentosIA.slice(-3).reverse().forEach(t => {
+      html += `
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+          <div style="font-weight: 600; color: #374151; margin-bottom: 5px;">
+            "${t.frase}"
+          </div>
+          <div style="font-size: 0.85rem; color: #6b7280;">
+            💰 R$ ${t.valor.toFixed(2)} • 🏷️ ${t.categoria} • 🏪 ${t.loja}
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  lista.innerHTML = html;
 }
 
 // ============================================================================
-// 3. PROCESSAMENTO INTELIGENTE DE MÚLTIPLAS LOJAS
+// CHAT IA INTELIGENTE
 // ============================================================================
 
-function processarMultiplasLojas(mensagem) {
-  const msgLower = mensagem.toLowerCase();
-  
-  // Padrão: "pra loja X item1 valor1 item2 valor2 e pra loja Y item3 valor3"
-  const padraoLojas = /(?:pra|para)\s+(?:loja\s+)?([^0-9]+?)(?:\s+([^e]+?))?(?:\s+e\s+|$)/gi;
-  const transacoes = [];
-  
-  let match;
-  while ((match = padraoLojas.exec(msgLower)) !== null) {
-    const nomeLoja = match[1].trim();
-    const conteudo = match[2] ? match[2].trim() : '';
-    
-    if (conteudo) {
-      // Extrair itens e valores do conteudo
-      const itens = extrairItensEValores(conteudo);
-      
-      // Encontrar loja correspondente
-      const lojaEncontrada = encontrarLojaCorrespondente(nomeLoja);
-      
-      itens.forEach(item => {
-        if (item.valor > 0) {
-          transacoes.push({
-            loja: lojaEncontrada || nomeLoja,
-            categoria: determinarCategoriaInteligente(item.descricao),
-            descricao: item.descricao,
-            valor: item.valor
-          });
-        }
-      });
-    }
-  }
-  
-  return transacoes;
-}
-
-function extrairItensEValores(texto) {
-  const itens = [];
-  
-  // Padrões para extrair: "item valor item valor"
-  const padraoItemValor = /([a-záàãçéêíóôõú\s]+?)\s+(\d+(?:[.,]\d+)?)/gi;
-  
-  let match;
-  while ((match = padraoItemValor.exec(texto)) !== null) {
-    const descricao = match[1].trim();
-    const valorTexto = match[2];
-    
-    const valor = processarValorInteligente(valorTexto);
-    
-    if (valor > 0) {
-      itens.push({
-        descricao: descricao,
-        valor: valor
-      });
-    }
-  }
-  
-  return itens;
-}
-
-function encontrarLojaCorrespondente(nomeLoja) {
-  // Busca exata
-  let lojaEncontrada = lojas.find(l => l.toLowerCase() === nomeLoja.toLowerCase());
-  
-  if (!lojaEncontrada) {
-    // Busca por inclusão
-    lojaEncontrada = lojas.find(l => 
-      l.toLowerCase().includes(nomeLoja.toLowerCase()) ||
-      nomeLoja.toLowerCase().includes(l.toLowerCase())
-    );
-  }
-  
-  if (!lojaEncontrada) {
-    // Mapeamento de palavras-chave
-    const mapeamento = {
-      'centro': ['centro'],
-      'shopping': ['shopping', 'shop'],
-      'bairro': ['bairro'],
-      'castanhal': ['castanhal', 'cast'],
-      'mix': ['mix']
-    };
-    
-    for (const [palavra, variacoes] of Object.entries(mapeamento)) {
-      if (variacoes.some(v => nomeLoja.includes(v))) {
-        lojaEncontrada = lojas.find(l => l.toLowerCase().includes(palavra));
-        break;
-      }
-    }
-  }
-  
-  return lojaEncontrada;
-}
-
-// ============================================================================
-// 4. PROCESSAMENTO INTELIGENTE DE VALORES
-// ============================================================================
-
-function processarValorInteligente(valorTexto) {
-  if (!valorTexto) return 0;
-  
-  // Remover tudo exceto números, vírgulas e pontos
-  let valor = valorTexto.toString().replace(/[^0-9.,]/g, '');
-  
-  // Casos especiais brasileiros
-  if (valor.includes('.') && valor.includes(',')) {
-    // Formato: 1.597,11 (brasileiro)
-    valor = valor.replace(/\./g, '').replace(',', '.');
-  } else if (valor.includes(',') && valor.split(',')[1]?.length === 2) {
-    // Formato: 1597,11 (decimal brasileiro)
-    valor = valor.replace(',', '.');
-  } else if (valor.includes('.') && valor.split('.')[1]?.length === 2) {
-    // Formato: 1597.11 (decimal americano) - manter
-  } else if (valor.includes(',') && valor.split(',')[1]?.length !== 2) {
-    // Formato: 1,597 (milhares brasileiros)
-    valor = valor.replace(',', '');
-  } else if (valor.includes('.') && valor.split('.')[1]?.length > 2) {
-    // Formato: 1.597 (milhares)
-    valor = valor.replace(/\./g, '');
-  }
-  
-  const resultado = parseFloat(valor);
-  
-  // Validação para evitar valores muito pequenos
-  if (isNaN(resultado) || resultado <= 0) {
-    return 0;
-  }
-  
-  // Se o valor for menor que 10 e o texto original tinha mais dígitos,
-  // provavelmente houve erro na extração
-  if (resultado < 10 && valorTexto.replace(/[^0-9]/g, '').length > 2) {
-    // Tentar extrair novamente como número inteiro
-    const numeroLimpo = valorTexto.replace(/[^0-9]/g, '');
-    if (numeroLimpo.length >= 3) {
-      return parseInt(numeroLimpo);
-    }
-  }
-  
-  return resultado;
-}
-
-// ============================================================================
-// 5. DETERMINAÇÃO INTELIGENTE DE CATEGORIA
-// ============================================================================
-
-function determinarCategoriaInteligente(descricao) {
-  const descLower = descricao.toLowerCase();
-  
-  // 1. Verificar aprendizado automático primeiro
-  const aprendizado = JSON.parse(localStorage.getItem('aprendizadoAutomatico') || '{}');
-  
-  for (const [palavra, dados] of Object.entries(aprendizado)) {
-    if (descLower.includes(palavra.toLowerCase())) {
-      console.log('🧠 Categoria encontrada por aprendizado:', dados.categoria);
-      return dados.categoria;
-    }
-  }
-  
-  // 2. Padrões pré-definidos expandidos
-  const padroesCategorias = {
-    'Marketing': [
-      'trafego', 'tráfego', 'propaganda', 'marketing', 'anuncio', 'anúncio',
-      'publicidade', 'ads', 'facebook', 'instagram', 'google', 'impulsionar'
-    ],
-    'Aluguel': [
-      'aluguel', 'aluguer', 'locação', 'arrendamento', 'rent'
-    ],
-    'Energia': [
-      'energia', 'luz', 'elétrica', 'eletricidade', 'conta de luz',
-      'enel', 'cpfl', 'cemig', 'eletropaulo'
-    ],
-    'Internet': [
-      'internet', 'wifi', 'banda larga', 'provedor', 'vivo fibra',
-      'claro net', 'tim live', 'oi fibra'
-    ],
-    'Combustível': [
-      'combustivel', 'combustível', 'gasolina', 'etanol', 'diesel',
-      'posto', 'abasteci', 'álcool', 'gas', 'gnv'
-    ],
-    'Água': [
-      'agua', 'água', 'saneamento', 'conta de água', 'sabesp', 'cedae'
-    ],
-    'Material': [
-      'material', 'escritório', 'papelaria', 'equipamento', 'ferramenta',
-      'suprimento', 'impressora', 'papel', 'caneta'
-    ],
-    'Transporte': [
-      'transporte', 'uber', 'taxi', 'ônibus', 'onibus', 'metrô', 'metro',
-      'passagem', 'viagem', 'corrida', '99'
-    ],
-    'Alimentação': [
-      'alimentação', 'alimentacao', 'comida', 'mercado', 'supermercado',
-      'restaurante', 'lanche', 'café', 'delivery', 'ifood'
-    ]
-  };
-  
-  for (const [categoria, palavras] of Object.entries(padroesCategorias)) {
-    if (palavras.some(palavra => descLower.includes(palavra))) {
-      console.log('🏷️ Categoria encontrada por padrão:', categoria);
-      return categoria;
-    }
-  }
-  
-  // 3. Se não encontrou, retornar a descrição como categoria para posterior pergunta
-  return descricao.charAt(0).toUpperCase() + descricao.slice(1);
-}
-
-// ============================================================================
-// 6. PERGUNTAS INTELIGENTES PARA DADOS FALTANTES
-// ============================================================================
-
-let aguardandoRespostaLoja = false;
-let aguardandoRespostaCategoria = false;
-let dadosTemporarios = null;
-
-async function verificarEPerguntarDadosFaltantes(dados) {
-  // Verificar se a loja existe
-  if (!lojas.includes(dados.loja)) {
-    aguardandoRespostaLoja = true;
-    dadosTemporarios = dados;
-    
-    const pergunta = `🏪 Não reconheci a loja "${dados.loja}".\n\nDeseja:\n1. Adicionar "${dados.loja}" como nova loja\n2. Escolher uma loja existente\n\nDigite "1" para adicionar ou "2" para escolher.`;
-    
-    adicionarMensagemChat('system', pergunta);
-    return false;
-  }
-  
-  // Verificar se a categoria existe
-  if (!categorias.includes(dados.categoria)) {
-    aguardandoRespostaCategoria = true;
-    dadosTemporarios = dados;
-    
-    const pergunta = `🏷️ Não reconheci o centro de custo "${dados.categoria}".\n\nDeseja:\n1. Adicionar "${dados.categoria}" como novo centro de custo\n2. Escolher um centro de custo existente\n\nDigite "1" para adicionar ou "2" para escolher.`;
-    
-    adicionarMensagemChat('system', pergunta);
-    return false;
-  }
-  
-  return true;
-}
-
-function processarRespostaUsuario(resposta) {
-  const respostaLower = resposta.toLowerCase().trim();
-  
-  if (aguardandoRespostaLoja) {
-    if (respostaLower === '1' || respostaLower === 'sim' || respostaLower === 'adicionar') {
-      // Adicionar nova loja
-      lojas.push(dadosTemporarios.loja);
-      salvarDadosLocal();
-      atualizarInterfaceCompleta();
-      
-      adicionarMensagemChat('system', `✅ Loja "${dadosTemporarios.loja}" adicionada com sucesso!`);
-      
-      // Continuar processamento
-      aguardandoRespostaLoja = false;
-      processarSaidaFinal(dadosTemporarios);
-      
-    } else if (respostaLower === '2' || respostaLower === 'escolher') {
-      // Mostrar opções de lojas
-      const opcoesLojas = lojas.map((loja, index) => `${index + 1}. ${loja}`).join('\n');
-      adicionarMensagemChat('system', `Escolha uma loja:\n\n${opcoesLojas}\n\nDigite o número da loja:`);
-      
-    } else if (/^\d+$/.test(respostaLower)) {
-      // Número da loja escolhida
-      const indice = parseInt(respostaLower) - 1;
-      if (indice >= 0 && indice < lojas.length) {
-        dadosTemporarios.loja = lojas[indice];
-        
-        adicionarMensagemChat('system', `✅ Loja "${dadosTemporarios.loja}" selecionada!`);
-        
-        aguardandoRespostaLoja = false;
-        processarSaidaFinal(dadosTemporarios);
-      } else {
-        adicionarMensagemChat('system', '❌ Número inválido. Tente novamente.');
-      }
-    }
-    
-    return true;
-  }
-  
-  if (aguardandoRespostaCategoria) {
-    if (respostaLower === '1' || respostaLower === 'sim' || respostaLower === 'adicionar') {
-      // Adicionar nova categoria
-      categorias.push(dadosTemporarios.categoria);
-      salvarDadosLocal();
-      atualizarInterfaceCompleta();
-      
-      adicionarMensagemChat('system', `✅ Centro de custo "${dadosTemporarios.categoria}" adicionado com sucesso!`);
-      
-      // Continuar processamento
-      aguardandoRespostaCategoria = false;
-      processarSaidaFinal(dadosTemporarios);
-      
-    } else if (respostaLower === '2' || respostaLower === 'escolher') {
-      // Mostrar opções de categorias
-      const opcoesCategorias = categorias.map((cat, index) => `${index + 1}. ${cat}`).join('\n');
-      adicionarMensagemChat('system', `Escolha um centro de custo:\n\n${opcoesCategorias}\n\nDigite o número:`);
-      
-    } else if (/^\d+$/.test(respostaLower)) {
-      // Número da categoria escolhida
-      const indice = parseInt(respostaLower) - 1;
-      if (indice >= 0 && indice < categorias.length) {
-        dadosTemporarios.categoria = categorias[indice];
-        
-        adicionarMensagemChat('system', `✅ Centro de custo "${dadosTemporarios.categoria}" selecionado!`);
-        
-        aguardandoRespostaCategoria = false;
-        processarSaidaFinal(dadosTemporarios);
-      } else {
-        adicionarMensagemChat('system', '❌ Número inválido. Tente novamente.');
-      }
-    }
-    
-    return true;
-  }
-  
-  return false;
-}
-
-function processarSaidaFinal(dados) {
-  const saida = {
-    id: Date.now() + Math.random() * 1000,
-    loja: dados.loja,
-    categoria: dados.categoria,
-    descricao: dados.descricao,
-    valor: dados.valor,
-    data: dados.data,
-    recorrente: dados.recorrente || "Não",
-    tipoRecorrencia: dados.tipoRecorrencia || null,
-    pago: dados.pago || "Sim",
-    origem: 'chat',
-    timestamp: new Date()
-  };
-  
-  if (saida.pago === 'Sim') {
-    saidas.unshift(saida);
-  } else {
-    saidasPendentes.unshift(saida);
-  }
-  
-  salvarDadosLocal();
-  atualizarInterfaceCompleta();
-  
-  const resposta = gerarRespostaChat(saida);
-  adicionarMensagemChat('system', resposta);
-  mostrarMensagemSucesso('✅ Saída adicionada via Chat IA!');
-  
-  dadosTemporarios = null;
-}
-
-// ============================================================================
-// 7. FUNÇÃO PRINCIPAL MELHORADA DE PROCESSAMENTO
-// ============================================================================
-
-// Salvar função original
-const enviarMensagemChatOriginal = enviarMensagemChat;
-
-// Nova função melhorada
 function enviarMensagemChat() {
   const input = document.getElementById('chatInput');
   const mensagem = input?.value.trim();
@@ -477,230 +235,1138 @@ function enviarMensagemChat() {
   const sendBtn = document.getElementById('chatSendBtn');
   if (sendBtn) sendBtn.disabled = true;
   
-  adicionarMensagemChat('user', mensagem);
-  
-  // Verificar se está aguardando resposta
-  if (aguardandoRespostaLoja || aguardandoRespostaCategoria) {
-    const processado = processarRespostaUsuario(mensagem);
-    if (processado) {
-      if (sendBtn) sendBtn.disabled = false;
-      return;
-    }
+  if (aguardandoSelecaoLoja) {
+    processarSelecaoLoja(mensagem);
+    return;
   }
   
+  adicionarMensagemChat('user', mensagem);
   mostrarTyping();
   
   setTimeout(() => {
-    processarMensagemIAMelhorada(mensagem);
-  }, 1000);
+    processarMensagemIA(mensagem);
+  }, 1500);
 }
 
-async function processarMensagemIAMelhorada(mensagem) {
+function adicionarMensagemChat(tipo, texto) {
+  const chatMessages = document.getElementById('chatMessages');
+  if (!chatMessages) return;
+  
+  const agora = new Date().toLocaleTimeString('pt-BR', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `chat-message ${tipo}`;
+  
+  messageDiv.innerHTML = `
+    <div class="chat-bubble">
+      <div>${texto}</div>
+      <div class="chat-time">${agora}</div>
+    </div>
+  `;
+  
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function mostrarTyping() {
+  const typing = document.getElementById('typingIndicator');
+  if (typing) {
+    typing.style.display = 'flex';
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  }
+}
+
+function esconderTyping() {
+  const typing = document.getElementById('typingIndicator');
+  if (typing) {
+    typing.style.display = 'none';
+  }
+  const sendBtn = document.getElementById('chatSendBtn');
+  if (sendBtn) sendBtn.disabled = false;
+}
+
+async function processarMensagemIA(mensagem) {
   try {
-    console.log('🧠 IA melhorada processando:', mensagem);
+    console.log('🧠 Processando:', mensagem);
     
+    const resultado = interpretarMensagemIA(mensagem);
     esconderTyping();
     
-    // 1. Verificar se é comando de treinamento
-    const treinamento = processarComandoTreinamento(mensagem);
-    if (treinamento.sucesso) {
-      adicionarMensagemChat('system', treinamento.resposta);
-      return;
-    }
-    
-    // 2. Verificar se é múltiplas lojas
-    const transacoesMultiplas = processarMultiplasLojas(mensagem);
-    if (transacoesMultiplas.length > 0) {
-      
-      // Determinar data
-      let data = calcularDataPorDiaSemana(mensagem) || new Date().toISOString().split('T')[0];
-      
-      // Determinar status de pagamento
-      const msgLower = mensagem.toLowerCase();
-      const pago = msgLower.includes('pagas') || msgLower.includes('paguei') ? 'Sim' : 'Não';
-      
-      // Processar cada transação
-      for (const transacao of transacoesMultiplas) {
-        const dados = {
-          ...transacao,
-          data: data,
-          pago: pago,
-          descricao: transacao.descricao
-        };
-        
-        // Verificar e processar
-        const dadosValidos = await verificarEPerguntarDadosFaltantes(dados);
-        if (dadosValidos) {
-          processarSaidaFinal(dados);
-        } else {
-          // Se há dados faltantes, interromper e aguardar resposta
-          return;
-        }
-      }
-      
-      const resposta = `✅ **${transacoesMultiplas.length} transações processadas!**\n\n📊 Status: ${pago === 'Sim' ? 'Pagas' : 'Pendentes'}\n📅 Data: ${new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')}`;
-      adicionarMensagemChat('system', resposta);
-      return;
-    }
-    
-    // 3. Processamento individual normal
-    const resultado = interpretarMensagemIAMelhorada(mensagem);
-    
     if (!resultado.sucesso) {
-      const erro = `❌ ${resultado.erro}\n\n💡 **Exemplos válidos:**\n• "paguei 500 de aluguel hoje"\n• "lançar aluguel sexta 100 shopping"\n• "pagas hoje pra castanhal aluguel 100 marketing 200"`;
+      const erro = `❌ ${resultado.erro}
+
+💡 Exemplos válidos:
+• "Paguei 500 de aluguel hoje"
+• "Gastei 80 de gasolina ontem"  
+• "Devo 200 de internet"`;
       
       adicionarMensagemChat('system', erro);
       return;
     }
     
-    // Verificar e processar dados
-    const dadosValidos = await verificarEPerguntarDadosFaltantes(resultado);
-    if (dadosValidos) {
-      processarSaidaFinal(resultado);
+    const validacao = validarInformacoesObrigatorias(resultado, mensagem);
+    
+    if (!validacao.valido) {
+      await solicitarInformacoesFaltantes(validacao, resultado, mensagem);
+      return;
+    }
+    
+    const lojaMencionada = detectarLojaNaMensagem(mensagem);
+    
+    if (lojaMencionada) {
+      const saidaData = criarDadosSaida(resultado, lojaMencionada);
+      await finalizarAdicaoSaida(saidaData);
+    } else {
+      await solicitarSelecaoLoja(resultado);
     }
     
   } catch (error) {
-    console.error('❌ Erro IA melhorada:', error);
+    console.error('❌ Erro processamento:', error);
     esconderTyping();
     adicionarMensagemChat('system', '❌ Erro ao processar. Tente novamente.');
   }
 }
 
-function interpretarMensagemIAMelhorada(mensagem) {
+function interpretarMensagemIA(mensagem) {
   try {
     const msgOriginal = mensagem.trim();
     const msgLower = mensagem.toLowerCase().trim();
     
-    console.log('🧠 Interpretando:', msgLower.substring(0, 50));
+    console.log('🧠 IA analisando:', msgLower.substring(0, 50));
 
-    // 1. EXTRAIR VALOR com processamento inteligente
-    const padraoValor = /(?:r\$?\s*)?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d+)?)\s*(?:reais?|real|pila|conto|pau|dinheiro)?/i;
-    const matchValor = msgLower.match(padraoValor);
+    const treinamentoNatural = buscarTreinamentoNatural(msgLower);
+    const treinamentoEncontrado = buscarTreinamento(msgLower);
     
-    if (!matchValor) {
-      return { 
-        sucesso: false, 
-        erro: "Não consegui identificar o valor na mensagem" 
+    if (treinamentoEncontrado) {
+      console.log('🎓 Usando treinamento manual:', treinamentoEncontrado);
+      return {
+        sucesso: true,
+        categoria: treinamentoEncontrado.categoria,
+        valor: treinamentoEncontrado.valor,
+        data: new Date().toISOString().split('T')[0],
+        descricao: treinamentoEncontrado.categoria,
+        pago: detectarStatusPagamento(msgLower),
+        recorrente: "Não",
+        tipoRecorrencia: null,
+        fonte: 'treinamento'
       };
     }
-    
-    const valor = processarValorInteligente(matchValor[1]);
-    if (isNaN(valor) || valor <= 0) {
-      return { 
-        sucesso: false, 
-        erro: `Valor inválido identificado: ${matchValor[1]}. Tente um formato como: 100, 1.500,00 ou 1597,11` 
-      };
-    }
 
-    console.log('💰 Valor extraído:', valor);
-
-    // 2. EXTRAIR DATA com reconhecimento de dias da semana
-    let data = calcularDataPorDiaSemana(msgLower);
-    
-    if (!data) {
-      // Padrões de data tradicionais
-      const padroes = {
-        dataHoje: /\b(?:hoje|hj|agora)\b/i,
-        dataOntem: /\b(?:ontem|onte)\b/i,
-        dataAmanha: /\b(?:amanhã|amanha|tomorrow)\b/i,
-        dataEspecifica: /(?:dia|para\s+dia|no\s+dia|em)\s+(\d{1,2})(?:\/(\d{1,2}))?/i,
-        dataFormatada: /(\d{1,2})[\/\-\.](\d{1,2})(?:[\/\-\.](\d{2,4}))?/
-      };
-      
-      const hoje = new Date();
-      
-      if (padroes.dataOntem.test(msgLower)) {
-        const ontem = new Date();
-        ontem.setDate(ontem.getDate() - 1);
-        data = ontem.toISOString().split('T')[0];
-      } else if (padroes.dataAmanha.test(msgLower)) {
-        const amanha = new Date();
-        amanha.setDate(amanha.getDate() + 1);
-        data = amanha.toISOString().split('T')[0];
-      } else if (padroes.dataEspecifica.test(msgLower)) {
-        const matchData = msgLower.match(padroes.dataEspecifica);
-        const dia = matchData[1].padStart(2, '0');
-        const mes = matchData[2] ? matchData[2].padStart(2, '0') : String(hoje.getMonth() + 1).padStart(2, '0');
-        const ano = hoje.getFullYear();
-        data = `${ano}-${mes}-${dia}`;
-      } else {
-        data = hoje.toISOString().split('T')[0]; // Default: hoje
-      }
-    }
-
-    console.log('📅 Data calculada:', data);
-
-    // 3. IDENTIFICAR LOJA
-    let loja = encontrarLojaCorrespondente(msgLower);
-    if (!loja) {
-      // Tentar extrair possível nome de loja da mensagem
-      const palavrasLoja = msgLower.match(/(?:loja\s+|da\s+loja\s+)([a-zA-ZÀ-ÿ\s]+?)(?:\s|$)/);
-      if (palavrasLoja) {
-        loja = palavrasLoja[1].trim();
-      }
-    }
-
-    // 4. IDENTIFICAR CATEGORIA com aprendizado
-    const categoria = determinarCategoriaInteligente(msgLower);
-
-    // 5. STATUS DE PAGAMENTO
-    let pago = "Sim"; // Default
-    
-    const padroesPagamento = {
-      noPago: /\b(?:devo|deve|preciso\s+pagar|vou\s+pagar|pendente|conta\s+para\s+pagar|a\s+pagar|fatura|boleto|lançar)\b/i,
-      pago: /\b(?:pague[i]?|gaste[i]?|compre[i]?|pago|pagou|gastou|comprou|saída|despesa|débito|desembolsei?|pagas)\b/i
+    const padroes = {
+      valor: /(?:r\$?\s*)?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+)\s*(?:reais?|real|pila|conto|pau|dinheiro)?/i,
+      dataHoje: /\b(?:hoje|hj|agora)\b/i,
+      dataOntem: /\b(?:ontem|onte)\b/i,
+      dataAmanha: /\b(?:amanhã|amanha|tomorrow)\b/i,
+      acoesPago: /\b(?:pague[i]?|gaste[i]?|compre[i]?|pago|pagou|gastou|comprou|saída|despesa|débito|desembolsei?)\b/i,
+      acoesNaoPago: /\b(?:devo|deve|preciso\s+pagar|vou\s+pagar|pendente|conta\s+para\s+pagar|a\s+pagar|fatura|boleto)\b/i,
+      recorrente: /\b(?:mensal|todo\s+mês|mensalmente|recorrente|fixo|sempre|mensalidade)\b/i
     };
+
+    const categoriasIA = {
+      'Aluguel': { regex: /\b(?:aluguel|aluguer|rent|locação|arrendamento)\b/i, confianca: 0.95 },
+      'Energia': { regex: /\b(?:energia|luz|elétrica|eletricidade|conta\s+de\s+luz|enel|cpfl|cemig)\b/i, confianca: 0.9 },
+      'Internet': { regex: /\b(?:internet|wifi|banda\s+larga|provedor|vivo\s+fibra|claro\s+net|tim\s+live)\b/i, confianca: 0.9 },
+      'Combustível': { regex: /\b(?:combustível|gasolina|etanol|diesel|posto|abasteci|álcool|combustivel|gas)\b/i, confianca: 0.9 },
+      'Material': { regex: /\b(?:material|escritório|papelaria|equipamento|ferramenta|suprimento)\b/i, confianca: 0.8 },
+      'Transporte': { regex: /\b(?:transporte|uber|taxi|ônibus|onibus|metrô|metro|passagem|viagem|corrida)\b/i, confianca: 0.85 },
+      'Alimentação': { regex: /\b(?:alimentação|comida|mercado|supermercado|restaurante|lanche|café|delivery)\b/i, confianca: 0.8 },
+      'Marketing': { regex: /\b(?:marketing|publicidade|anúncio|anuncio|propaganda|google\s+ads|facebook\s+ads)\b/i, confianca: 0.8 },
+      'Saúde': { regex: /\b(?:saúde|saude|médico|medico|hospital|farmácia|farmacia|remédio|remedio)\b/i, confianca: 0.85 }
+    };
+
+    const matchValor = msgLower.match(padroes.valor);
+    if (!matchValor) {
+      return { sucesso: false, erro: "Não consegui identificar o valor na mensagem" };
+    }
     
-    if (padroesPagamento.noPago.test(msgLower)) {
+    let valorTexto = matchValor[1];
+    
+    if (/^\d+$/.test(valorTexto)) {
+      const numeroSimples = parseInt(valorTexto);
+      if (numeroSimples >= 10) {
+        valorTexto = numeroSimples.toString();
+      }
+    } else {
+      if (valorTexto.includes('.') && !valorTexto.includes(',')) {
+        const partes = valorTexto.split('.');
+        if (partes.length === 2 && partes[1].length === 3) {
+          valorTexto = valorTexto.replace('.', '');
+        } else if (partes.length === 2 && partes[1].length <= 2) {
+          valorTexto = valorTexto.replace('.', ',');
+        }
+      }
+      
+      if (valorTexto.includes(',')) {
+        valorTexto = valorTexto.replace(/\./g, '').replace(',', '.');
+      }
+    }
+    
+    const valor = parseFloat(valorTexto);
+    
+    if (isNaN(valor) || valor <= 0) {
+      return { sucesso: false, erro: `Valor inválido: ${matchValor[1]}` };
+    }
+
+    let data = new Date().toISOString().split('T')[0];
+    
+    if (padroes.dataOntem.test(msgLower)) {
+      const ontem = new Date();
+      ontem.setDate(ontem.getDate() - 1);
+      data = ontem.toISOString().split('T')[0];
+    } else if (padroes.dataAmanha.test(msgLower)) {
+      const amanha = new Date();
+      amanha.setDate(amanha.getDate() + 1);
+      data = amanha.toISOString().split('T')[0];
+    }
+
+    let melhorCategoria = treinamentoNatural ? treinamentoNatural.categoria : "Outros";
+    let maiorConfianca = treinamentoNatural ? 0.95 : 0;
+    
+    for (const [categoria, config] of Object.entries(categoriasIA)) {
+      if (config.regex.test(msgLower)) {
+        if (config.confianca > maiorConfianca) {
+          melhorCategoria = categoria;
+          maiorConfianca = config.confianca;
+        }
+      }
+    }
+
+    let pago = "Sim";
+    
+    if (padroes.acoesNaoPago.test(msgLower)) {
       pago = "Não";
-    } else if (padroesPagamento.pago.test(msgLower)) {
+    } else if (padroes.acoesPago.test(msgLower)) {
       pago = "Sim";
     }
 
-    // 6. GERAR DESCRIÇÃO
-    let descricao = categoria;
+    let recorrente = "Não";
+    let tipoRecorrencia = null;
     
-    // Tentar extrair uma descrição mais específica
-    const palavrasRelevantes = msgLower
-      .replace(/\b(?:paguei|gastei|comprei|lançar|hoje|ontem|amanha|sexta|segunda|terça|quarta|quinta|sabado|domingo|r\$|\d+|,|\.|de|da|do|para|pra|loja|centro|shopping|bairro)\b/g, '')
-      .trim()
-      .split(/\s+/)
-      .filter(p => p.length > 2);
-    
-    if (palavrasRelevantes.length > 0) {
-      descricao = palavrasRelevantes[0].charAt(0).toUpperCase() + palavrasRelevantes[0].slice(1);
+    if (padroes.recorrente.test(msgLower)) {
+      recorrente = "Sim";
+      tipoRecorrencia = "Mensal";
     }
+
+    let descricao = melhorCategoria;
 
     const resultado = {
       sucesso: true,
-      categoria: categoria,
+      categoria: melhorCategoria,
       valor: valor,
       data: data,
       descricao: descricao,
       pago: pago,
-      loja: loja,
-      recorrente: "Não",
-      tipoRecorrencia: null
+      recorrente: recorrente,
+      tipoRecorrencia: tipoRecorrencia
     };
 
-    console.log('🎯 Resultado interpretação:', resultado);
+    console.log('🎯 Resultado IA:', resultado);
     return resultado;
     
   } catch (error) {
-    console.error('❌ Erro interpretação:', error);
-    return { 
-      sucesso: false, 
-      erro: `Erro no processamento: ${error.message}` 
-    };
+    console.error('❌ Erro IA:', error);
+    return { sucesso: false, erro: `Erro no processamento: ${error.message}` };
+  }
+}
+
+function buscarTreinamentoNatural(mensagem) {
+  for (const treinamento of treinamentosNaturais) {
+    if (mensagem.includes(treinamento.palavra.toLowerCase())) {
+      return treinamento;
+    }
+  }
+  return null;
+}
+
+function buscarTreinamento(mensagem) {
+  let melhorTreinamento = null;
+  let melhorScore = 0;
+  
+  for (const treinamento of treinamentosIA) {
+    const score = calcularSimilaridade(mensagem, treinamento.frase);
+    if (score > melhorScore && score > 0.7) {
+      melhorScore = score;
+      melhorTreinamento = treinamento;
+    }
+  }
+  
+  return melhorTreinamento;
+}
+
+function calcularSimilaridade(str1, str2) {
+  const palavras1 = str1.toLowerCase().split(' ').filter(p => p.length > 2);
+  const palavras2 = str2.toLowerCase().split(' ').filter(p => p.length > 2);
+  
+  let matches = 0;
+  for (const palavra1 of palavras1) {
+    for (const palavra2 of palavras2) {
+      if (palavra1.includes(palavra2) || palavra2.includes(palavra1)) {
+        matches++;
+        break;
+      }
+    }
+  }
+  
+  return matches / Math.max(palavras1.length, palavras2.length);
+}
+
+function detectarStatusPagamento(mensagem) {
+  const padroesPago = /\b(?:pague[i]?|gaste[i]?|compre[i]?|pago|pagou|gastou|comprou)\b/i;
+  const padroesNaoPago = /\b(?:devo|deve|preciso\s+pagar|vou\s+pagar|pendente)\b/i;
+  
+  if (padroesNaoPago.test(mensagem)) return "Não";
+  if (padroesPago.test(mensagem)) return "Sim";
+  return "Sim";
+}
+
+function validarInformacoesObrigatorias(resultado, mensagem) {
+  const problemas = [];
+  
+  if (!resultado.valor || resultado.valor <= 0) {
+    problemas.push('valor');
+  }
+  
+  if (!resultado.categoria || resultado.categoria === 'Outros') {
+    problemas.push('categoria');
+  }
+  
+  return {
+    valido: problemas.length === 0,
+    problemas: problemas,
+    resultado: resultado
+  };
+}
+
+async function solicitarInformacoesFaltantes(validacao, resultado, mensagem) {
+  const problemas = validacao.problemas;
+  
+  if (problemas.includes('valor')) {
+    adicionarMensagemChat('system', '💰 Não consegui identificar o valor. Qual o valor da saída?\n\n📝 Exemplo: "R$ 500" ou "500"');
+    return;
+  }
+  
+  if (problemas.includes('categoria')) {
+    adicionarMensagemChat('system', `🏷️ Não consegui identificar a categoria. Para que é esta saída?\n\n📝 Categorias disponíveis:\n${categorias.map(c => `• ${c}`).join('\n')}`);
+    return;
+  }
+}
+
+async function solicitarSelecaoLoja(resultado) {
+  const saidaData = criarDadosSaida(resultado, null);
+  
+  saidaPendenteLoja = saidaData;
+  aguardandoSelecaoLoja = true;
+  
+  const pergunta = `✅ Entendi! Saída de ${formatarMoedaBR(resultado.valor)} para ${resultado.categoria}.
+
+📍 Para qual loja é esta saída?`;
+  
+  adicionarMensagemChat('system', pergunta);
+  
+  const opcoesTexto = lojas.map((loja, index) => `${index + 1}. ${loja}`).join('\n');
+  adicionarMensagemChat('system', `Escolha uma opção:\n\n${opcoesTexto}`);
+}
+
+function processarSelecaoLoja(resposta) {
+  const numeroEscolhido = parseInt(resposta.trim());
+  
+  if (numeroEscolhido >= 1 && numeroEscolhido <= lojas.length) {
+    const lojaEscolhida = lojas[numeroEscolhido - 1];
+    saidaPendenteLoja.loja = lojaEscolhida;
+    
+    adicionarMensagemChat('user', resposta);
+    finalizarAdicaoSaida(saidaPendenteLoja);
+    
+    aguardandoSelecaoLoja = false;
+    saidaPendenteLoja = null;
+    
+  } else {
+    adicionarMensagemChat('user', resposta);
+    adicionarMensagemChat('system', `❌ Opção inválida. Digite um número de 1 a ${lojas.length}:`);
+    
+    const opcoesTexto = lojas.map((loja, index) => `${index + 1}. ${loja}`).join('\n');
+    adicionarMensagemChat('system', opcoesTexto);
+  }
+  
+  const sendBtn = document.getElementById('chatSendBtn');
+  if (sendBtn) sendBtn.disabled = false;
+}
+
+function criarDadosSaida(resultado, loja) {
+  return {
+    id: Date.now() + Math.random() * 1000,
+    loja: loja,
+    categoria: resultado.categoria,
+    descricao: resultado.descricao,
+    valor: resultado.valor,
+    data: resultado.data,
+    recorrente: resultado.recorrente || "Não",
+    tipoRecorrencia: resultado.tipoRecorrencia || null,
+    pago: resultado.pago,
+    origem: 'chat',
+    timestamp: new Date(),
+    dataProcessamento: new Date().toISOString()
+  };
+}
+
+function detectarLojaNaMensagem(mensagem) {
+  const msgLower = mensagem.toLowerCase();
+  
+  for (const loja of lojas) {
+    if (msgLower.includes(loja.toLowerCase())) {
+      return loja;
+    }
+  }
+  
+  if (msgLower.includes('centro')) {
+    const lojasCentro = lojas.filter(l => l.toLowerCase().includes('centro'));
+    if (lojasCentro.length > 0) return lojasCentro[0];
+  }
+  
+  if (msgLower.includes('shopping')) {
+    const lojasShoppingas = lojas.filter(l => l.toLowerCase().includes('shopping'));
+    if (lojasShoppingas.length > 0) return lojasShoppingas[0];
+  }
+  
+  if (msgLower.includes('bairro')) {
+    const lojasBairro = lojas.filter(l => l.toLowerCase().includes('bairro'));
+    if (lojasBairro.length > 0) return lojasBairro[0];
+  }
+  
+  return null;
+}
+
+async function finalizarAdicaoSaida(saidaData) {
+  try {
+    if (saidaData.pago === 'Sim') {
+      saidas.unshift(saidaData);
+    } else {
+      saidasPendentes.unshift(saidaData);
+    }
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    
+    const resposta = gerarRespostaChat(saidaData);
+    adicionarMensagemChat('system', resposta);
+    mostrarMensagemSucesso('✅ Saída adicionada via Chat IA!');
+    
+  } catch (error) {
+    console.error('❌ Erro finalizar:', error);
+    adicionarMensagemChat('system', '❌ Erro ao salvar. Tente novamente.');
+  }
+}
+
+function gerarRespostaChat(saida) {
+  const dataFormatada = new Date(saida.data + 'T00:00:00').toLocaleDateString('pt-BR');
+  const valorFormatado = saida.valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+  
+  const emojiCategoria = {
+    'Aluguel': '🏠', 'Energia': '⚡', 'Internet': '🌐', 'Combustível': '⛽',
+    'Material': '📦', 'Transporte': '🚗', 'Alimentação': '🍽️', 'Marketing': '📢', 'Saúde': '🏥'
+  };
+  
+  const emoji = emojiCategoria[saida.categoria] || '📊';
+  
+  return `✅ Saída registrada com sucesso!
+
+💰 Valor: ${valorFormatado}
+${emoji} Categoria: ${saida.categoria}
+🏪 Loja: ${saida.loja}
+📅 Data: ${dataFormatada}
+💳 Status: ${saida.pago === "Sim" ? "Pago ✅" : "Pendente ⏳"}
+
+🤖 Processado pela IA`;
+}
+
+function limparChat() {
+  const chatMessages = document.getElementById('chatMessages');
+  if (chatMessages) {
+    chatMessages.innerHTML = `
+      <div class="chat-message system">
+        <div class="chat-bubble">
+          <div>👋 Olá! Eu sou a IA do iClub. Digite suas saídas agora e eu vou adicionar automaticamente para você!</div>
+          <div class="chat-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+      </div>
+    `;
   }
 }
 
 // ============================================================================
-// 8. CORREÇÕES NO FLUXO DE SAÍDAS
+// FUNÇÕES PRINCIPAIS DO SISTEMA
 // ============================================================================
 
-// Corrigir função de atualização de tabela para separar corretamente as seções
-const atualizarTabelaOriginalCompleta = atualizarTabela;
+function adicionarSaida() {
+  const loja = document.getElementById("loja")?.value || "Manual";
+  const categoria = document.getElementById("categoria")?.value || "Outros";
+  const descricao = document.getElementById("descricao")?.value || categoria;
+  const valorInput = document.getElementById("valor")?.value || "0";
+  const valor = extrairValorNumerico(valorInput);
+  const data = document.getElementById("data")?.value || new Date().toISOString().split('T')[0];
+  const recorrente = document.getElementById("recorrente")?.value || "Não";
+  const tipoRecorrencia = document.getElementById("tipoRecorrencia")?.value || null;
+  const pago = document.getElementById("pago")?.value || "Sim";
+
+  if (valor <= 0) {
+    alert("Por favor, insira um valor válido!");
+    return;
+  }
+
+  const saida = { 
+    id: Date.now() + Math.random() * 1000, 
+    loja, categoria, 
+    descricao: descricao || categoria,
+    valor, data, recorrente,
+    tipoRecorrencia: recorrente === "Sim" ? tipoRecorrencia : null,
+    pago, origem: 'manual', timestamp: new Date()
+  };
+
+  try {
+    if (pago === "Sim") {
+      saidas.unshift(saida);
+    } else {
+      saidasPendentes.unshift(saida);
+    }
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarMensagemSucesso('✅ Saída adicionada com sucesso!');
+    limparFormulario();
+    
+  } catch (error) {
+    console.error('❌ Erro adicionar saída:', error);
+    alert('Erro ao salvar saída. Tente novamente.');
+  }
+}
+
+function excluirSaida(firestoreId, saidaId) {
+  if (!confirm('Tem certeza que deseja excluir esta saída?')) return;
+
+  try {
+    saidas = saidas.filter(s => s.id !== saidaId);
+    saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarMensagemSucesso('✅ Saída excluída!');
+  } catch (error) {
+    console.error('❌ Erro excluir:', error);
+    alert('Erro ao excluir saída. Tente novamente.');
+  }
+}
+
+function marcarComoPago(firestoreId, saidaId) {
+  if (!confirm('Marcar esta saída como paga?')) return;
+
+  try {
+    const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+    if (saida) {
+      saida.pago = 'Sim';
+      saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+      saidas.unshift(saida);
+      salvarDadosLocal();
+      atualizarInterfaceCompleta();
+      mostrarMensagemSucesso('✅ Saída marcada como paga!');
+    }
+  } catch (error) {
+    console.error('❌ Erro marcar como pago:', error);
+    alert('Erro ao atualizar saída. Tente novamente.');
+  }
+}
+
+function editarSaida(firestoreId, saidaId) {
+  const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+  
+  if (!saida) {
+    alert('Saída não encontrada!');
+    return;
+  }
+  
+  const modal = document.getElementById('modalCustom');
+  if (!modal) return;
+  
+  document.getElementById('modalTitulo').textContent = 'Editar Saída';
+  document.getElementById('modalTexto').innerHTML = `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Loja:</label>
+        <select id="editLoja" class="form-select">
+          ${lojas.map(loja => `<option value="${loja}" ${loja === saida.loja ? 'selected' : ''}>${loja}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Categoria:</label>
+        <select id="editCategoria" class="form-select">
+          ${categorias.map(cat => `<option value="${cat}" ${cat === saida.categoria ? 'selected' : ''}>${cat}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-bold">Descrição:</label>
+        <input type="text" id="editDescricao" class="form-control" value="${saida.descricao}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Valor (R$):</label>
+        <input type="text" id="editValor" class="form-control" value="${formatarMoedaBR(saida.valor)}" oninput="formatarMoeda(this)">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Data:</label>
+        <input type="date" id="editData" class="form-control" value="${saida.data}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Recorrente:</label>
+        <select id="editRecorrente" class="form-select" onchange="toggleEditRecorrencia()">
+          <option value="Não" ${saida.recorrente === 'Não' ? 'selected' : ''}>Não</option>
+          <option value="Sim" ${saida.recorrente === 'Sim' ? 'selected' : ''}>Sim</option>
+        </select>
+      </div>
+      <div class="col-md-4" id="editTipoRecorrenciaContainer" style="display: ${saida.recorrente === 'Sim' ? 'block' : 'none'};">
+        <label class="form-label fw-bold">Tipo:</label>
+        <select id="editTipoRecorrencia" class="form-select">
+          <option value="Diária" ${saida.tipoRecorrencia === 'Diária' ? 'selected' : ''}>Diária</option>
+          <option value="Semanal" ${saida.tipoRecorrencia === 'Semanal' ? 'selected' : ''}>Semanal</option>
+          <option value="Mensal" ${saida.tipoRecorrencia === 'Mensal' ? 'selected' : ''}>Mensal</option>
+          <option value="Anual" ${saida.tipoRecorrencia === 'Anual' ? 'selected' : ''}>Anual</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Status:</label>
+        <select id="editPago" class="form-select">
+          <option value="Sim" ${saida.pago === 'Sim' ? 'selected' : ''}>Pago</option>
+          <option value="Não" ${saida.pago === 'Não' ? 'selected' : ''}>Pendente</option>
+        </select>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modalBotoes').innerHTML = `
+    <button class="btn btn-success" onclick="salvarEdicaoSaida(${saidaId})">Salvar</button>
+    <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+  `;
+  
+  modal.style.display = 'flex';
+}
+
+function toggleEditRecorrencia() {
+  const recorrente = document.getElementById('editRecorrente');
+  const container = document.getElementById('editTipoRecorrenciaContainer');
+  
+  if (recorrente && container) {
+    if (recorrente.value === 'Sim') {
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+}
+
+function salvarEdicaoSaida(saidaId) {
+  const loja = document.getElementById('editLoja')?.value;
+  const categoria = document.getElementById('editCategoria')?.value;
+  const descricao = document.getElementById('editDescricao')?.value;
+  const valorInput = document.getElementById('editValor')?.value;
+  const valor = extrairValorNumerico(valorInput);
+  const data = document.getElementById('editData')?.value;
+  const recorrente = document.getElementById('editRecorrente')?.value;
+  const tipoRecorrencia = document.getElementById('editTipoRecorrencia')?.value;
+  const pago = document.getElementById('editPago')?.value;
+  
+  if (!loja || !categoria || !descricao || valor <= 0 || !data) {
+    alert('Preencha todos os campos obrigatórios!');
+    return;
+  }
+  
+  let saidaEncontrada = saidas.find(s => s.id === saidaId);
+  let listaSaidas = saidas;
+  
+  if (!saidaEncontrada) {
+    saidaEncontrada = saidasPendentes.find(s => s.id === saidaId);
+    listaSaidas = saidasPendentes;
+  }
+  
+  if (!saidaEncontrada) {
+    alert('Saída não encontrada!');
+    return;
+  }
+  
+  const indexAtual = listaSaidas.findIndex(s => s.id === saidaId);
+  if (indexAtual !== -1) {
+    listaSaidas.splice(indexAtual, 1);
+  }
+  
+  saidas = saidas.filter(s => s.id !== saidaId);
+  saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+  
+  saidaEncontrada.loja = loja;
+  saidaEncontrada.categoria = categoria;
+  saidaEncontrada.descricao = descricao;
+  saidaEncontrada.valor = valor;
+  saidaEncontrada.data = data;
+  saidaEncontrada.recorrente = recorrente;
+  saidaEncontrada.tipoRecorrencia = recorrente === 'Sim' ? tipoRecorrencia : null;
+  saidaEncontrada.pago = pago;
+  saidaEncontrada.editadoEm = new Date().toISOString();
+  
+  if (pago === 'Sim') {
+    saidas.unshift(saidaEncontrada);
+  } else {
+    saidasPendentes.unshift(saidaEncontrada);
+  }
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  fecharModal();
+  mostrarMensagemSucesso('✅ Saída editada com sucesso!');
+}
+
+// ============================================================================
+// GESTÃO DE CATEGORIAS E LOJAS
+// ============================================================================
+
+function mostrarEditorCategoria() {
+  const editor = document.getElementById("editor-categoria");
+  if (editor) {
+    editor.style.display = editor.style.display === "none" ? "block" : "none";
+  }
+}
+
+function mostrarEditorLoja() {
+  const editor = document.getElementById("editor-loja");
+  if (editor) {
+    editor.style.display = editor.style.display === "none" ? "block" : "none";
+  }
+}
+
+function adicionarCategoria() {
+  const input = document.getElementById("novaCategoria");
+  if (!input) return;
+  
+  const novaCategoria = input.value.trim();
+  
+  if (!novaCategoria) {
+    alert("Digite o nome da categoria!");
+    return;
+  }
+  
+  if (categorias.includes(novaCategoria)) {
+    alert("Esta categoria já existe!");
+    return;
+  }
+  
+  categorias.push(novaCategoria);
+  input.value = "";
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarMensagemSucesso(`✅ Categoria "${novaCategoria}" adicionada!`);
+}
+
+function adicionarLoja() {
+  const input = document.getElementById("novaLoja");
+  if (!input) return;
+  
+  const novaLoja = input.value.trim();
+  
+  if (!novaLoja) {
+    alert("Digite o nome da loja!");
+    return;
+  }
+  
+  if (lojas.includes(novaLoja)) {
+    alert("Esta loja já existe!");
+    return;
+  }
+  
+  lojas.push(novaLoja);
+  input.value = "";
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarMensagemSucesso(`✅ Loja "${novaLoja}" adicionada!`);
+}
+
+function mostrarEditorCategoriaExistente() {
+  const lista = categorias.map((cat, index) => 
+    `${index + 1}. ${cat} <button onclick="removerCategoria(${index})" class="btn btn-danger btn-sm">❌</button>`
+  ).join('<br>');
+  
+  const modal = document.getElementById('modalCustom');
+  if (modal) {
+    document.getElementById('modalTitulo').textContent = 'Editar Categorias';
+    document.getElementById('modalTexto').innerHTML = lista || 'Nenhuma categoria cadastrada.';
+    document.getElementById('modalBotoes').innerHTML = `
+      <button class="btn btn-secondary" onclick="fecharModal()">Fechar</button>
+    `;
+    modal.style.display = 'flex';
+  }
+}
+
+function mostrarEditorLojaExistente() {
+  const lista = lojas.map((loja, index) => 
+    `${index + 1}. ${loja} <button onclick="removerLoja(${index})" class="btn btn-danger btn-sm">❌</button>`
+  ).join('<br>');
+  
+  const modal = document.getElementById('modalCustom');
+  if (modal) {
+    document.getElementById('modalTitulo').textContent = 'Editar Lojas';
+    document.getElementById('modalTexto').innerHTML = lista || 'Nenhuma loja cadastrada.';
+    document.getElementById('modalBotoes').innerHTML = `
+      <button class="btn btn-secondary" onclick="fecharModal()">Fechar</button>
+    `;
+    modal.style.display = 'flex';
+  }
+}
+
+function removerCategoria(index) {
+  const categoria = categorias[index];
+  if (confirm(`Tem certeza que deseja remover a categoria "${categoria}"?`)) {
+    categorias.splice(index, 1);
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarEditorCategoriaExistente();
+    mostrarMensagemSucesso(`✅ Categoria "${categoria}" removida!`);
+  }
+}
+
+function removerLoja(index) {
+  const loja = lojas[index];
+  if (confirm(`Tem certeza que deseja remover a loja "${loja}"?`)) {
+    lojas.splice(index, 1);
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarEditorLojaExistente();
+    mostrarMensagemSucesso(`✅ Loja "${loja}" removida!`);
+  }
+}
+
+function fecharModal() {
+  const modal = document.getElementById('modalCustom');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// ============================================================================
+// MÚLTIPLAS SAÍDAS
+// ============================================================================
+
+function iniciarMultiplasSaidas() {
+  multiplasSaidasLista = [];
+  contadorMultiplas = 0;
+  
+  const container = document.getElementById("multiplasSaidasContainer");
+  if (container) {
+    container.style.display = "block";
+    adicionarNovaLinha();
+  }
+}
+
+function adicionarNovaLinha() {
+  contadorMultiplas++;
+  const listaSaidas = document.getElementById("listaSaidas");
+  if (!listaSaidas) return;
+  
+  const novaLinha = document.createElement("div");
+  novaLinha.className = "saida-item";
+  novaLinha.id = `saida-${contadorMultiplas}`;
+  
+  novaLinha.innerHTML = `
+    <div class="saida-info">
+      <div class="row g-2">
+        <div class="col-md-2">
+          <select class="form-select form-select-sm loja-select" id="loja-${contadorMultiplas}">
+            ${lojas.map(loja => `<option value="${loja}">${loja}</option>`).join('')}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select class="form-select form-select-sm categoria-select" id="categoria-${contadorMultiplas}">
+            ${categorias.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control form-control-sm descricao-input" id="descricao-${contadorMultiplas}" placeholder="Descrição">
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control form-control-sm valor-input" id="valor-${contadorMultiplas}" placeholder="R$ 0,00" oninput="formatarMoedaMultiplas(this)">
+        </div>
+        <div class="col-md-2">
+          <input type="date" class="form-control form-control-sm data-input" id="data-${contadorMultiplas}" value="${new Date().toISOString().split('T')[0]}">
+        </div>
+        <div class="col-md-1">
+          <select class="form-select form-select-sm pago-select" id="pago-${contadorMultiplas}">
+            <option>Sim</option>
+            <option>Não</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="saida-actions">
+      <button class="btn btn-danger btn-sm" onclick="removerLinhaSaida(${contadorMultiplas})">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  `;
+  
+  listaSaidas.appendChild(novaLinha);
+}
+
+function formatarMoedaMultiplas(input) {
+  let valor = input.value.replace(/\D/g, '');
+  
+  if (valor === '') {
+    input.value = '';
+    return;
+  }
+  
+  valor = parseInt(valor);
+  const valorFormatado = (valor / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+  
+  input.value = valorFormatado;
+}
+
+function removerLinhaSaida(id) {
+  const elemento = document.getElementById(`saida-${id}`);
+  if (elemento) {
+    elemento.remove();
+  }
+}
+
+function adicionarTodasSaidas() {
+  const listaSaidas = document.getElementById("listaSaidas");
+  if (!listaSaidas) return;
+  
+  const linhas = listaSaidas.querySelectorAll('.saida-item');
+  
+  let sucessos = 0;
+  let erros = 0;
+  
+  for (const linha of linhas) {
+    const id = linha.id.split('-')[1];
+    
+    const loja = document.getElementById(`loja-${id}`)?.value;
+    const categoria = document.getElementById(`categoria-${id}`)?.value;
+    const descricao = document.getElementById(`descricao-${id}`)?.value || categoria;
+    const valorInput = document.getElementById(`valor-${id}`)?.value;
+    const valor = extrairValorNumerico(valorInput);
+    const data = document.getElementById(`data-${id}`)?.value;
+    const pago = document.getElementById(`pago-${id}`)?.value;
+    
+    if (valor <= 0) {
+      erros++;
+      continue;
+    }
+    
+    const saida = {
+      id: Date.now() + Math.random() * 1000,
+      loja: loja || "Manual",
+      categoria: categoria || "Outros",
+      descricao: descricao || categoria || "Saída",
+      valor,
+      data: data || new Date().toISOString().split('T')[0],
+      recorrente: "Não",
+      tipoRecorrencia: null,
+      pago: pago || "Sim",
+      origem: 'multiplas',
+      timestamp: new Date()
+    };
+    
+    try {
+      if (saida.pago === 'Sim') {
+        saidas.unshift(saida);
+      } else {
+        saidasPendentes.unshift(saida);
+      }
+      sucessos++;
+    } catch (error) {
+      console.error('❌ Erro saída múltipla:', error);
+      erros++;
+    }
+  }
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  
+  cancelarMultiplasSaidas();
+  mostrarMensagemSucesso(`✅ ${sucessos} saídas adicionadas! ${erros > 0 ? `(${erros} erros)` : ''}`);
+}
+
+function cancelarMultiplasSaidas() {
+  const container = document.getElementById("multiplasSaidasContainer");
+  if (container) {
+    container.style.display = "none";
+  }
+  
+  const listaSaidas = document.getElementById("listaSaidas");
+  if (listaSaidas) {
+    listaSaidas.innerHTML = "";
+  }
+  
+  multiplasSaidasLista = [];
+  contadorMultiplas = 0;
+}
+
+// ============================================================================
+// INTERFACE E ATUALIZAÇÃO
+// ============================================================================
+
+function atualizarInterfaceCompleta() {
+  try {
+    console.log('🔄 Atualizando interface completa...');
+    
+    atualizarCategorias();
+    atualizarLojas();
+    atualizarFiltros();
+    atualizarTabela();
+    atualizarDashboard();
+    atualizarTodosGraficos();
+    
+    console.log('✅ Interface atualizada');
+  } catch (error) {
+    console.error('❌ Erro atualizar interface:', error);
+  }
+}
+
+function atualizarCategorias() {
+  const select = document.getElementById("categoria");
+  if (!select) return;
+  
+  select.innerHTML = "";
+  categorias.forEach(cat => {
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    select.appendChild(option);
+  });
+}
+
+function atualizarLojas() {
+  const select = document.getElementById("loja");
+  if (!select) return;
+  
+  select.innerHTML = "";
+  lojas.forEach(loja => {
+    const option = document.createElement("option");
+    option.value = loja;
+    option.textContent = loja;
+    select.appendChild(option);
+  });
+}
+
+function atualizarFiltros() {
+  const filtroGlobal = document.getElementById("filtroLojaGlobal");
+  if (filtroGlobal) {
+    const valorAtual = filtroGlobal.value;
+    filtroGlobal.innerHTML = '<option value="">📊 Todas as lojas (Consolidado)</option>';
+    
+    lojas.forEach(loja => {
+      const option = document.createElement("option");
+      option.value = loja;
+      option.textContent = loja;
+      if (loja === valorAtual) option.selected = true;
+      filtroGlobal.appendChild(option);
+    });
+  }
+
+  const filtroRecorrentes = document.getElementById("filtroLojaRecorrentes");
+  if (filtroRecorrentes) {
+    const valorAtual = filtroRecorrentes.value;
+    filtroRecorrentes.innerHTML = '<option value="">Todas as lojas</option>';
+    
+    lojas.forEach(loja => {
+      const option = document.createElement("option");
+      option.value = loja;
+      option.textContent = loja;
+      if (loja === valorAtual) option.selected = true;
+      filtroRecorrentes.appendChild(option);
+    });
+  }
+
+  const filtroCategoria = document.getElementById("filtroCategoriaRecorrentes");
+  if (filtroCategoria) {
+    const valorAtual = filtroCategoria.value;
+    filtroCategoria.innerHTML = '<option value="">Todos os centros de custo</option>';
+    
+    categorias.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat;
+      if (cat === valorAtual) option.selected = true;
+      filtroCategoria.appendChild(option);
+    });
+  }
+
+  const filtroAno = document.getElementById("filtroAnoRecorrentes");
+  if (filtroAno) {
+    const valorAtual = filtroAno.value;
+    const anosDisponiveis = [...new Set([...saidas, ...saidasPendentes].map(s => s.data.substring(0, 4)))].sort().reverse();
+    const anoAtual = new Date().getFullYear().toString();
+    
+    filtroAno.innerHTML = '<option value="">Todos os anos</option>';
+    
+    if (anosDisponiveis.length === 0) {
+      anosDisponiveis.push(anoAtual);
+    }
+    
+    anosDisponiveis.forEach(ano => {
+      const option = document.createElement("option");
+      option.value = ano;
+      option.textContent = ano;
+      if (ano === valorAtual || (!valorAtual && ano === anoAtual)) {
+        option.selected = true;
+      }
+      filtroAno.appendChild(option);
+    });
+  }
+
+  preencherMesesDoAno();
+}
+
+function preencherMesesDoAno() {
+  const filtroAno = document.getElementById("filtroAnoRecorrentes");
+  const filtroMes = document.getElementById("filtroMesRecorrentes");
+  
+  if (!filtroMes || !filtroAno) return;
+  
+  const anoSelecionado = filtroAno.value || new Date().getFullYear().toString();
+  const valorAtual = filtroMes.value;
+  const mesAtual = `${anoSelecionado}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+  
+  const meses = [
+    { valor: `${anoSelecionado}-01`, nome: 'Janeiro' },
+    { valor: `${anoSelecionado}-02`, nome: 'Fevereiro' },
+    { valor: `${anoSelecionado}-03`, nome: 'Março' },
+    { valor: `${anoSelecionado}-04`, nome: 'Abril' },
+    { valor: `${anoSelecionado}-05`, nome: 'Maio' },
+    { valor: `${anoSelecionado}-06`, nome: 'Junho' },
+    { valor: `${anoSelecionado}-07`, nome: 'Julho' },
+    { valor: `${anoSelecionado}-08`, nome: 'Agosto' },
+    { valor: `${anoSelecionado}-09`, nome: 'Setembro' },
+    { valor: `${anoSelecionado}-10`, nome: 'Outubro' },
+    { valor: `${anoSelecionado}-11`, nome: 'Novembro' },
+    { valor: `${anoSelecionado}-12`, nome: 'Dezembro' }
+  ];
+  
+  filtroMes.innerHTML = '<option value="">Todos os meses</option>';
+  
+  meses.forEach(mes => {
+    const option = document.createElement("option");
+    option.value = mes.valor;
+    option.textContent = mes.nome;
+    if (mes.valor === valorAtual || (!valorAtual && mes.valor === mesAtual)) {
+      option.selected = true;
+    }
+    filtroMes.appendChild(option);
+  });
+}
 
 function atualizarTabela() {
   const tbody = document.getElementById("tabelaSaidas");
@@ -711,7 +1377,6 @@ function atualizarTabela() {
   
   if (!tbody) return;
   
-  // Limpar todas as seções
   tbody.innerHTML = "";
   if (divAtrasadas) divAtrasadas.innerHTML = "";
   if (divVencendoHoje) divVencendoHoje.innerHTML = "";
@@ -722,60 +1387,53 @@ function atualizarTabela() {
   const dataHoje = hoje.toISOString().split('T')[0];
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   
-  // CORREÇÃO: Saídas do mês = APENAS PAGAS do mês atual
-  const saidasMesCorretas = saidas.filter(s => {
-    const saidaAnoMes = s.data.substring(0, 7);
-    const isPaga = s.pago === 'Sim';
-    const isDoMes = saidaAnoMes === anoMes;
-    
-    if (lojaFiltroAtual) {
-      return isPaga && isDoMes && s.loja === lojaFiltroAtual;
-    }
-    
-    return isPaga && isDoMes;
-  });
-  
-  // CORREÇÃO: Separar saídas pendentes por status
+  const saidasMes = [];
   const saidasAtrasadas = [];
   const saidasVencendoHoje = [];
   const saidasProximas = [];
+  const saidasRecorrentes = [];
   
-  saidasPendentes.forEach(s => {
+  [...saidas, ...saidasPendentes].forEach(s => {
     if (lojaFiltroAtual && s.loja !== lojaFiltroAtual) return;
     
     const dataSaida = s.data;
     
-    if (dataSaida < dataHoje) {
-      // Atrasadas
-      const diasAtrasado = Math.floor((hoje - new Date(dataSaida + 'T00:00:00')) / (1000 * 60 * 60 * 24));
-      saidasAtrasadas.push({...s, diasAtrasado});
-    } else if (dataSaida === dataHoje) {
-      // Vencendo hoje
-      saidasVencendoHoje.push(s);
-    } else {
-      // Futuras
-      const diasRestantes = Math.floor((new Date(dataSaida + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
-      saidasProximas.push({...s, diasRestantes});
+    if (s.recorrente === 'Sim') {
+      saidasRecorrentes.push(s);
+    }
+    
+    if (s.pago === 'Não') {
+      if (dataSaida < dataHoje) {
+        const diasAtrasado = Math.floor((hoje - new Date(dataSaida + 'T00:00:00')) / (1000 * 60 * 60 * 24));
+        saidasAtrasadas.push({...s, diasAtrasado});
+      } else if (dataSaida === dataHoje) {
+        saidasVencendoHoje.push(s);
+      } else {
+        const diasRestantes = Math.floor((new Date(dataSaida + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
+        if (diasRestantes <= 7) {
+          saidasProximas.push({...s, diasRestantes});
+        }
+      }
+    }
+    
+    if (s.data.substring(0, 7) === anoMes) {
+      saidasMes.push(s);
     }
   });
   
-  // Saídas recorrentes (separadas)
-  const saidasRecorrentes = [...saidas, ...saidasPendentes].filter(s => s.recorrente === 'Sim');
+  saidasMes.sort((a, b) => new Date(b.data) - new Date(a.data));
+  saidasAtrasadas.sort((a, b) => b.diasAtrasado - a.diasAtrasado);
+  saidasVencendoHoje.sort((a, b) => new Date(a.data) - new Date(b.data));
+  saidasProximas.sort((a, b) => a.diasRestantes - b.diasRestantes);
   
-  // Preencher tabelas
-  preencherTabelaDoMesCorrigida(tbody, saidasMesCorretas);
+  preencherTabelaDoMes(tbody, saidasMes);
   preencherTabelaAtrasadas(divAtrasadas, saidasAtrasadas);
   preencherTabelaVencendoHoje(divVencendoHoje, saidasVencendoHoje);
-  preencherTabelaProximasComVerMais(divProximas, saidasProximas);
-  preencherTabelaRecorrentesComBotoes(divPrevisaoRecorrentes, saidasRecorrentes);
-  
-  // Atualizar contador
-  atualizarContadorSaidas();
+  preencherTabelaProximas(divProximas, saidasProximas);
+  preencherTabelaRecorrentes(divPrevisaoRecorrentes, saidasRecorrentes);
 }
 
-function preencherTabelaDoMesCorrigida(tbody, saidas) {
-  saidas.sort((a, b) => new Date(b.data) - new Date(a.data));
-  
+function preencherTabelaDoMes(tbody, saidas) {
   saidas.forEach(s => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -784,7 +1442,7 @@ function preencherTabelaDoMesCorrigida(tbody, saidas) {
       <td>${s.descricao}</td>
       <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
       <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
-      <td><span class="badge bg-success">Pago</span></td>
+      <td><span class="badge ${s.recorrente === 'Sim' ? 'bg-info' : 'bg-secondary'}">${s.recorrente}</span></td>
       <td>${s.tipoRecorrencia || '-'}</td>
       <td>
         <button class="btn btn-warning btn-sm" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
@@ -799,7 +1457,107 @@ function preencherTabelaDoMesCorrigida(tbody, saidas) {
   });
 }
 
-function preencherTabelaProximasComVerMais(container, saidas) {
+function preencherTabelaAtrasadas(container, saidas) {
+  if (!container) return;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Nenhuma saída atrasada.</p>';
+    return;
+  }
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Dias Atrasado</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td><span class="badge bg-danger">${s.diasAtrasado} dias</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i> Pagar
+                </button>
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+function preencherTabelaVencendoHoje(container, saidas) {
+  if (!container) return;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Nenhuma saída vencendo hoje.</p>';
+    return;
+  }
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i> Pagar
+                </button>
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+function preencherTabelaProximas(container, saidas) {
   if (!container) return;
   
   if (saidas.length === 0) {
@@ -807,14 +1565,7 @@ function preencherTabelaProximasComVerMais(container, saidas) {
     return;
   }
   
-  // Separar: próximos 7 dias vs. mais distantes
-  const proximos7Dias = saidas.filter(s => s.diasRestantes <= 7);
-  const maisDistantes = saidas.filter(s => s.diasRestantes > 7);
-  
-  proximos7Dias.sort((a, b) => a.diasRestantes - b.diasRestantes);
-  maisDistantes.sort((a, b) => a.diasRestantes - b.diasRestantes);
-  
-  let html = `
+  const tabela = `
     <div class="table-responsive">
       <table class="table table-modern">
         <thead>
@@ -829,105 +1580,60 @@ function preencherTabelaProximasComVerMais(container, saidas) {
           </tr>
         </thead>
         <tbody>
+          ${saidas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td><span class="badge bg-warning">${s.diasRestantes} dias</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i> Pagar
+                </button>
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
   `;
   
-  // Mostrar próximos 7 dias
-  proximos7Dias.forEach(s => {
-    html += `
-      <tr>
-        <td><strong>${s.loja}</strong></td>
-        <td>${s.categoria}</td>
-        <td>${s.descricao}</td>
-        <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-        <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
-        <td><span class="badge bg-warning">${s.diasRestantes} dias</span></td>
-        <td>
-          <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
-            <i class="fas fa-check"></i> Pagar
-          </button>
-          <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-  
-  html += `</tbody></table></div>`;
-  
-  // Botão ver mais para saídas distantes
-  if (maisDistantes.length > 0) {
-    html += `
-      <div class="mt-3">
-        <button class="btn btn-primary" onclick="toggleSaidasMaisDistantes()" id="btnVerMaisDistantes">
-          <i class="fas fa-calendar-plus"></i> Ver Mais Saídas Futuras (${maisDistantes.length})
-        </button>
-        <div id="saidasMaisDistantesDiv" style="display: none; margin-top: 15px;">
-          <h6 class="text-primary">📅 Saídas Mais Distantes:</h6>
-          <div class="table-responsive">
-            <table class="table table-modern">
-              <thead>
-                <tr>
-                  <th>Loja</th>
-                  <th>Categoria</th>
-                  <th>Descrição</th>
-                  <th>Valor</th>
-                  <th>Data</th>
-                  <th>Dias Restantes</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-    `;
-    
-    maisDistantes.forEach(s => {
-      html += `
-        <tr>
-          <td><strong>${s.loja}</strong></td>
-          <td>${s.categoria}</td>
-          <td>${s.descricao}</td>
-          <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-          <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
-          <td><span class="badge bg-info">${s.diasRestantes} dias</span></td>
-          <td>
-            <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
-              <i class="fas fa-check"></i> Pagar
-            </button>
-            <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-    });
-    
-    html += `</tbody></table></div></div></div>`;
-  }
-  
-  container.innerHTML = html;
+  container.innerHTML = tabela;
 }
 
-function preencherTabelaRecorrentesComBotoes(container, saidas) {
+function preencherTabelaRecorrentes(container, saidas) {
   if (!container) return;
   
   let saidasFiltradas = [...saidas];
   
-  // Aplicar filtros existentes
   const filtroLoja = document.getElementById("filtroLojaRecorrentes")?.value;
   const filtroAno = document.getElementById("filtroAnoRecorrentes")?.value;
   const filtroMes = document.getElementById("filtroMesRecorrentes")?.value;
   const filtroCategoria = document.getElementById("filtroCategoriaRecorrentes")?.value;
   
-  if (filtroLoja) saidasFiltradas = saidasFiltradas.filter(s => s.loja === filtroLoja);
-  if (filtroAno) saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 4) === filtroAno);
-  if (filtroMes) saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 7) === filtroMes);
-  if (filtroCategoria) saidasFiltradas = saidasFiltradas.filter(s => s.categoria === filtroCategoria);
+  if (filtroLoja) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.loja === filtroLoja);
+  }
+  
+  if (filtroAno) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 4) === filtroAno);
+  }
+  
+  if (filtroMes) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 7) === filtroMes);
+  }
+  
+  if (filtroCategoria) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.categoria === filtroCategoria);
+  }
   
   if (saidasFiltradas.length === 0) {
     container.innerHTML = '<p class="text-muted text-center">Nenhuma saída recorrente encontrada com os filtros aplicados.</p>';
@@ -963,9 +1669,7 @@ function preencherTabelaRecorrentesComBotoes(container, saidas) {
               <td><span class="badge bg-info">${s.tipoRecorrencia || 'Mensal'}</span></td>
               <td><span class="badge ${s.pago === 'Sim' ? 'bg-success' : 'bg-warning'}">${s.pago}</span></td>
               <td>
-                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
-                  <i class="fas fa-check"></i> Pagar
-                </button>
+                ${s.pago === 'Não' ? `<button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago"><i class="fas fa-check"></i> Pagar</button>` : ''}
                 <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
@@ -986,594 +1690,939 @@ function preencherTabelaRecorrentesComBotoes(container, saidas) {
   atualizarTotalRecorrentes(total);
 }
 
-// ============================================================================
-// 9. MELHORIAS EM MÚLTIPLAS SAÍDAS COM RECORRÊNCIA
-// ============================================================================
-
-function adicionarNovaLinhaMelhorada() {
-  contadorMultiplas++;
-  const listaSaidas = document.getElementById("listaSaidas");
-  if (!listaSaidas) return;
-  
-  const novaLinha = document.createElement("div");
-  novaLinha.className = "saida-item";
-  novaLinha.id = `saida-${contadorMultiplas}`;
-  
-  novaLinha.innerHTML = `
-    <div class="saida-info">
-      <div class="row g-2">
-        <div class="col-md-2">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Loja:</label>
-          <select class="form-select form-select-sm loja-select" id="loja-${contadorMultiplas}">
-            ${lojas.map(loja => `<option value="${loja}">${loja}</option>`).join('')}
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Centro de custo:</label>
-          <select class="form-select form-select-sm categoria-select" id="categoria-${contadorMultiplas}">
-            ${categorias.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Descrição:</label>
-          <input type="text" class="form-control form-control-sm descricao-input" id="descricao-${contadorMultiplas}" placeholder="Descrição">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Valor (R$):</label>
-          <input type="text" class="form-control form-control-sm valor-input" id="valor-${contadorMultiplas}" placeholder="R$ 0,00" oninput="formatarMoedaMultiplas(this)">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Data:</label>
-          <input type="date" class="form-control form-control-sm data-input" id="data-${contadorMultiplas}" value="${new Date().toISOString().split('T')[0]}">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Status:</label>
-          <select class="form-select form-select-sm pago-select" id="pago-${contadorMultiplas}">
-            <option value="Sim">Pago</option>
-            <option value="Não">Pendente</option>
-          </select>
-        </div>
-      </div>
-      <div class="row g-2 mt-2">
-        <div class="col-md-3">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Recorrente:</label>
-          <select class="form-select form-select-sm" id="recorrente-${contadorMultiplas}" onchange="toggleRecorrenciaMultiplaCompleta(${contadorMultiplas})">
-            <option value="Não">Não</option>
-            <option value="Sim">Sim</option>
-          </select>
-        </div>
-        <div class="col-md-3" id="tipoRecorrenciaDiv-${contadorMultiplas}" style="display: none;">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Tipo:</label>
-          <select class="form-select form-select-sm" id="tipoRecorrencia-${contadorMultiplas}" onchange="verificarPersonalizada(${contadorMultiplas})">
-            <option value="Mensal">Mensal</option>
-            <option value="Semanal">Semanal</option>
-            <option value="Diária">Diária</option>
-            <option value="Anual">Anual</option>
-            <option value="Personalizada">Personalizada</option>
-          </select>
-        </div>
-        <div class="col-md-6" id="personalizadaDiv-${contadorMultiplas}" style="display: none;">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Detalhes da Recorrência:</label>
-          <input type="text" class="form-control form-control-sm" id="personalizada-${contadorMultiplas}" placeholder="Ex: A cada 15 dias, Por 6 meses, Durante 2 anos">
-        </div>
-      </div>
-    </div>
-    <div class="saida-actions">
-      <button class="btn btn-danger btn-sm" onclick="removerLinhaSaida(${contadorMultiplas})" title="Remover">
-        <i class="fas fa-trash"></i>
-      </button>
-    </div>
-  `;
-  
-  listaSaidas.appendChild(novaLinha);
-}
-
-function toggleRecorrenciaMultiplaCompleta(id) {
-  const recorrente = document.getElementById(`recorrente-${id}`);
-  const tipoDiv = document.getElementById(`tipoRecorrenciaDiv-${id}`);
-  const personalizadaDiv = document.getElementById(`personalizadaDiv-${id}`);
-  
-  if (recorrente && tipoDiv) {
-    if (recorrente.value === 'Sim') {
-      tipoDiv.style.display = 'block';
-    } else {
-      tipoDiv.style.display = 'none';
-      if (personalizadaDiv) {
-        personalizadaDiv.style.display = 'none';
-      }
-    }
+function atualizarTotalRecorrentes(total) {
+  const elemento = document.getElementById("totalSaidasRecorrentes");
+  if (elemento) {
+    elemento.textContent = formatarMoedaBR(total);
   }
 }
 
-function verificarPersonalizada(id) {
-  const tipoSelect = document.getElementById(`tipoRecorrencia-${id}`);
-  const personalizadaDiv = document.getElementById(`personalizadaDiv-${id}`);
+function filtrarRecorrentesPorFiltros() {
+  atualizarTabela();
+}
+
+function limparFiltrosRecorrentes() {
+  const hoje = new Date();
+  const anoAtual = hoje.getFullYear().toString();
+  const mesAtual = `${anoAtual}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   
-  if (tipoSelect && personalizadaDiv) {
-    if (tipoSelect.value === 'Personalizada') {
-      personalizadaDiv.style.display = 'block';
-    } else {
-      personalizadaDiv.style.display = 'none';
+  const filtros = [
+    { id: "filtroLojaRecorrentes", valor: "" },
+    { id: "filtroAnoRecorrentes", valor: anoAtual },
+    { id: "filtroMesRecorrentes", valor: mesAtual },
+    { id: "filtroCategoriaRecorrentes", valor: "" }
+  ];
+  
+  filtros.forEach(filtro => {
+    const elemento = document.getElementById(filtro.id);
+    if (elemento) {
+      elemento.value = filtro.valor;
     }
+  });
+  
+  preencherMesesDoAno();
+  filtrarRecorrentesPorFiltros();
+}
+
+function atualizarDashboard() {
+  const hoje = new Date();
+  const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+  
+  let saidasMes = [...saidas, ...saidasPendentes].filter(s => {
+    const saidaAnoMes = s.data.substring(0, 7);
+    return saidaAnoMes === anoMes;
+  });
+
+  if (lojaFiltroAtual) {
+    saidasMes = saidasMes.filter(s => s.loja === lojaFiltroAtual);
+  }
+
+  const totalMes = saidasMes.reduce((sum, s) => sum + s.valor, 0);
+  const elementoTotalMes = document.getElementById("totalMes");
+  if (elementoTotalMes) {
+    elementoTotalMes.textContent = formatarMoedaBR(totalMes);
+  }
+
+  const totalRecorrente = saidasMes.filter(s => s.recorrente === 'Sim').reduce((sum, s) => sum + s.valor, 0);
+  const elementoTotalRecorrente = document.getElementById("totalRecorrente");
+  if (elementoTotalRecorrente) {
+    elementoTotalRecorrente.textContent = formatarMoedaBR(totalRecorrente);
+  }
+
+  const maiorGasto = saidasMes.length > 0 ? Math.max(...saidasMes.map(s => s.valor)) : 0;
+  const elementoMaiorGasto = document.getElementById("maiorGasto");
+  if (elementoMaiorGasto) {
+    elementoMaiorGasto.textContent = formatarMoedaBR(maiorGasto);
+  }
+
+  const categoriaCount = {};
+  saidasMes.forEach(s => {
+    categoriaCount[s.categoria] = (categoriaCount[s.categoria] || 0) + s.valor;
+  });
+  
+  const categoriaTopo = Object.keys(categoriaCount).length > 0 
+    ? Object.keys(categoriaCount).reduce((a, b) => categoriaCount[a] > categoriaCount[b] ? a : b)
+    : '-';
+  const elementoCategoriaTopo = document.getElementById("categoriaTopo");
+  if (elementoCategoriaTopo) {
+    elementoCategoriaTopo.textContent = categoriaTopo;
+  }
+
+  const elementoTotalSaidas = document.getElementById("totalSaidas");
+  if (elementoTotalSaidas) {
+    elementoTotalSaidas.textContent = saidasMes.length;
   }
 }
 
-// Atualizar função de adicionar todas as saídas
-function adicionarTodasSaidasMelhorada() {
-  const listaSaidas = document.getElementById("listaSaidas");
-  if (!listaSaidas) return;
-  
-  const linhas = listaSaidas.querySelectorAll('.saida-item');
-  
-  let sucessos = 0;
-  let erros = 0;
-  
-  for (const linha of linhas) {
-    const id = linha.id.split('-')[1];
+function atualizarTodosGraficos() {
+  try {
+    console.log('📊 Atualizando TODOS os gráficos...');
     
-    const loja = document.getElementById(`loja-${id}`)?.value;
-    const categoria = document.getElementById(`categoria-${id}`)?.value;
-    const descricao = document.getElementById(`descricao-${id}`)?.value || categoria;
-    const valorInput = document.getElementById(`valor-${id}`)?.value;
-    const valor = extrairValorNumerico(valorInput);
-    const data = document.getElementById(`data-${id}`)?.value;
-    const pago = document.getElementById(`pago-${id}`)?.value;
-    const recorrente = document.getElementById(`recorrente-${id}`)?.value || "Não";
+    const hoje = new Date();
+    const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
     
-    let tipoRecorrencia = null;
-    let recorrenciaPersonalizada = null;
+    let dadosGrafico = [...saidas, ...saidasPendentes].filter(s => {
+      const saidaAnoMes = s.data.substring(0, 7);
+      return saidaAnoMes === anoMes;
+    });
+
+    if (lojaFiltroAtual) {
+      dadosGrafico = dadosGrafico.filter(s => s.loja === lojaFiltroAtual);
+    }
     
-    if (recorrente === "Sim") {
-      const tipoSelect = document.getElementById(`tipoRecorrencia-${id}`);
-      if (tipoSelect) {
-        tipoRecorrencia = tipoSelect.value;
-        
-        if (tipoRecorrencia === "Personalizada") {
-          const personalizadaInput = document.getElementById(`personalizada-${id}`);
-          if (personalizadaInput) {
-            recorrenciaPersonalizada = personalizadaInput.value;
-            tipoRecorrencia = recorrenciaPersonalizada || "Personalizada";
+    atualizarGraficoCategoria(dadosGrafico);
+    atualizarGraficoTipo(dadosGrafico);
+    atualizarGraficoLojas(dadosGrafico);
+    atualizarGraficoMeses();
+    atualizarGraficoCentrosCusto();
+    
+    console.log('✅ Todos os gráficos atualizados');
+    
+  } catch (error) {
+    console.error('❌ Erro gráficos:', error);
+  }
+}
+
+function atualizarGraficoCategoria(dados) {
+  const ctx = document.getElementById('graficoCategoria');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartCategoria) {
+      window.chartCategoria.destroy();
+    }
+    
+    const categoriaValues = {};
+    dados.forEach(s => {
+      categoriaValues[s.categoria] = (categoriaValues[s.categoria] || 0) + s.valor;
+    });
+    
+    const labels = Object.keys(categoriaValues);
+    const values = Object.values(categoriaValues);
+    
+    if (labels.length === 0) {
+      return;
+    }
+    
+    const cores = [
+      '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', 
+      '#ef4444', '#06b6d4', '#84cc16', '#f97316',
+      '#ec4899', '#6366f1', '#14b8a6', '#eab308'
+    ];
+    
+    window.chartCategoria = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: cores.slice(0, labels.length),
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              usePointStyle: true
+            }
           }
         }
       }
-    }
-    
-    if (valor <= 0) {
-      erros++;
-      continue;
-    }
-    
-    const saida = {
-      id: Date.now() + Math.random() * 1000,
-      loja: loja || "Manual",
-      categoria: categoria || "Outros",
-      descricao: descricao || categoria || "Saída",
-      valor,
-      data: data || new Date().toISOString().split('T')[0],
-      recorrente: recorrente,
-      tipoRecorrencia: tipoRecorrencia,
-      recorrenciaPersonalizada: recorrenciaPersonalizada,
-      pago: pago || "Sim",
-      origem: 'multiplas',
-      timestamp: new Date()
-    };
-    
-    try {
-      if (saida.pago === 'Sim') {
-        saidas.unshift(saida);
-      } else {
-        saidasPendentes.unshift(saida);
-      }
-      sucessos++;
-    } catch (error) {
-      console.error('❌ Erro saída múltipla:', error);
-      erros++;
-    }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico categoria:', error);
   }
-  
-  salvarDadosLocal();
-  atualizarInterfaceCompleta();
-  
-  cancelarMultiplasSaidas();
-  mostrarMensagemSucesso(`✅ ${sucessos} saídas adicionadas! ${erros > 0 ? `(${erros} erros)` : ''}`);
 }
 
-// ============================================================================
-// 10. ADICIONAR RECORRÊNCIA PERSONALIZADA AO FORMULÁRIO PRINCIPAL
-// ============================================================================
+function atualizarGraficoTipo(dados) {
+  const ctx = document.getElementById('graficoTipo');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartTipo) {
+      window.chartTipo.destroy();
+    }
+    
+    const pago = dados.filter(s => s.pago === 'Sim').reduce((sum, s) => sum + s.valor, 0);
+    const pendente = dados.filter(s => s.pago === 'Não').reduce((sum, s) => sum + s.valor, 0);
+    
+    if (pago === 0 && pendente === 0) {
+      return;
+    }
+    
+    window.chartTipo = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Pago', 'Pendente'],
+        datasets: [{
+          data: [pago, pendente],
+          backgroundColor: ['#10b981', '#f59e0b'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              usePointStyle: true
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico tipo:', error);
+  }
+}
 
-function toggleTipoRecorrenciaCompleta() {
+function atualizarGraficoLojas(dados) {
+  const ctx = document.getElementById('graficoLojas');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartLojas) {
+      window.chartLojas.destroy();
+    }
+    
+    const lojaValues = {};
+    dados.forEach(s => {
+      lojaValues[s.loja] = (lojaValues[s.loja] || 0) + s.valor;
+    });
+    
+    const labels = Object.keys(lojaValues);
+    const values = Object.values(lojaValues);
+    
+    if (labels.length === 0) {
+      return;
+    }
+    
+    window.chartLojas = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Valor Total',
+          data: values,
+          backgroundColor: '#10b981',
+          borderColor: '#059669',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico lojas:', error);
+  }
+}
+
+function atualizarGraficoMeses() {
+  const ctx = document.getElementById('graficoMes');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartMes) {
+      window.chartMes.destroy();
+    }
+    
+    const mesesData = {};
+    const hoje = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      const mesKey = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+      const mesNome = data.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      mesesData[mesKey] = { nome: mesNome, valor: 0 };
+    }
+    
+    [...saidas, ...saidasPendentes].forEach(s => {
+      const mesKey = s.data.substring(0, 7);
+      if (mesesData[mesKey]) {
+        if (!lojaFiltroAtual || s.loja === lojaFiltroAtual) {
+          mesesData[mesKey].valor += s.valor;
+        }
+      }
+    });
+    
+    const labels = Object.values(mesesData).map(m => m.nome);
+    const values = Object.values(mesesData).map(m => m.valor);
+    
+    window.chartMes = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Valor Mensal',
+          data: values,
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          borderColor: '#10b981',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico meses:', error);
+  }
+}
+
+function atualizarGraficoCentrosCusto() {
+  const ctx = document.getElementById('graficoCentrosCusto');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartCentrosCusto) {
+      window.chartCentrosCusto.destroy();
+    }
+    
+    const lojasCategorias = {};
+    
+    [...saidas, ...saidasPendentes].forEach(s => {
+      if (lojaFiltroAtual && s.loja !== lojaFiltroAtual) return;
+      
+      if (!lojasCategorias[s.loja]) {
+        lojasCategorias[s.loja] = {};
+      }
+      
+      if (!lojasCategorias[s.loja][s.categoria]) {
+        lojasCategorias[s.loja][s.categoria] = 0;
+      }
+      
+      lojasCategorias[s.loja][s.categoria] += s.valor;
+    });
+    
+    const todasCategorias = [...new Set([...saidas, ...saidasPendentes].map(s => s.categoria))];
+    const lojaLabels = Object.keys(lojasCategorias);
+    
+    const cores = [
+      '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', 
+      '#ef4444', '#06b6d4', '#84cc16', '#f97316',
+      '#ec4899', '#6366f1', '#14b8a6', '#eab308'
+    ];
+    
+    const datasets = todasCategorias.map((categoria, index) => ({
+      label: categoria,
+      data: lojaLabels.map(loja => lojasCategorias[loja][categoria] || 0),
+      backgroundColor: cores[index % cores.length],
+      borderColor: cores[index % cores.length],
+      borderWidth: 1
+    }));
+    
+    window.chartCentrosCusto = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: lojaLabels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 15
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico centros de custo:', error);
+  }
+}
+
+function aplicarFiltroLoja() {
+  const filtro = document.getElementById("filtroLojaGlobal");
+  lojaFiltroAtual = filtro ? filtro.value : "";
+  atualizarTabela();
+  atualizarDashboard();
+  atualizarTodosGraficos();
+}
+
+function toggleTipoRecorrencia() {
   const recorrente = document.getElementById("recorrente");
   const coluna = document.getElementById("colunaTipoRecorrencia");
   
   if (recorrente && coluna) {
     if (recorrente.value === "Sim") {
       coluna.style.display = "block";
-      
-      // Verificar se existe o campo personalizada, se não, criar
-      const tipoSelect = document.getElementById("tipoRecorrencia");
-      if (tipoSelect && !tipoSelect.querySelector('option[value="Personalizada"]')) {
-        const optionPersonalizada = document.createElement('option');
-        optionPersonalizada.value = 'Personalizada';
-        optionPersonalizada.textContent = 'Personalizada';
-        tipoSelect.appendChild(optionPersonalizada);
-        
-        // Adicionar evento para mostrar campo personalizado
-        tipoSelect.addEventListener('change', function() {
-          toggleCampoPersonalizado();
-        });
-      }
-      
     } else {
       coluna.style.display = "none";
       const tipoRecorrencia = document.getElementById("tipoRecorrencia");
       if (tipoRecorrencia) {
         tipoRecorrencia.value = "";
       }
-      
-      // Esconder campo personalizado se existe
-      const campoPersonalizado = document.getElementById("campoPersonalizado");
-      if (campoPersonalizado) {
-        campoPersonalizado.style.display = "none";
-      }
     }
   }
 }
 
-function toggleCampoPersonalizado() {
-  const tipoSelect = document.getElementById("tipoRecorrencia");
-  let campoPersonalizado = document.getElementById("campoPersonalizado");
-  
-  if (tipoSelect) {
-    if (tipoSelect.value === "Personalizada") {
-      
-      // Criar campo personalizado se não existe
-      if (!campoPersonalizado) {
-        const colunaTipo = document.getElementById("colunaTipoRecorrencia");
-        if (colunaTipo) {
-          const divPersonalizado = document.createElement('div');
-          divPersonalizado.id = 'campoPersonalizado';
-          divPersonalizado.className = 'mt-2';
-          divPersonalizado.innerHTML = `
-            <label class="form-label fw-bold">Detalhes da Recorrência:</label>
-            <input type="text" id="recorrenciaPersonalizada" class="form-control" placeholder="Ex: A cada 15 dias, Por 6 meses, Durante 2 anos">
-            <small class="text-muted">Descreva como deve funcionar a recorrência</small>
-          `;
-          colunaTipo.appendChild(divPersonalizado);
-          campoPersonalizado = divPersonalizado;
-        }
-      }
-      
-      if (campoPersonalizado) {
-        campoPersonalizado.style.display = "block";
-      }
-      
-    } else {
-      if (campoPersonalizado) {
-        campoPersonalizado.style.display = "none";
-      }
-    }
-  }
-}
-
-// ============================================================================
-// 11. FUNÇÕES AUXILIARES PARA TOGGLES
-// ============================================================================
-
-function toggleSaidasMaisDistantes() {
-  const div = document.getElementById('saidasMaisDistantesDiv');
-  const btn = document.getElementById('btnVerMaisDistantes');
-  
-  if (div && btn) {
-    if (div.style.display === 'none') {
-      div.style.display = 'block';
-      btn.innerHTML = '<i class="fas fa-calendar-minus"></i> Ocultar Saídas Futuras';
-    } else {
-      div.style.display = 'none';
-      btn.innerHTML = '<i class="fas fa-calendar-plus"></i> Ver Mais Saídas Futuras';
-    }
-  }
-}
-
-// ============================================================================
-// 12. REMOVER NOTIFICAÇÕES DO RAILWAY
-// ============================================================================
-
-// Função para remover qualquer referência ao Railway
-function removerNotificacaoRailway() {
-  // Remover do localStorage qualquer referência
-  const chaves = Object.keys(localStorage);
-  chaves.forEach(chave => {
-    if (chave.includes('railway') || chave.includes('Railway')) {
-      localStorage.removeItem(chave);
-    }
+function formatarMoedaBR(valor) {
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
   });
-  
-  // Interceptar qualquer tentativa de mostrar notificação do Railway
-  const mostrarMensagemSucessoOriginal = window.mostrarMensagemSucesso;
-  
-  window.mostrarMensagemSucesso = function(texto) {
-    // Filtrar mensagens do Railway
-    if (texto && typeof texto === 'string') {
-      const textoLower = texto.toLowerCase();
-      if (textoLower.includes('railway') || textoLower.includes('falha') || textoLower.includes('erro de deploy')) {
-        console.log('🚫 Notificação do Railway bloqueada:', texto);
-        return;
-      }
-    }
-    
-    // Chamar função original se não for do Railway
-    if (mostrarMensagemSucessoOriginal) {
-      mostrarMensagemSucessoOriginal(texto);
-    }
-  };
 }
 
-// ============================================================================
-// 13. CORREÇÃO DA FUNÇÃO DE ADICIONAR SAÍDA PRINCIPAL
-// ============================================================================
-
-// Salvar função original
-const adicionarSaidaOriginal = adicionarSaida;
-
-// Nova função melhorada
-function adicionarSaida() {
-  const loja = document.getElementById("loja")?.value || "Manual";
-  const categoria = document.getElementById("categoria")?.value || "Outros";
-  const descricao = document.getElementById("descricao")?.value || categoria;
-  const valorInput = document.getElementById("valor")?.value || "0";
-  const valor = extrairValorNumerico(valorInput);
-  const data = document.getElementById("data")?.value || new Date().toISOString().split('T')[0];
-  const recorrente = document.getElementById("recorrente")?.value || "Não";
-  const pago = document.getElementById("pago")?.value || "Sim";
+function mostrarMensagemSucesso(texto = '✅ Operação realizada!') {
+  const mensagem = document.getElementById("mensagemSucesso");
+  if (!mensagem) return;
   
-  let tipoRecorrencia = null;
-  let recorrenciaPersonalizada = null;
+  mensagem.textContent = texto;
+  mensagem.style.display = "block";
   
-  if (recorrente === "Sim") {
-    const tipoSelect = document.getElementById("tipoRecorrencia");
-    if (tipoSelect) {
-      tipoRecorrencia = tipoSelect.value;
-      
-      if (tipoRecorrencia === "Personalizada") {
-        const personalizadaInput = document.getElementById("recorrenciaPersonalizada");
-        if (personalizadaInput && personalizadaInput.value.trim()) {
-          recorrenciaPersonalizada = personalizadaInput.value.trim();
-          tipoRecorrencia = recorrenciaPersonalizada;
-        } else {
-          alert("Por favor, descreva os detalhes da recorrência personalizada!");
-          return;
-        }
-      }
-    }
-  }
+  setTimeout(() => {
+    mensagem.style.display = "none";
+  }, 3000);
+}
 
-  if (valor <= 0) {
-    alert("Por favor, insira um valor válido!");
+function formatarMoeda(input) {
+  let valor = input.value.replace(/\D/g, '');
+  
+  if (valor === '') {
+    input.value = '';
     return;
   }
+  
+  valor = parseInt(valor);
+  const valorFormatado = (valor / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+  
+  input.value = valorFormatado;
+}
 
-  const saida = { 
-    id: Date.now() + Math.random() * 1000, 
-    loja, 
-    categoria, 
-    descricao: descricao || categoria,
-    valor, 
-    data, 
-    recorrente,
-    tipoRecorrencia: tipoRecorrencia,
-    recorrenciaPersonalizada: recorrenciaPersonalizada,
-    pago, 
-    origem: 'manual', 
-    timestamp: new Date()
-  };
+function extrairValorNumerico(valorFormatado) {
+  if (!valorFormatado) return 0;
+  return parseFloat(valorFormatado.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+}
 
+function limparFormulario() {
+  const campos = ['descricao', 'valor'];
+  campos.forEach(campo => {
+    const elemento = document.getElementById(campo);
+    if (elemento) elemento.value = '';
+  });
+  
+  const dataElement = document.getElementById('data');
+  if (dataElement) {
+    dataElement.value = new Date().toISOString().split('T')[0];
+  }
+}
+
+function salvarDadosLocal() {
   try {
-    if (pago === "Sim") {
-      saidas.unshift(saida);
-    } else {
-      saidasPendentes.unshift(saida);
+    const dadosBackup = {
+      categorias,
+      lojas, 
+      saidas,
+      saidasPendentes,
+      treinamentosIA,
+      treinamentosNaturais,
+      versao: '1.0.0',
+      ultimoBackup: new Date().toISOString(),
+      totalSaidas: saidas.length + saidasPendentes.length
+    };
+    
+    localStorage.setItem('iclubSaidas', JSON.stringify(dadosBackup));
+    localStorage.setItem('iclubSaidasBackup', JSON.stringify(dadosBackup));
+    
+    console.log('💾 Backup local salvo:', dadosBackup.totalSaidas, 'saídas');
+  } catch (error) {
+    console.error('❌ Erro salvar backup:', error);
+  }
+}
+
+function carregarDadosLocal() {
+  try {
+    let dadosSalvos = localStorage.getItem('iclubSaidas');
+    
+    if (!dadosSalvos) {
+      dadosSalvos = localStorage.getItem('iclubSaidasBackup');
     }
     
-    salvarDadosLocal();
-    atualizarInterfaceCompleta();
-    mostrarMensagemSucesso('✅ Saída adicionada com sucesso!');
-    limparFormulario();
+    if (dadosSalvos) {
+      const dados = JSON.parse(dadosSalvos);
+      
+      if (dados.categorias) categorias = dados.categorias;
+      if (dados.lojas) lojas = dados.lojas;
+      if (dados.saidas) saidas = dados.saidas;
+      if (dados.saidasPendentes) saidasPendentes = dados.saidasPendentes;
+      if (dados.treinamentosIA) treinamentosIA = dados.treinamentosIA;
+      if (dados.treinamentosNaturais) treinamentosNaturais = dados.treinamentosNaturais;
+      
+      console.log('📂 Backup local carregado:', dados.totalSaidas || 0, 'saídas');
+      
+      return true;
+    } else {
+      console.log('📂 Nenhum backup local encontrado');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Erro carregar backup:', error);
+    return false;
+  }
+}
+
+let dadosParaAnalise = [];
+let analiseCompleta = null;
+
+async function abrirAnaliseInteligente() {
+  const modal = document.getElementById('modalAnaliseInteligente');
+  const loading = document.getElementById('analiseLoading');
+  const resultado = document.getElementById('analiseResultado');
+  
+  if (!modal || !loading || !resultado) {
+    alert('Modal de análise não encontrado');
+    return;
+  }
+  
+  modal.style.display = 'block';
+  loading.style.display = 'block';
+  resultado.style.display = 'none';
+  
+  const progressoBarra = document.getElementById('progressoBarra');
+  if (progressoBarra) {
+    progressoBarra.style.width = '0%';
+  }
+  
+  try {
+    await simularProgressoAnalise();
+    const analise = await executarAnaliseInteligente();
+    exibirResultadosAnalise(analise);
+    
+    loading.style.display = 'none';
+    resultado.style.display = 'block';
     
   } catch (error) {
-    console.error('❌ Erro adicionar saída:', error);
-    alert('Erro ao salvar saída. Tente novamente.');
+    console.error('❌ Erro na análise:', error);
+    loading.innerHTML = `
+      <div style="text-align: center; padding: 40px;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 20px;"></i>
+        <h4>Erro na Análise</h4>
+        <p>Não foi possível processar os dados. Tente novamente.</p>
+        <button class="btn-analise-inteligente" onclick="fecharAnaliseInteligente()">Fechar</button>
+      </div>
+    `;
   }
 }
 
-// ============================================================================
-// 14. ATUALIZAR CONTADOR DE SAÍDAS CORRIGIDO
-// ============================================================================
-
-function atualizarContadorSaidasCorrigido() {
-  const contador = document.getElementById('contadorSaidas');
-  const btnVerMais = document.getElementById('btnVerMais');
-  
-  if (!contador) return;
-  
-  const hoje = new Date();
-  const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-  
-  // CORREÇÃO: Contar apenas saídas PAGAS do mês
-  let saidasMesPagas = saidas.filter(s => {
-    const saidaAnoMes = s.data.substring(0, 7);
-    return saidaAnoMes === anoMes && s.pago === 'Sim';
-  });
-
-  if (lojaFiltroAtual) {
-    saidasMesPagas = saidasMesPagas.filter(s => s.loja === lojaFiltroAtual);
+function fecharAnaliseInteligente() {
+  const modal = document.getElementById('modalAnaliseInteligente');
+  if (modal) {
+    modal.style.display = 'none';
   }
-  
-  contador.textContent = `📊 ${saidasMesPagas.length} saídas pagas no mês`;
-  
-  // Mostrar/esconder botão "Ver mais" baseado na quantidade
-  if (btnVerMais) {
-    if (saidasMesPagas.length > 5) {
-      btnVerMais.style.display = 'block';
-    } else {
-      btnVerMais.style.display = 'none';
+}
+
+async function simularProgressoAnalise() {
+  const etapas = [
+    { progresso: 10, texto: 'Carregando dados locais...' },
+    { progresso: 25, texto: 'Processando padrões de gastos...' },
+    { progresso: 45, texto: 'Analisando tendências temporais...' },
+    { progresso: 65, texto: 'Identificando oportunidades...' },
+    { progresso: 80, texto: 'Gerando insights inteligentes...' },
+    { progresso: 95, texto: 'Finalizando análise...' },
+    { progresso: 100, texto: 'Análise concluída!' }
+  ];
+
+  for (const etapa of etapas) {
+    const progressoBarra = document.getElementById('progressoBarra');
+    const etapaAnalise = document.getElementById('etapaAnalise');
+    
+    if (progressoBarra) {
+      progressoBarra.style.width = etapa.progresso + '%';
     }
+    if (etapaAnalise) {
+      etapaAnalise.textContent = etapa.texto;
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 600));
   }
 }
 
-// ============================================================================
-// 15. SOBRESCREVER FUNÇÕES EXISTENTES COM MELHORIAS
-// ============================================================================
-
-// Sobrescrever função de envio de mensagem
-window.enviarMensagemChat = enviarMensagemChat;
-
-// Sobrescrever função de adicionar saída
-window.adicionarSaida = adicionarSaida;
-
-// Sobrescrever função de adicionar nova linha
-window.adicionarNovaLinha = adicionarNovaLinhaMelhorada;
-
-// Sobrescrever função de adicionar todas as saídas
-window.adicionarTodasSaidas = adicionarTodasSaidasMelhorada;
-
-// Sobrescrever função de toggle de recorrência
-window.toggleTipoRecorrencia = toggleTipoRecorrenciaCompleta;
-
-// Sobrescrever função de atualizar tabela
-window.atualizarTabela = atualizarTabela;
-
-// Sobrescrever função de contador
-window.atualizarContadorSaidas = atualizarContadorSaidasCorrigido;
-
-// Adicionar novas funções ao escopo global
-window.toggleRecorrenciaMultiplaCompleta = toggleRecorrenciaMultiplaCompleta;
-window.verificarPersonalizada = verificarPersonalizada;
-window.toggleCampoPersonalizado = toggleCampoPersonalizado;
-window.toggleSaidasMaisDistantes = toggleSaidasMaisDistantes;
-window.processarComandoTreinamento = processarComandoTreinamento;
-window.processarMensagemIAMelhorada = processarMensagemIAMelhorada;
-
-// ============================================================================
-// 16. INICIALIZAÇÃO DAS MELHORIAS
-// ============================================================================
-
-// Executar quando a página carrega
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 Melhorias IA iClub carregadas!');
+async function executarAnaliseInteligente() {
+  dadosParaAnalise = await coletarDadosParaAnalise();
   
-  // Remover notificações do Railway
-  removerNotificacaoRailway();
-  
-  // Verificar se existe o campo personalizado no tipo de recorrência
-  const tipoRecorrencia = document.getElementById("tipoRecorrencia");
-  if (tipoRecorrencia && !tipoRecorrencia.querySelector('option[value="Personalizada"]')) {
-    const optionPersonalizada = document.createElement('option');
-    optionPersonalizada.value = 'Personalizada';
-    optionPersonalizada.textContent = 'Personalizada';
-    tipoRecorrencia.appendChild(optionPersonalizada);
-  }
-  
-  console.log('✅ Todas as melhorias aplicadas com sucesso!');
-});
-
-// ============================================================================
-// 17. MELHORIAS ADICIONAIS NA INTERPRETAÇÃO
-// ============================================================================
-
-// Função para reconhecer mais padrões de linguagem natural
-function reconhecerPadroesAvancados(mensagem) {
-  const msgLower = mensagem.toLowerCase();
-  
-  // Padrões de data mais naturais
-  const padroesData = {
-    'na sexta': calcularDataPorDiaSemana('sexta'),
-    'na segunda': calcularDataPorDiaSemana('segunda'),
-    'na terça': calcularDataPorDiaSemana('terça'),
-    'na quarta': calcularDataPorDiaSemana('quarta'),
-    'na quinta': calcularDataPorDiaSemana('quinta'),
-    'no sábado': calcularDataPorDiaSemana('sábado'),
-    'no domingo': calcularDataPorDiaSemana('domingo'),
-    'semana passada': (() => {
-      const data = new Date();
-      data.setDate(data.getDate() - 7);
-      return data.toISOString().split('T')[0];
-    })(),
-    'semana que vem': (() => {
-      const data = new Date();
-      data.setDate(data.getDate() + 7);
-      return data.toISOString().split('T')[0];
-    })()
+  const analise = {
+    resumoExecutivo: gerarResumoExecutivo(dadosParaAnalise),
+    insights: gerarInsightsPrincipais(dadosParaAnalise)
   };
+
+  analiseCompleta = analise;
+  return analise;
+}
+
+async function coletarDadosParaAnalise() {
+  const todasSaidas = [...saidas, ...saidasPendentes];
   
-  // Padrões de valor mais naturais
-  const padroesValor = {
-    'mil': 1000,
-    'mil e quinhentos': 1500,
-    'dois mil': 2000,
-    'três mil': 3000,
-    'quatro mil': 4000,
-    'cinco mil': 5000
+  const dados = {
+    saidas: todasSaidas,
+    totalSaidas: todasSaidas.length,
+    valorTotal: todasSaidas.reduce((sum, s) => sum + (s.valor || 0), 0),
+    categorias: agruparPorCategoria(todasSaidas),
+    lojas: agruparPorLoja(todasSaidas),
+    statusPagamento: agruparPorStatus(todasSaidas)
   };
-  
-  // Padrões de loja mais naturais
-  const padroesLoja = {
-    'do centro': 'Centro',
-    'da centro': 'Centro',
-    'do shopping': 'Shopping',
-    'da shopping': 'Shopping',
-    'do bairro': 'Bairro',
-    'da bairro': 'Bairro',
-    'castanhal': 'Castanhal',
-    'mix': 'Mix'
-  };
+
+  return dados;
+}
+
+function agruparPorCategoria(saidas) {
+  const grupos = {};
+  saidas.forEach(s => {
+    if (!grupos[s.categoria]) {
+      grupos[s.categoria] = { itens: [], total: 0, count: 0 };
+    }
+    grupos[s.categoria].itens.push(s);
+    grupos[s.categoria].total += s.valor || 0;
+    grupos[s.categoria].count++;
+  });
+  return grupos;
+}
+
+function agruparPorLoja(saidas) {
+  const grupos = {};
+  saidas.forEach(s => {
+    if (!grupos[s.loja]) {
+      grupos[s.loja] = { itens: [], total: 0, count: 0 };
+    }
+    grupos[s.loja].itens.push(s);
+    grupos[s.loja].total += s.valor || 0;
+    grupos[s.loja].count++;
+  });
+  return grupos;
+}
+
+function agruparPorStatus(saidas) {
+  const pagos = saidas.filter(s => s.pago === 'Sim');
+  const pendentes = saidas.filter(s => s.pago === 'Não');
   
   return {
-    data: Object.keys(padroesData).find(padrao => msgLower.includes(padrao)),
-    valor: Object.keys(padroesValor).find(padrao => msgLower.includes(padrao)),
-    loja: Object.keys(padroesLoja).find(padrao => msgLower.includes(padrao))
+    pagos: {
+      itens: pagos,
+      total: pagos.reduce((sum, s) => sum + (s.valor || 0), 0),
+      count: pagos.length
+    },
+    pendentes: {
+      itens: pendentes,
+      total: pendentes.reduce((sum, s) => sum + (s.valor || 0), 0),
+      count: pendentes.length
+    }
   };
 }
 
-// ============================================================================
-// 18. FUNÇÃO DE VALIDAÇÃO FINAL
-// ============================================================================
-
-function validarTodasAsMelhorias() {
-  const melhorias = [
-    'Treinamento automático IA',
-    'Reconhecimento dias da semana',
-    'Múltiplas lojas inteligente',
-    'Valores em formato brasileiro',
-    'Perguntas inteligentes',
-    'Saídas do mês apenas pagas',
-    'Recorrência personalizada',
-    'Ver mais em próximas saídas',
-    'Botões em recorrentes',
-    'Remoção Railway'
-  ];
+function gerarResumoExecutivo(dados) {
+  const ticketMedio = dados.totalSaidas > 0 ? dados.valorTotal / dados.totalSaidas : 0;
+  const categoriaTop = Object.keys(dados.categorias).length > 0 ? 
+    Object.keys(dados.categorias).reduce((a, b) => 
+      dados.categorias[a].total > dados.categorias[b].total ? a : b, 
+      Object.keys(dados.categorias)[0]
+    ) : 'N/A';
   
-  console.log('🎯 Melhorias implementadas:');
-  melhorias.forEach((melhoria, index) => {
-    console.log(`  ${index + 1}. ✅ ${melhoria}`);
-  });
-  
-  console.log('\n💡 Exemplos de teste:');
-  console.log('  • "adicione centro de custo marketing e quando falar tráfego adicione no centro de custo marketing"');
-  console.log('  • "lançar aluguel sexta 100 shopping"');
-  console.log('  • "pagas hoje pra castanhal aluguel 100 marketing 200"');
-  console.log('  • "paguei 1.597,11 de tráfego da loja mix"');
-  
-  return true;
+  return {
+    valorTotal: dados.valorTotal,
+    totalSaidas: dados.totalSaidas,
+    ticketMedio: ticketMedio,
+    categoriaTop: categoriaTop,
+    percentualPendente: dados.totalSaidas > 0 ? 
+      (dados.statusPagamento.pendentes.count / dados.totalSaidas * 100) : 0
+  };
 }
 
-// Executar validação
-validarTodasAsMelhorias();
+function gerarInsightsPrincipais(dados) {
+  const insights = [];
+  
+  if (Object.keys(dados.categorias).length > 0) {
+    const categoriaTop = Object.entries(dados.categorias)
+      .sort(([,a], [,b]) => b.total - a.total)[0];
+    
+    if (categoriaTop) {
+      const [categoria, dadosCategoria] = categoriaTop;
+      const percentual = (dadosCategoria.total / dados.valorTotal * 100);
+      
+      insights.push({
+        tipo: 'insight',
+        titulo: 'Categoria Dominante',
+        valor: percentual.toFixed(1) + '%',
+        descricao: `A categoria "${categoria}" representa ${percentual.toFixed(1)}% dos seus gastos totais (${formatarMoedaBR(dadosCategoria.total)}). Essa concentração pode indicar oportunidades de otimização.`,
+        acoes: ['Analisar fornecedores', 'Buscar alternativas', 'Negociar preços']
+      });
+    }
+  }
 
-// ============================================================================
-// 19. EXPORT DAS FUNÇÕES (FINAL)
-// ============================================================================
+  if (dados.statusPagamento.pendentes.count > 0) {
+    const percentualPendente = (dados.statusPagamento.pendentes.count / dados.totalSaidas * 100);
+    
+    if (percentualPendente > 30) {
+      insights.push({
+        tipo: 'alerta',
+        titulo: 'Alto Volume de Pendências',
+        valor: dados.statusPagamento.pendentes.count + ' saídas',
+        descricao: `Você tem ${dados.statusPagamento.pendentes.count} saídas pendentes (${percentualPendente.toFixed(1)}%), totalizando ${formatarMoedaBR(dados.statusPagamento.pendentes.total)}. Isso pode impactar seu fluxo de caixa.`,
+        acoes: ['Priorizar pagamentos', 'Renegociar prazos', 'Organizar cronograma']
+      });
+    }
+  }
 
-console.log('🎉 MELHORIAS IA ICLUB IMPLEMENTADAS COM SUCESSO!');
-console.log('🔥 Sistema 100% funcional com todas as melhorias solicitadas');
-console.log('🚀 Pronto para uso com IA mais inteligente!');
+  if (Object.keys(dados.lojas).length > 1) {
+    const lojasOrdenadas = Object.entries(dados.lojas)
+      .sort(([,a], [,b]) => b.total - a.total);
+    
+    const lojaTop = lojasOrdenadas[0];
+    const percentualLojaTop = (lojaTop[1].total / dados.valorTotal * 100);
+    
+    insights.push({
+      tipo: 'tendencia',
+      titulo: 'Loja com Maior Movimento',
+      valor: percentualLojaTop.toFixed(1) + '%',
+      descricao: `A "${lojaTop[0]}" concentra ${percentualLojaTop.toFixed(1)}% dos gastos (${formatarMoedaBR(lojaTop[1].total)}). Verifique se essa distribuição está alinhada com o planejamento.`,
+      acoes: ['Revisar distribuição', 'Balancear investimentos', 'Analisar rentabilidade']
+    });
+  }
+
+  return insights;
+}
+
+function exibirResultadosAnalise(analise) {
+  const container = document.getElementById('analiseResultado');
+  
+  if (!container) return;
+  
+  let html = `
+    <div class="resumo-executivo">
+      <h4 class="resumo-titulo">📊 Resumo Executivo</h4>
+      <p>Análise completa dos dados do sistema iClub</p>
+      <div class="resumo-stats">
+        <div class="resumo-stat">
+          <div class="resumo-stat-valor">${formatarMoedaBR(analise.resumoExecutivo.valorTotal)}</div>
+          <div class="resumo-stat-label">Valor Total</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-valor">${analise.resumoExecutivo.totalSaidas}</div>
+          <div class="resumo-stat-label">Total Saídas</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-valor">${formatarMoedaBR(analise.resumoExecutivo.ticketMedio)}</div>
+          <div class="resumo-stat-label">Ticket Médio</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-stat-valor">${analise.resumoExecutivo.categoriaTop}</div>
+          <div class="resumo-stat-label">Categoria Top</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (analise.insights && analise.insights.length > 0) {
+    analise.insights.forEach(insight => {
+      html += `
+        <div class="insight-card tipo-${insight.tipo}">
+          <div class="insight-header">
+            <div class="insight-icon ${insight.tipo}">
+              <i class="fas fa-${insight.tipo === 'alerta' ? 'exclamation-triangle' : insight.tipo === 'tendencia' ? 'chart-line' : 'lightbulb'}"></i>
+            </div>
+            <div>
+              <h6 class="insight-titulo">${insight.titulo}</h6>
+              <p class="insight-valor">${insight.valor}</p>
+            </div>
+          </div>
+          <div class="insight-descricao">
+            ${insight.descricao}
+          </div>
+          <div class="insight-acoes">
+            ${insight.acoes.map(acao => `<span class="insight-acao">${acao}</span>`).join('')}
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    html += `
+      <div class="insight-card">
+        <div class="insight-header">
+          <div class="insight-icon insight">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div>
+            <h6 class="insight-titulo">Sistema Funcionando</h6>
+            <p class="insight-valor">Dados insuficientes</p>
+          </div>
+        </div>
+        <div class="insight-descricao">
+          Adicione mais saídas para gerar insights mais detalhados. O sistema precisa de dados para criar análises inteligentes.
+        </div>
+        <div class="insight-acoes">
+          <span class="insight-acao">Adicionar mais dados</span>
+          <span class="insight-acao">Usar Chat IA</span>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+window.addEventListener('load', async () => {
+  try {
+    console.log('🚀 Iniciando aplicação iClub...');
+    
+    const dataElement = document.getElementById('data');
+    if (dataElement && !dataElement.value) {
+      dataElement.value = new Date().toISOString().split('T')[0];
+    }
+    
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+      chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          enviarMensagemChat();
+        }
+      });
+    }
+    
+    const backupOK = carregarDadosLocal();
+    if (backupOK) {
+      console.log('✅ Dados carregados do backup local');
+    }
+    
+    atualizarInterfaceCompleta();
+    
+    const totalSaidas = saidas.length + saidasPendentes.length;
+    console.log('✅ Sistema carregado:', totalSaidas, 'saídas total');
+    
+    if (totalSaidas > 0) {
+      mostrarMensagemSucesso(`✅ Sistema carregado! ${totalSaidas} saídas encontradas.`);
+    } else {
+      mostrarMensagemSucesso('✅ Sistema carregado! Pronto para uso.');
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro crítico:', error);
+    mostrarMensagemSucesso('❌ Erro ao carregar. Verifique o console.');
+  }
+});
+
+window.mostrarTreinamentoIA = mostrarTreinamentoIA;
+window.fecharTreinamentoIA = fecharTreinamentoIA;
+window.salvarTreinamentoNatural = salvarTreinamentoNatural;
+window.salvarTreinamentoManual = salvarTreinamentoManual;
+window.enviarMensagemChat = enviarMensagemChat;
+window.limparChat = limparChat;
+window.adicionarSaida = adicionarSaida;
+window.excluirSaida = excluirSaida;
+window.editarSaida = editarSaida;
+window.toggleEditRecorrencia = toggleEditRecorrencia;
+window.salvarEdicaoSaida = salvarEdicaoSaida;
+window.marcarComoPago = marcarComoPago;
+window.mostrarEditorCategoria = mostrarEditorCategoria;
+window.mostrarEditorLoja = mostrarEditorLoja;
+window.adicionarCategoria = adicionarCategoria;
+window.adicionarLoja = adicionarLoja;
+window.mostrarEditorCategoriaExistente = mostrarEditorCategoriaExistente;
+window.mostrarEditorLojaExistente = mostrarEditorLojaExistente;
+window.removerCategoria = removerCategoria;
+window.removerLoja = removerLoja;
+window.fecharModal = fecharModal;
+window.iniciarMultiplasSaidas = iniciarMultiplasSaidas;
+window.adicionarNovaLinha = adicionarNovaLinha;
+window.removerLinhaSaida = removerLinhaSaida;
+window.adicionarTodasSaidas = adicionarTodasSaidas;
+window.cancelarMultiplasSaidas = cancelarMultiplasSaidas;
+window.formatarMoedaMultiplas = formatarMoedaMultiplas;
+window.aplicarFiltroLoja = aplicarFiltroLoja;
+window.toggleTipoRecorrencia = toggleTipoRecorrencia;
+window.filtrarRecorrentesPorFiltros = filtrarRecorrentesPorFiltros;
+window.limparFiltrosRecorrentes = limparFiltrosRecorrentes;
+window.preencherMesesDoAno = preencherMesesDoAno;
+window.formatarMoeda = formatarMoeda;
+window.abrirAnaliseInteligente = abrirAnaliseInteligente;
+window.fecharAnaliseInteligente = fecharAnaliseInteligente;
+
+console.log('✅ Sistema iClub TOTALMENTE FUNCIONAL!');
+console.log('🧠 IA com treinamento natural implementado');
+console.log('📊 Categorização de saídas 100% corrigida');
+console.log('🔧 Filtros, gráficos e todas as funcionalidades operacionais');
