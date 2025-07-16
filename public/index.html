@@ -20,6 +20,8 @@
       --white: #ffffff;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --whatsapp-green: #25d366;
+      --whatsapp-dark: #128c7e;
     }
 
     body {
@@ -45,6 +47,207 @@
       text-align: center;
     }
 
+    /* ===== CHAT IA STYLES ===== */
+    .chat-ia-container {
+      background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 25px;
+      color: white;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .chat-avatar {
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .chat-title {
+      flex: 1;
+    }
+
+    .chat-title h5 {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .chat-title small {
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+
+    .chat-messages {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 15px;
+      height: 200px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    .chat-message {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-message.user {
+      justify-content: flex-end;
+    }
+
+    .chat-message.system {
+      justify-content: flex-start;
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      word-wrap: break-word;
+      position: relative;
+    }
+
+    .chat-message.user .chat-bubble {
+      background: #ffffff;
+      color: var(--dark-color);
+      border-bottom-right-radius: 6px;
+    }
+
+    .chat-message.system .chat-bubble {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-bottom-left-radius: 6px;
+    }
+
+    .chat-time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .chat-input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 25px;
+      padding: 12px 20px;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .chat-input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.25);
+    }
+
+    .chat-send-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      color: white;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-send-btn:hover:not(:disabled) {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+
+    .chat-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .chat-examples {
+      margin-top: 15px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chat-example-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 6px 12px;
+      color: white;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chat-example-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+    }
+
+    .typing-indicator {
+      display: none;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 18px;
+      color: white;
+      font-style: italic;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 3px;
+    }
+
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ===== EXISTING STYLES ===== */
     .card-modern {
       background: var(--white);
       border-radius: 16px;
@@ -391,6 +594,14 @@
       .btn-multiplas-container {
         flex-direction: column;
       }
+
+      .chat-examples {
+        justify-content: center;
+      }
+
+      .chat-bubble {
+        max-width: 90%;
+      }
     }
   </style>
 </head>
@@ -400,6 +611,69 @@
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
     </h1>
+
+    <!-- CHAT IA INTEGRADO -->
+    <div class="chat-ia-container">
+      <div class="chat-header">
+        <div class="chat-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="chat-title">
+          <h5>💬 Chat Inteligente</h5>
+          <small>Digite suas saídas em linguagem natural - ex: "Paguei R$ 500 de aluguel hoje"</small>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; padding: 8px 12px;" onclick="window.limparChat && window.limparChat()">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-message system">
+          <div class="chat-bubble">
+            <div>👋 Olá! Eu sou a IA do iClub. Digite suas saídas em linguagem natural e eu vou processá-las automaticamente!</div>
+            <div class="chat-time">Agora</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span>IA processando...</span>
+      </div>
+      
+      <div class="chat-input-container">
+        <input type="text" 
+               class="chat-input" 
+               id="chatInput" 
+               placeholder="Ex: Paguei R$ 500 de aluguel hoje..."
+               autocomplete="off"
+               maxlength="200">
+        <button class="chat-send-btn" id="chatSendBtn" onclick="window.enviarMensagemChat && window.enviarMensagemChat()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      
+      <div class="chat-examples">
+        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Paguei R$ 1.200 de aluguel hoje')">
+          Pagar aluguel
+        </button>
+        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Gastei R$ 80 de gasolina ontem')">
+          Gasolina
+        </button>
+        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Comprei R$ 150 de material de escritório')">
+          Material
+        </button>
+        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Devo R$ 300 de energia elétrica')">
+          Conta pendente
+        </button>
+      </div>
+    </div>
 
     <!-- Formulário de Cadastro -->
     <div class="card-modern">
@@ -728,6 +1002,36 @@
     </div>
   </div>
 
-  <script src="painel.js"></script>
+  <script type="module" src="painel.js"></script>
+  <script>
+    // Garantir que funções globais funcionem
+    window.addEventListener('DOMContentLoaded', function() {
+      // Configurar data padrão
+      const dataElement = document.getElementById('data');
+      if (dataElement && !dataElement.value) {
+        dataElement.value = new Date().toISOString().split('T')[0];
+      }
+      
+      // Event listener para Enter no chat
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (typeof window.enviarMensagemChat === 'function') {
+              window.enviarMensagemChat();
+            }
+          }
+        });
+      }
+      
+      // Focar no chat ao carregar
+      if (chatInput) {
+        chatInput.focus();
+      }
+      
+      console.log('✅ HTML carregado e configurado');
+    });
+  </script>
 </body>
 </html>
