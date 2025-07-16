@@ -1,0 +1,29 @@
+{
+  "name": "iclub-saidas-whatsapp",
+  "version": "1.0.0",
+  "description": "Sistema de controle de saídas com integração WhatsApp e IA",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Build completed successfully'",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": [
+    "whatsapp",
+    "firebase",
+    "netlify",
+    "controle-financeiro",
+    "ai"
+  ],
+  "author": "iClub",
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^11.10.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^15.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
