@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>CONTROLE ICLUB SAÍDAS - MULTI-USUÁRIO</title>
+  <title>CONTROLE ICLUB SAÍDAS</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -43,16 +43,6 @@
       font-size: 2rem;
       margin-bottom: 30px;
       text-align: center;
-    }
-
-    .multi-user-badge {
-      background: linear-gradient(135deg, #8b5cf6, #a855f7);
-      color: white;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin-left: 10px;
     }
 
     .card-modern {
@@ -311,11 +301,9 @@
       border-radius: 16px;
       padding: 30px;
       box-shadow: var(--shadow-lg);
-      max-width: 600px;
+      max-width: 400px;
       width: 90%;
       text-align: center;
-      max-height: 80vh;
-      overflow-y: auto;
     }
 
     .modal-title-custom {
@@ -348,37 +336,7 @@
       box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
     }
 
-    /* Novos estilos para multi-usuário */
-    .user-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 8px;
-      border-radius: 12px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .multi-user-section {
-      background: linear-gradient(135deg, #8b5cf6, #a855f7);
-      color: white;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .multi-user-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* Estilos para múltiplas saídas (mantidos) */
+    /* Estilos para múltiplas saídas */
     .multiplas-saidas-container {
       background: var(--light-bg);
       border-radius: 12px;
@@ -434,238 +392,6 @@
         flex-direction: column;
       }
     }
-
-    /* Estilos do Chat */
-    .chat-container {
-      background: linear-gradient(135deg, #25d366, #128c7e);
-      border-radius: 20px;
-      padding: 25px;
-      margin-bottom: 30px;
-      box-shadow: var(--shadow-lg);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .chat-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-
-    .chat-header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .chat-title {
-      color: white;
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .chat-subtitle {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 0.9rem;
-      margin: 0;
-    }
-
-    .chat-messages {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 20px;
-      min-height: 200px;
-      max-height: 300px;
-      overflow-y: auto;
-      position: relative;
-      z-index: 1;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .message {
-      margin-bottom: 15px;
-      display: flex;
-      animation: fadeInUp 0.3s ease;
-    }
-
-    .message.user {
-      justify-content: flex-end;
-    }
-
-    .message.system {
-      justify-content: flex-start;
-    }
-
-    .message-bubble {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      position: relative;
-    }
-
-    .message.user .message-bubble {
-      background: #dcf8c6;
-      color: #000;
-      border-bottom-right-radius: 5px;
-    }
-
-    .message.system .message-bubble {
-      background: white;
-      color: #333;
-      border-bottom-left-radius: 5px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .message-time {
-      font-size: 0.7rem;
-      opacity: 0.7;
-      margin-top: 2px;
-      text-align: right;
-    }
-
-    .chat-input-container {
-      position: relative;
-      z-index: 1;
-    }
-
-    .chat-input {
-      background: white;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 25px;
-      padding: 15px 50px 15px 20px;
-      width: 100%;
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .chat-input:focus {
-      border-color: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
-    }
-
-    .chat-send-btn {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: var(--success-color);
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      color: white;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .chat-send-btn:hover {
-      background: #059669;
-      transform: translateY(-50%) scale(1.1);
-    }
-
-    .chat-send-btn:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-      transform: translateY(-50%) scale(1);
-    }
-
-    .typing-indicator {
-      display: none;
-      padding: 10px 16px;
-      background: white;
-      border-radius: 18px;
-      border-bottom-left-radius: 5px;
-      max-width: 80px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .typing-dots {
-      display: flex;
-      gap: 4px;
-    }
-
-    .typing-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #999;
-      animation: typing 1.4s infinite ease-in-out;
-    }
-
-    .typing-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .typing-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    @keyframes typing {
-      0%, 60%, 100% {
-        transform: translateY(0);
-        opacity: 0.5;
-      }
-      30% {
-        transform: translateY(-10px);
-        opacity: 1;
-      }
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .chat-examples {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 15px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .example-chip {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .example-chip:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
-    }
   </style>
 </head>
 <body>
@@ -673,25 +399,7 @@
     <h1 class="header-title" style="display: flex; align-items: center; justify-content: center;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
-      <span class="multi-user-badge">👥 Multi-Usuário</span>
     </h1>
-
-    <!-- Seção Multi-Usuário -->
-    <div class="multi-user-section">
-      <div class="multi-user-title">
-        <i class="fas fa-users"></i>
-        Sistema Multi-Usuário WhatsApp Ativo
-      </div>
-      <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
-        Você e sua sócia podem adicionar saídas via WhatsApp em números diferentes. 
-        Todos os dados são consolidados neste painel compartilhado.
-      </p>
-      <div style="margin-top: 10px;">
-        <button class="btn btn-light btn-sm" onclick="mostrarGerenciadorUsuarios()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
-          <i class="fas fa-cog"></i> Gerenciar Usuários
-        </button>
-      </div>
-    </div>
 
     <!-- Formulário de Cadastro -->
     <div class="card-modern">
@@ -811,22 +519,16 @@
       </div>
     </div>
 
-    <!-- Filtros Globais Multi-Usuário -->
+    <!-- Filtro Global por Loja -->
     <div class="card-modern">
       <h5 class="status-title">
-        Filtros Gerais Multi-Usuário
+        Filtros Gerais
       </h5>
-      <div class="row g-3">
-        <div class="col-md-6">
+      <div class="row g-2">
+        <div class="col-md-12">
           <label class="form-label fw-bold">Visualizar loja:</label>
           <select id="filtroLojaGlobal" class="form-select" onchange="aplicarFiltroLoja()">
             <option value="">📊 Todas as lojas (Consolidado)</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Visualizar usuário:</label>
-          <select id="filtroUsuarioGlobal" class="form-select" onchange="aplicarFiltroUsuario()">
-            <option value="">👥 Todos os usuários (Consolidado)</option>
           </select>
         </div>
       </div>
@@ -859,40 +561,34 @@
         Saídas Recorrentes
       </h5>
       <div class="row g-2 mb-3">
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label fw-bold">Filtrar por loja:</label>
           <select id="filtroLojaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
             <option value="">Todas as lojas</option>
           </select>
         </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Filtrar por usuário:</label>
-          <select id="filtroUsuarioRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
-            <option value="">Todos os usuários</option>
-          </select>
-        </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label fw-bold">Filtrar por ano:</label>
           <select id="filtroAnoRecorrentes" class="form-select" onchange="preencherMesesDoAno()">
             <option value="">Todos os anos</option>
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label fw-bold">Filtrar por mês:</label>
           <select id="filtroMesRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
             <option value="">Todos os meses</option>
           </select>
         </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Filtrar por centro:</label>
-          <select id="filtroCategoriaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
-            <option value="">Todos os centros</option>
-          </select>
-        </div>
-        <div class="col-md-2 d-flex align-items-end">
-          <button class="btn btn-limpar-filtros w-100" onclick="limparFiltrosRecorrentes()" title="Limpar Filtros">
-            <i class="fas fa-times"></i> Limpar
-          </button>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por centro de custo:</label>
+          <div class="d-flex gap-2">
+            <select id="filtroCategoriaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+              <option value="">Todos os centros de custo</option>
+            </select>
+            <button class="btn btn-limpar-filtros" onclick="limparFiltrosRecorrentes()" title="Limpar Filtros">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
         </div>
       </div>
       <div id="previsaoRecorrentes"></div>
@@ -904,13 +600,12 @@
     <!-- Saídas do Mês -->
     <div class="card-modern">
       <h4 class="status-title">
-        Saídas do Mês Multi-Usuário
+        Saídas do Mês
       </h4>
       <div class="table-responsive">
         <table class="table table-modern">
           <thead>
             <tr>
-              <th>👤 Usuário</th>
               <th>Loja</th>
               <th>Centro de custo</th>
               <th>Descrição</th>
@@ -929,7 +624,7 @@
     <!-- Dashboard -->
     <div class="card-modern">
       <h4 class="status-title">
-        Dashboard Consolidado Multi-Usuário
+        Dashboard total saídas do mês
       </h4>
       <div class="dashboard-cards">
         <div class="dashboard-card">
@@ -951,26 +646,6 @@
         <div class="dashboard-card">
           <div class="dashboard-value" id="totalSaidas">0</div>
           <div class="dashboard-label">Total de Saídas</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Comparativo entre Usuários -->
-    <div class="card-modern" id="comparativoUsuarios">
-      <h4 class="status-title">
-        👥 Comparativo entre Usuários
-      </h4>
-      <div id="tabelaComparativoUsuarios"></div>
-      
-      <!-- Gráfico Comparativo de Usuários -->
-      <div class="chart-container mt-4">
-        <h4 class="chart-title">
-          Gráfico Comparativo por Usuário
-        </h4>
-        <div class="d-flex justify-content-center align-items-center">
-          <div style="width: 500px; height: 400px;">
-            <canvas id="graficoUsuarios"></canvas>
-          </div>
         </div>
       </div>
     </div>
