@@ -50,6 +50,39 @@
       position: relative;
     }
 
+    /* ===== NOTIFICAÇÃO INTELIGENTE ===== */
+    .notificacao-inteligente {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+      z-index: 9999;
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      max-width: 350px;
+      font-weight: 600;
+    }
+
+    .notificacao-inteligente.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .notificacao-inteligente.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .notificacao-inteligente.warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    }
+
     /* ===== MODAL TREINAMENTO IA MELHORADO ===== */
     .modal-treinamento {
       display: none;
@@ -494,7 +527,7 @@
       border-radius: 10px;
     }
 
-    /* ===== EXISTING STYLES (mantidos iguais) ===== */
+    /* ===== CHAT IA STYLES ===== */
     .chat-ia-container {
       background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
       border-radius: 16px;
@@ -671,6 +704,56 @@
       40% { transform: scale(1); opacity: 1; }
     }
 
+    /* ===== PERGUNTAS INTELIGENTES ===== */
+    .pergunta-inteligente {
+      background: #f0f9ff;
+      border: 2px solid #0ea5e9;
+      border-radius: 12px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+
+    .pergunta-titulo {
+      font-weight: 700;
+      color: #0c4a6e;
+      margin-bottom: 10px;
+    }
+
+    .pergunta-opcoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pergunta-opcao {
+      background: white;
+      border: 2px solid #0ea5e9;
+      border-radius: 20px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #0c4a6e;
+      transition: all 0.2s ease;
+    }
+
+    .pergunta-opcao:hover {
+      background: #0ea5e9;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .pergunta-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid #0ea5e9;
+      border-radius: 8px;
+      background: white;
+      color: #0c4a6e;
+    }
+
+    /* ===== REMAINING STYLES ===== */
     .card-modern {
       background: var(--white);
       border-radius: 16px;
@@ -698,6 +781,18 @@
       border-color: var(--success-color);
       box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
       background: var(--white);
+    }
+
+    .campo-obrigatorio {
+      border-color: var(--danger-color) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
     }
 
     .btn-modern {
@@ -731,10 +826,45 @@
       box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
     }
 
+    .btn-warning-modern {
+      background: linear-gradient(135deg, var(--warning-color), #d97706);
+      color: white;
+    }
+
+    .btn-warning-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-danger-modern {
+      background: linear-gradient(135deg, var(--danger-color), #dc2626);
+      color: white;
+    }
+
+    .btn-danger-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(239, 68, 68, 0.3);
+    }
+
     .btn-sm-modern {
       padding: 8px 16px;
       font-size: 0.75rem;
       border-radius: 8px;
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .status-section {
@@ -998,6 +1128,82 @@
       flex-wrap: wrap;
     }
 
+    .recorrencia-personalizada {
+      margin-top: 10px;
+    }
+
+    .recorrencia-personalizada input {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 12px;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+
+    .recorrencia-personalizada input:focus {
+      outline: none;
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .ver-mais-container {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .btn-ver-mais {
+      background: var(--ai-gradient);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-ver-mais:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .paginacao-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+      padding: 15px;
+      background: var(--light-bg);
+      border-radius: 12px;
+    }
+
+    .paginacao-btn {
+      background: var(--success-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .paginacao-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .paginacao-btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .paginacao-info {
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+
     @media (max-width: 768px) {
       .main-container {
         margin: 10px;
@@ -1054,10 +1260,26 @@
       .insight-acoes {
         justify-content: center;
       }
+
+      .notificacao-inteligente {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100px);
+      }
+
+      .notificacao-inteligente.show {
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
+  <!-- NOTIFICAÇÃO INTELIGENTE -->
+  <div id="notificacaoInteligente" class="notificacao-inteligente">
+    <span id="textoNotificacao"></span>
+  </div>
+
   <div class="main-container">
     <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; position: relative;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
@@ -1263,13 +1485,17 @@
         </div>
         <div class="col-md-6 col-lg-1" id="colunaTipoRecorrencia" style="display:none;">
           <label class="form-label fw-bold">Tipo</label>
-          <select id="tipoRecorrencia" class="form-select">
+          <select id="tipoRecorrencia" class="form-select" onchange="toggleRecorrenciaPersonalizada()">
             <option disabled selected>Selecione</option>
             <option>Diária</option>
             <option>Semanal</option>
             <option>Mensal</option>
             <option>Anual</option>
+            <option>Personalizada</option>
           </select>
+          <div id="recorrenciaPersonalizada" class="recorrencia-personalizada" style="display:none;">
+            <input type="text" id="recorrenciaCustom" placeholder="Ex: A cada 15 dias">
+          </div>
         </div>
         <div class="col-md-6 col-lg-1">
           <label class="form-label fw-bold">Pago?</label>
@@ -1374,6 +1600,13 @@
         <i class="fas fa-calendar-alt"></i> Próximas Saídas a Vencer
       </h5>
       <div id="proximas"></div>
+      <div id="proximasExtras" style="display:none;"></div>
+      <div class="ver-mais-container">
+        <button id="btnVerMaisProximas" class="btn-ver-mais" onclick="toggleVerMaisProximas()" style="display:none;">
+          Ver Mais <i class="fas fa-chevron-down"></i>
+        </button>
+        <div id="contadorProximas" style="font-size: 0.85rem; color: #6b7280; margin-top: 10px;"></div>
+      </div>
     </div>
 
     <div class="status-section status-recorrentes">
@@ -1439,6 +1672,19 @@
           <tbody id="tabelaSaidas"></tbody>
         </table>
       </div>
+      
+      <!-- Paginação -->
+      <div id="paginacaoSaidasMes" class="paginacao-container" style="display:none;">
+        <button class="paginacao-btn" onclick="paginacaoAnterior('saidasMes')">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="paginacao-info">
+          Página <span id="paginaAtualSaidasMes">1</span> de <span id="totalPaginasSaidasMes">1</span>
+        </span>
+        <button class="paginacao-btn" onclick="paginacaoProxima('saidasMes')">
+          Próxima <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Dashboard -->
@@ -1460,95 +1706,3 @@
           <div class="dashboard-label">Maior Gasto</div>
         </div>
         <div class="dashboard-card">
-          <div class="dashboard-value" id="categoriaTopo">-</div>
-          <div class="dashboard-label">Centro de custo Topo</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-value" id="totalSaidas">0</div>
-          <div class="dashboard-label">Total de Saídas</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Comparativo entre Lojas -->
-    <div class="card-modern" id="comparativoLojas">
-      <h4 class="status-title">
-        📊 Comparativo entre Lojas
-      </h4>
-      <div id="tabelaComparativo"></div>
-      
-      <!-- Gráfico Comparativo de Lojas -->
-      <div class="chart-container mt-4">
-        <h4 class="chart-title">
-          Gráfico Comparativo por Loja
-        </h4>
-        <div class="d-flex justify-content-center align-items-center">
-          <div style="width: 600px; height: 400px;">
-            <canvas id="graficoLojas"></canvas>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Gráfico Centros de Custo por Loja -->
-      <div class="chart-container mt-4">
-        <h4 class="chart-title">
-          Gráfico de Centros de Custo por Loja
-        </h4>
-        <div class="d-flex justify-content-center align-items-center">
-          <div style="width: 700px; height: 400px;">
-            <canvas id="graficoCentrosCusto"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="chart-container">
-      <h4 class="chart-title">
-        Gráfico por Centro de custo
-      </h4>
-      <div class="d-flex justify-content-center align-items-center">
-        <div style="width: 400px; height: 400px;">
-          <canvas id="graficoCategoria"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h4 class="chart-title">
-        Gráfico por Tipo de Gasto
-      </h4>
-      <div class="d-flex justify-content-center align-items-center">
-        <div style="width: 400px; height: 400px;">
-          <canvas id="graficoTipo"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h4 class="chart-title">
-        Gráfico de Saídas por Mês
-      </h4>
-      <div class="d-flex justify-content-center align-items-center">
-        <div style="width: 600px; height: 400px;">
-          <canvas id="graficoMes"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal personalizado -->
-  <div id="modalCustom" class="modal-overlay" style="display: none;">
-    <div class="modal-content-custom">
-      <div class="modal-title-custom" id="modalTitulo">Título do Modal</div>
-      <div id="modalTexto" style="margin-bottom: 20px;"></div>
-      <div class="modal-buttons" id="modalBotoes">
-        <!-- Botões serão inseridos aqui -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Incluir o painel.js -->
-  <script src="painel.js"></script>
-</body>
-</html>
