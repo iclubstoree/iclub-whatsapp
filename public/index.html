@@ -505,48 +505,10 @@
 </head>
 <body>
   <div class="main-container">
-    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap;">
+    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
-      <span class="sync-badge" id="syncStatus">
-        <i class="fas fa-cloud"></i> Sincronizado
-      </span>
-      <span class="multi-user-badge">👥 Multi-Usuário</span>
     </h1>
-
-    <!-- Seção Firebase Sync -->
-    <div class="firebase-section">
-      <div class="firebase-title">
-        <i class="fas fa-cloud-upload-alt"></i>
-        Sistema Sincronizado com Firebase
-      </div>
-      <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
-        <span class="sync-indicator" id="syncIndicator"></span>
-        Todos os dados são salvos automaticamente na nuvem e sincronizados em tempo real entre todos os dispositivos.
-      </p>
-      <div style="margin-top: 10px;">
-        <small id="syncDetails" style="opacity: 0.8;">
-          ✅ Dados salvos permanentemente • 🔄 Sincronização automática • 📱 Acesso de qualquer dispositivo
-        </small>
-      </div>
-    </div>
-
-    <!-- Seção Multi-Usuário -->
-    <div class="multi-user-section">
-      <div class="multi-user-title">
-        <i class="fas fa-users"></i>
-        Sistema Multi-Usuário WhatsApp Ativo
-      </div>
-      <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
-        Você e sua sócia podem adicionar saídas via WhatsApp em números diferentes. 
-        Todos os dados são consolidados neste painel compartilhado.
-      </p>
-      <div style="margin-top: 10px;">
-        <button class="btn btn-light btn-sm" onclick="mostrarGerenciadorUsuarios()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
-          <i class="fas fa-cog"></i> Gerenciar Usuários
-        </button>
-      </div>
-    </div>
 
     <!-- Resto do HTML igual ao anterior, apenas com IDs de sincronização adicionados -->
     <!-- Formulário de Cadastro -->
