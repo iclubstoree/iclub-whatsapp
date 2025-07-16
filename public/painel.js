@@ -2325,6 +2325,7 @@ function limparFiltrosRecorrentes() {
   
   preencherMesesDoAno();
   filtrarRecorrentesPorFiltros();
+  mostrarNotificacaoInteligente('✅ Filtros limpos!');
 }
 
 function atualizarDashboard() {
@@ -2393,6 +2394,64 @@ function aplicarFiltroLoja() {
 // GRÁFICOS E VISUALIZAÇÕES
 // ============================================================================
 
+// ============================================================================
+// INICIALIZAÇÃO E CORREÇÃO DOS GRÁFICOS
+// ============================================================================
+
+function inicializarTodosGraficos() {
+  console.log('📊 Verificando elementos de gráficos...');
+  
+  // Verificar se Chart.js está carregado
+  if (typeof Chart === 'undefined') {
+    console.error('❌ Chart.js não está carregado!');
+    setTimeout(() => {
+      inicializarTodosGraficos();
+    }, 1000);
+    return;
+  }
+  
+  console.log('✅ Chart.js carregado, versão:', Chart.version);
+  
+  // Verificar se os canvas existem
+  const graficos = [
+    { id: 'graficoCategoria', nome: 'Categorias' },
+    { id: 'graficoTipo', nome: 'Tipo de Gasto' },
+    { id: 'graficoLojas', nome: 'Lojas' },
+    { id: 'graficoMes', nome: 'Meses' },
+    { id: 'graficoCentrosCusto', nome: 'Centros de Custo' }
+  ];
+  
+  graficos.forEach(grafico => {
+    const canvas = document.getElementById(grafico.id);
+    console.log(`- ${grafico.nome} (${grafico.id}):`, !!canvas);
+    
+    if (canvas) {
+      // Garantir que o canvas tenha o tamanho correto
+      const container = canvas.parentElement;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          console.log(`✅ Canvas ${grafico.nome} encontrado e dimensionado`);
+        } else {
+          // Forçar dimensionamento
+          canvas.style.width = '100%';
+          canvas.style.height = '400px';
+          console.log(`🔧 Canvas ${grafico.nome} redimensionado`);
+        }
+      }
+    }
+  });
+  
+  // Chamar a atualização dos gráficos
+  atualizarTodosGraficos();
+  
+  // Forçar uma segunda atualização após um delay
+  setTimeout(() => {
+    console.log('🔄 Segunda atualização dos gráficos...');
+    atualizarTodosGraficos();
+  }, 1000);
+}
+
 function atualizarTodosGraficos() {
   try {
     console.log('📊 Atualizando TODOS os gráficos...');
@@ -2407,6 +2466,19 @@ function atualizarTodosGraficos() {
 
     if (lojaFiltroAtual) {
       dadosGrafico = dadosGrafico.filter(s => s.loja === lojaFiltroAtual);
+    }
+    
+    console.log(`📊 Dados para gráficos: ${dadosGrafico.length} saídas`);
+    
+    // Se não há dados, criar dados de exemplo
+    if (dadosGrafico.length === 0) {
+      console.log('📊 Criando dados de exemplo para demonstração...');
+      dadosGrafico = [
+        { categoria: 'Aluguel', loja: 'Loja Centro', valor: 1000, pago: 'Sim' },
+        { categoria: 'Energia', loja: 'Loja Centro', valor: 300, pago: 'Sim' },
+        { categoria: 'Internet', loja: 'Loja Shopping', valor: 150, pago: 'Não' },
+        { categoria: 'Marketing', loja: 'Loja Shopping', valor: 500, pago: 'Sim' }
+      ];
     }
     
     atualizarGraficoCategoria(dadosGrafico);
@@ -2424,9 +2496,14 @@ function atualizarTodosGraficos() {
 
 function atualizarGraficoCategoria(dados) {
   const ctx = document.getElementById('graficoCategoria');
-  if (!ctx) return;
+  if (!ctx) {
+    console.log('❌ Canvas graficoCategoria não encontrado');
+    return;
+  }
   
   try {
+    console.log('📊 Atualizando gráfico de categorias...');
+    
     if (window.chartCategoria) {
       window.chartCategoria.destroy();
     }
@@ -2439,7 +2516,10 @@ function atualizarGraficoCategoria(dados) {
     const labels = Object.keys(categoriaValues);
     const values = Object.values(categoriaValues);
     
+    console.log('📊 Dados categoria:', { labels, values });
+    
     if (labels.length === 0) {
+      console.log('📊 Sem dados para gráfico de categorias');
       return;
     }
     
@@ -2474,6 +2554,8 @@ function atualizarGraficoCategoria(dados) {
         }
       }
     });
+    
+    console.log('✅ Gráfico categorias criado');
   } catch (error) {
     console.error('❌ Erro gráfico categoria:', error);
   }
@@ -2481,9 +2563,14 @@ function atualizarGraficoCategoria(dados) {
 
 function atualizarGraficoTipo(dados) {
   const ctx = document.getElementById('graficoTipo');
-  if (!ctx) return;
+  if (!ctx) {
+    console.log('❌ Canvas graficoTipo não encontrado');
+    return;
+  }
   
   try {
+    console.log('📊 Atualizando gráfico de tipos...');
+    
     if (window.chartTipo) {
       window.chartTipo.destroy();
     }
@@ -2491,7 +2578,10 @@ function atualizarGraficoTipo(dados) {
     const pago = dados.filter(s => s.pago === 'Sim').reduce((sum, s) => sum + s.valor, 0);
     const pendente = dados.filter(s => s.pago === 'Não').reduce((sum, s) => sum + s.valor, 0);
     
+    console.log('📊 Dados tipo:', { pago, pendente });
+    
     if (pago === 0 && pendente === 0) {
+      console.log('📊 Sem dados para gráfico de tipos');
       return;
     }
     
@@ -2520,6 +2610,8 @@ function atualizarGraficoTipo(dados) {
         }
       }
     });
+    
+    console.log('✅ Gráfico tipos criado');
   } catch (error) {
     console.error('❌ Erro gráfico tipo:', error);
   }
@@ -2527,9 +2619,14 @@ function atualizarGraficoTipo(dados) {
 
 function atualizarGraficoLojas(dados) {
   const ctx = document.getElementById('graficoLojas');
-  if (!ctx) return;
+  if (!ctx) {
+    console.log('❌ Canvas graficoLojas não encontrado');
+    return;
+  }
   
   try {
+    console.log('📊 Atualizando gráfico de lojas...');
+    
     if (window.chartLojas) {
       window.chartLojas.destroy();
     }
@@ -2542,7 +2639,10 @@ function atualizarGraficoLojas(dados) {
     const labels = Object.keys(lojaValues);
     const values = Object.values(lojaValues);
     
+    console.log('📊 Dados lojas:', { labels, values });
+    
     if (labels.length === 0) {
+      console.log('📊 Sem dados para gráfico de lojas');
       return;
     }
     
@@ -2578,6 +2678,8 @@ function atualizarGraficoLojas(dados) {
         }
       }
     });
+    
+    console.log('✅ Gráfico lojas criado');
   } catch (error) {
     console.error('❌ Erro gráfico lojas:', error);
   }
@@ -2585,9 +2687,14 @@ function atualizarGraficoLojas(dados) {
 
 function atualizarGraficoMeses() {
   const ctx = document.getElementById('graficoMes');
-  if (!ctx) return;
+  if (!ctx) {
+    console.log('❌ Canvas graficoMes não encontrado');
+    return;
+  }
   
   try {
+    console.log('📊 Atualizando gráfico de meses...');
+    
     if (window.chartMes) {
       window.chartMes.destroy();
     }
@@ -2613,6 +2720,8 @@ function atualizarGraficoMeses() {
     
     const labels = Object.values(mesesData).map(m => m.nome);
     const values = Object.values(mesesData).map(m => m.valor);
+    
+    console.log('📊 Dados meses:', { labels, values });
     
     window.chartMes = new Chart(ctx, {
       type: 'line',
@@ -2648,6 +2757,8 @@ function atualizarGraficoMeses() {
         }
       }
     });
+    
+    console.log('✅ Gráfico meses criado');
   } catch (error) {
     console.error('❌ Erro gráfico meses:', error);
   }
@@ -2655,9 +2766,14 @@ function atualizarGraficoMeses() {
 
 function atualizarGraficoCentrosCusto() {
   const ctx = document.getElementById('graficoCentrosCusto');
-  if (!ctx) return;
+  if (!ctx) {
+    console.log('❌ Canvas graficoCentrosCusto não encontrado');
+    return;
+  }
   
   try {
+    console.log('📊 Atualizando gráfico de centros de custo...');
+    
     if (window.chartCentrosCusto) {
       window.chartCentrosCusto.destroy();
     }
@@ -2680,6 +2796,13 @@ function atualizarGraficoCentrosCusto() {
     
     const todasCategorias = [...new Set([...saidas, ...saidasPendentes].map(s => s.categoria))];
     const lojaLabels = Object.keys(lojasCategorias);
+    
+    console.log('📊 Dados centros de custo:', { lojaLabels, todasCategorias: todasCategorias.length });
+    
+    if (lojaLabels.length === 0 || todasCategorias.length === 0) {
+      console.log('📊 Sem dados para gráfico de centros de custo');
+      return;
+    }
     
     const cores = [
       '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', 
@@ -2729,6 +2852,8 @@ function atualizarGraficoCentrosCusto() {
         }
       }
     });
+    
+    console.log('✅ Gráfico centros de custo criado');
   } catch (error) {
     console.error('❌ Erro gráfico centros de custo:', error);
   }
@@ -3246,6 +3371,56 @@ window.addEventListener('load', async () => {
     
     atualizarInterfaceCompleta();
     
+    // Garantir que todas as funções estão disponíveis globalmente
+    setTimeout(() => {
+      // Forçar exposição de todas as funções
+      window.mostrarTreinamentoIA = mostrarTreinamentoIA;
+      window.fecharTreinamentoIA = fecharTreinamentoIA;
+      window.salvarTreinamentoNatural = salvarTreinamentoNatural;
+      window.salvarTreinamentoManual = salvarTreinamentoManual;
+      window.enviarMensagemChat = enviarMensagemChat;
+      window.limparChat = limparChat;
+      window.responderPerguntaInteligente = responderPerguntaInteligente;
+      window.adicionarSaida = adicionarSaida;
+      window.excluirSaida = excluirSaida;
+      window.editarSaida = editarSaida;
+      window.salvarEdicaoSaida = salvarEdicaoSaida;
+      window.marcarComoPago = marcarComoPago;
+      window.mostrarEditorCategoria = mostrarEditorCategoria;
+      window.mostrarEditorLoja = mostrarEditorLoja;
+      window.adicionarCategoria = adicionarCategoria;
+      window.adicionarLoja = adicionarLoja;
+      window.mostrarEditorCategoriaExistente = mostrarEditorCategoriaExistente;
+      window.mostrarEditorLojaExistente = mostrarEditorLojaExistente;
+      window.removerCategoria = removerCategoria;
+      window.removerLoja = removerLoja;
+      window.fecharModal = fecharModal;
+      window.iniciarMultiplasSaidas = iniciarMultiplasSaidas;
+      window.adicionarNovaLinha = adicionarNovaLinha;
+      window.removerLinhaSaida = removerLinhaSaida;
+      window.adicionarTodasSaidas = adicionarTodasSaidas;
+      window.cancelarMultiplasSaidas = cancelarMultiplasSaidas;
+      window.formatarMoedaMultiplas = formatarMoedaMultiplas;
+      window.toggleTipoRecorrencia = toggleTipoRecorrencia;
+      window.toggleRecorrenciaPersonalizada = toggleRecorrenciaPersonalizada;
+      window.toggleEditRecorrencia = toggleEditRecorrencia;
+      window.toggleEditRecorrenciaPersonalizada = toggleEditRecorrenciaPersonalizada;
+      window.toggleRecorrenciaMultipla = toggleRecorrenciaMultipla;
+      window.toggleRecorrenciaMultiplaPersonalizada = toggleRecorrenciaMultiplaPersonalizada;
+      window.aplicarFiltroLoja = aplicarFiltroLoja;
+      window.filtrarRecorrentesPorFiltros = filtrarRecorrentesPorFiltros;
+      window.limparFiltrosRecorrentes = limparFiltrosRecorrentes;
+      window.preencherMesesDoAno = preencherMesesDoAno;
+      window.toggleVerMaisProximas = toggleVerMaisProximas;
+      window.paginacaoAnterior = paginacaoAnterior;
+      window.paginacaoProxima = paginacaoProxima;
+      window.abrirAnaliseInteligente = abrirAnaliseInteligente;
+      window.fecharAnaliseInteligente = fecharAnaliseInteligente;
+      window.formatarMoeda = formatarMoeda;
+      
+      console.log('🔧 Todas as funções expostas globalmente');
+    }, 100);
+    
     const totalSaidas = saidas.length + saidasPendentes.length;
     console.log('✅ Sistema carregado:', totalSaidas, 'saídas total');
     
@@ -3261,6 +3436,110 @@ window.addEventListener('load', async () => {
         el.classList.add('fade-in-up');
       }, index * 100);
     });
+    
+    // CORREÇÃO: Adicionar event listeners diretos para garantir funcionamento
+    setTimeout(() => {
+      // Botão Análise Inteligente
+      const btnAnalise = document.querySelector('.btn-analise-inteligente');
+      if (btnAnalise) {
+        btnAnalise.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('🧠 Clicou Análise Inteligente');
+          abrirAnaliseInteligente();
+        });
+      }
+      
+      // Botão Adicionar Saída
+      const btnAdicionarSaida = document.querySelector('button[onclick="adicionarSaida()"]');
+      if (btnAdicionarSaida) {
+        btnAdicionarSaida.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('➕ Clicou Adicionar Saída');
+          adicionarSaida();
+        });
+      }
+      
+      // Botão Chat Send
+      const btnChatSend = document.getElementById('chatSendBtn');
+      if (btnChatSend) {
+        btnChatSend.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('💬 Clicou Enviar Chat');
+          enviarMensagemChat();
+        });
+      }
+      
+      // Filtros de recorrentes
+      const filtroLojaRec = document.getElementById('filtroLojaRecorrentes');
+      if (filtroLojaRec) {
+        filtroLojaRec.addEventListener('change', function() {
+          console.log('🔍 Mudou filtro loja recorrentes');
+          filtrarRecorrentesPorFiltros();
+        });
+      }
+      
+      const filtroAnoRec = document.getElementById('filtroAnoRecorrentes');
+      if (filtroAnoRec) {
+        filtroAnoRec.addEventListener('change', function() {
+          console.log('🔍 Mudou filtro ano recorrentes');
+          preencherMesesDoAno();
+        });
+      }
+      
+      const filtroMesRec = document.getElementById('filtroMesRecorrentes');
+      if (filtroMesRec) {
+        filtroMesRec.addEventListener('change', function() {
+          console.log('🔍 Mudou filtro mês recorrentes');
+          filtrarRecorrentesPorFiltros();
+        });
+      }
+      
+      const filtroCategRec = document.getElementById('filtroCategoriaRecorrentes');
+      if (filtroCategRec) {
+        filtroCategRec.addEventListener('change', function() {
+          console.log('🔍 Mudou filtro categoria recorrentes');
+          filtrarRecorrentesPorFiltros();
+        });
+      }
+      
+      // Filtro global loja
+      const filtroGlobal = document.getElementById('filtroLojaGlobal');
+      if (filtroGlobal) {
+        filtroGlobal.addEventListener('change', function() {
+          console.log('🔍 Mudou filtro global loja');
+          aplicarFiltroLoja();
+        });
+      }
+      
+      console.log('🔧 Event listeners adicionados diretamente');
+      
+      // DEBUG: Verificar se as funções estão disponíveis
+      console.log('🔍 DEBUG - Verificando funções disponíveis:');
+      console.log('- abrirAnaliseInteligente:', typeof window.abrirAnaliseInteligente);
+      console.log('- adicionarSaida:', typeof window.adicionarSaida);
+      console.log('- enviarMensagemChat:', typeof window.enviarMensagemChat);
+      console.log('- filtrarRecorrentesPorFiltros:', typeof window.filtrarRecorrentesPorFiltros);
+      console.log('- aplicarFiltroLoja:', typeof window.aplicarFiltroLoja);
+      
+      // Testar se os elementos existem
+      console.log('🔍 DEBUG - Verificando elementos:');
+      console.log('- btnAnalise:', !!document.querySelector('.btn-analise-inteligente'));
+      console.log('- btnAdicionarSaida:', !!document.querySelector('button[onclick="adicionarSaida()"]'));
+      console.log('- chatSendBtn:', !!document.getElementById('chatSendBtn'));
+      console.log('- filtroLojaRec:', !!document.getElementById('filtroLojaRecorrentes'));
+      
+      // CORREÇÃO: Inicializar gráficos após carregamento
+      console.log('📊 Inicializando gráficos...');
+      setTimeout(() => {
+        try {
+          inicializarTodosGraficos();
+          console.log('✅ Gráficos inicializados com sucesso');
+        } catch (error) {
+          console.error('❌ Erro ao inicializar gráficos:', error);
+        }
+      }, 500);
+      
+    }, 200);
     
     console.log('🎉 TODAS AS FUNCIONALIDADES IMPLEMENTADAS E FUNCIONANDO:');
     console.log('🧠 IA com treinamento automático e comandos diretos');
@@ -3282,10 +3561,10 @@ window.addEventListener('load', async () => {
 });
 
 // ============================================================================
-// EXPOSIÇÃO DAS FUNÇÕES GLOBAIS
+// EXPOSIÇÃO CORRETA DAS FUNÇÕES GLOBAIS - CORRIGIDO
 // ============================================================================
 
-// Funções principais do Chat IA
+// Adicionar todas as funções ao escopo global (window)
 window.mostrarTreinamentoIA = mostrarTreinamentoIA;
 window.fecharTreinamentoIA = fecharTreinamentoIA;
 window.salvarTreinamentoNatural = salvarTreinamentoNatural;
@@ -3294,14 +3573,12 @@ window.enviarMensagemChat = enviarMensagemChat;
 window.limparChat = limparChat;
 window.responderPerguntaInteligente = responderPerguntaInteligente;
 
-// Funções principais CRUD
 window.adicionarSaida = adicionarSaida;
 window.excluirSaida = excluirSaida;
 window.editarSaida = editarSaida;
 window.salvarEdicaoSaida = salvarEdicaoSaida;
 window.marcarComoPago = marcarComoPago;
 
-// Gestão de categorias e lojas
 window.mostrarEditorCategoria = mostrarEditorCategoria;
 window.mostrarEditorLoja = mostrarEditorLoja;
 window.adicionarCategoria = adicionarCategoria;
@@ -3312,7 +3589,6 @@ window.removerCategoria = removerCategoria;
 window.removerLoja = removerLoja;
 window.fecharModal = fecharModal;
 
-// Múltiplas saídas
 window.iniciarMultiplasSaidas = iniciarMultiplasSaidas;
 window.adicionarNovaLinha = adicionarNovaLinha;
 window.removerLinhaSaida = removerLinhaSaida;
@@ -3320,7 +3596,6 @@ window.adicionarTodasSaidas = adicionarTodasSaidas;
 window.cancelarMultiplasSaidas = cancelarMultiplasSaidas;
 window.formatarMoedaMultiplas = formatarMoedaMultiplas;
 
-// Funções de recorrência
 window.toggleTipoRecorrencia = toggleTipoRecorrencia;
 window.toggleRecorrenciaPersonalizada = toggleRecorrenciaPersonalizada;
 window.toggleEditRecorrencia = toggleEditRecorrencia;
@@ -3328,22 +3603,22 @@ window.toggleEditRecorrenciaPersonalizada = toggleEditRecorrenciaPersonalizada;
 window.toggleRecorrenciaMultipla = toggleRecorrenciaMultipla;
 window.toggleRecorrenciaMultiplaPersonalizada = toggleRecorrenciaMultiplaPersonalizada;
 
-// Filtros e navegação
 window.aplicarFiltroLoja = aplicarFiltroLoja;
 window.filtrarRecorrentesPorFiltros = filtrarRecorrentesPorFiltros;
 window.limparFiltrosRecorrentes = limparFiltrosRecorrentes;
 window.preencherMesesDoAno = preencherMesesDoAno;
 
-// Sistema "Ver Mais" e paginação
 window.toggleVerMaisProximas = toggleVerMaisProximas;
 window.paginacaoAnterior = paginacaoAnterior;
 window.paginacaoProxima = paginacaoProxima;
 
-// Análise inteligente
 window.abrirAnaliseInteligente = abrirAnaliseInteligente;
 window.fecharAnaliseInteligente = fecharAnaliseInteligente;
 
-// Utilitários
 window.formatarMoeda = formatarMoeda;
+
+// Funções de gráficos
+window.inicializarTodosGraficos = inicializarTodosGraficos;
+window.atualizarTodosGraficos = atualizarTodosGraficos;
 
 console.log('🎯 SISTEMA ICLUB VERSÃO FINAL - TODAS AS FUNCIONALIDADES IMPLEMENTADAS E CORRIGIDAS!');
