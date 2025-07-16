@@ -21,6 +21,9 @@ let treinamentosIA = JSON.parse(localStorage.getItem('treinamentosIA') || '[]');
 // Chat IA
 let aguardandoSelecaoLoja = false;
 let saidaPendenteLoja = null;
+let aguardandoCategoria = false;
+let aguardandoValor = false;
+let saidaPendenteCategoria = null;
 
 // ============================================================================
 // SISTEMA DE TREINAMENTO IA
@@ -154,6 +157,16 @@ function enviarMensagemChat() {
   
   if (aguardandoSelecaoLoja) {
     processarSelecaoLoja(mensagem);
+    return;
+  }
+  
+  if (aguardandoCategoria) {
+    processarRespostaCategoria(mensagem);
+    return;
+  }
+  
+  if (aguardandoValor) {
+    processarRespostaValor(mensagem);
     return;
   }
   
@@ -564,14 +577,126 @@ async function solicitarInformacoesFaltantes(validacao, resultado, mensagem) {
   const problemas = validacao.problemas;
   
   if (problemas.includes('valor')) {
+    aguardandoValor = true;
+    saidaPendenteCategoria = resultado;
     adicionarMensagemChat('system', '💰 Não consegui identificar o valor. Qual o valor da saída?\n\n📝 Exemplo: "R$ 500" ou "500"');
     return;
   }
   
   if (problemas.includes('categoria')) {
-    adicionarMensagemChat('system', `🏷️ Não consegui identificar a categoria. Para que é esta saída?\n\n📝 Categorias disponíveis:\n${categorias.map(c => `• ${c}`).join('\n')}`);
+    aguardandoCategoria = true;
+    saidaPendenteCategoria = { ...resultado, mensagemOriginal: mensagem };
+    adicionarMensagemChat('system', `🏷️ Não consegui identificar a categoria. Para que é esta saída?\n\n📝 Categorias disponíveis:\n${categorias.map(c => `• ${c}`).join('\n')}\n\n💡 Ou digite uma nova categoria que eu vou aprender!`);
     return;
   }
+}
+
+function processarRespostaCategoria(resposta) {
+  const categoriaEscolhida = resposta.trim();
+  
+  // Verificar se é uma categoria existente
+  const categoriaExistente = categorias.find(cat => 
+    cat.toLowerCase().includes(categoriaEscolhida.toLowerCase()) ||
+    categoriaEscolhida.toLowerCase().includes(cat.toLowerCase())
+  );
+  
+  let categoriaFinal = categoriaExistente || categoriaEscolhida;
+  
+  // Se é uma categoria nova, adicionar automaticamente
+  if (!categoriaExistente && categoriaEscolhida.length > 2) {
+    // Capitalizar primeira letra
+    categoriaFinal = categoriaEscolhida.charAt(0).toUpperCase() + categoriaEscolhida.slice(1).toLowerCase();
+    
+    if (!categorias.includes(categoriaFinal)) {
+      categorias.push(categoriaFinal);
+      salvarDadosLocal();
+      atualizarInterfaceCompleta();
+      
+      adicionarMensagemChat('system', `✅ Nova categoria "${categoriaFinal}" adicionada ao sistema!`);
+    }
+  }
+  
+  // Atualizar resultado pendente
+  saidaPendenteCategoria.categoria = categoriaFinal;
+  saidaPendenteCategoria.descricao = categoriaFinal;
+  
+  // Salvar como treinamento automático
+  if (saidaPendenteCategoria.mensagemOriginal && saidaPendenteCategoria.valor) {
+    const novoTreinamento = {
+      id: Date.now(),
+      frase: saidaPendenteCategoria.mensagemOriginal.toLowerCase(),
+      valor: saidaPendenteCategoria.valor,
+      categoria: categoriaFinal,
+      loja: 'Todas', // Será definida depois
+      criadoEm: new Date().toISOString(),
+      automatico: true // Marcar como treinamento automático
+    };
+    
+    treinamentosIA.push(novoTreinamento);
+    localStorage.setItem('treinamentosIA', JSON.stringify(treinamentosIA));
+    
+    adicionarMensagemChat('system', `🧠 IA aprendeu! Da próxima vez que você disser algo parecido, eu vou reconhecer como "${categoriaFinal}" automaticamente.`);
+  }
+  
+  adicionarMensagemChat('user', resposta);
+  
+  // Resetar estado
+  aguardandoCategoria = false;
+  const resultadoCompleto = saidaPendenteCategoria;
+  saidaPendenteCategoria = null;
+  
+  // Continuar com o fluxo normal
+  const lojaMencionada = detectarLojaNaMensagem(resultadoCompleto.mensagemOriginal || '');
+  
+  if (lojaMencionada) {
+    const saidaData = criarDadosSaida(resultadoCompleto, lojaMencionada);
+    await finalizarAdicaoSaida(saidaData);
+  } else {
+    await solicitarSelecaoLoja(resultadoCompleto);
+  }
+  
+  document.getElementById('chatSendBtn').disabled = false;
+}
+
+function processarRespostaValor(resposta) {
+  const valorTexto = resposta.trim();
+  const valor = extrairValorNumerico(valorTexto) || parseFloat(valorTexto.replace(/[^\d,]/g, '').replace(',', '.'));
+  
+  if (isNaN(valor) || valor <= 0) {
+    adicionarMensagemChat('user', resposta);
+    adicionarMensagemChat('system', '❌ Valor inválido. Digite apenas números, como "500" ou "R$ 500,00"');
+    return;
+  }
+  
+  // Atualizar resultado pendente
+  saidaPendenteCategoria.valor = valor;
+  
+  adicionarMensagemChat('user', resposta);
+  
+  // Resetar estado
+  aguardandoValor = false;
+  const resultadoCompleto = saidaPendenteCategoria;
+  saidaPendenteCategoria = null;
+  
+  // Validar novamente
+  const validacao = validarInformacoesObrigatorias(resultadoCompleto, resultadoCompleto.mensagemOriginal || '');
+  
+  if (!validacao.valido) {
+    solicitarInformacoesFaltantes(validacao, resultadoCompleto, resultadoCompleto.mensagemOriginal || '');
+    return;
+  }
+  
+  // Continuar com o fluxo normal
+  const lojaMencionada = detectarLojaNaMensagem(resultadoCompleto.mensagemOriginal || '');
+  
+  if (lojaMencionada) {
+    const saidaData = criarDadosSaida(resultadoCompleto, lojaMencionada);
+    finalizarAdicaoSaida(saidaData);
+  } else {
+    solicitarSelecaoLoja(resultadoCompleto);
+  }
+  
+  document.getElementById('chatSendBtn').disabled = false;
 }
 
 async function solicitarSelecaoLoja(resultado) {
@@ -596,6 +721,20 @@ function processarSelecaoLoja(resposta) {
   if (numeroEscolhido >= 1 && numeroEscolhido <= lojas.length) {
     const lojaEscolhida = lojas[numeroEscolhido - 1];
     saidaPendenteLoja.loja = lojaEscolhida;
+    
+    // Salvar treinamento automático se veio de aprendizado de categoria
+    if (saidaPendenteLoja.mensagemOriginal && saidaPendenteLoja.categoria !== 'Outros') {
+      const treinamentoExistente = treinamentosIA.find(t => 
+        t.frase === saidaPendenteLoja.mensagemOriginal.toLowerCase() && 
+        t.categoria === saidaPendenteLoja.categoria
+      );
+      
+      if (treinamentoExistente) {
+        // Atualizar treinamento existente com a loja
+        treinamentoExistente.loja = lojaEscolhida;
+        localStorage.setItem('treinamentosIA', JSON.stringify(treinamentosIA));
+      }
+    }
     
     adicionarMensagemChat('user', resposta);
     finalizarAdicaoSaida(saidaPendenteLoja);
@@ -628,7 +767,8 @@ function criarDadosSaida(resultado, loja) {
     pago: resultado.pago,
     origem: 'chat',
     timestamp: new Date(),
-    dataProcessamento: new Date().toISOString()
+    dataProcessamento: new Date().toISOString(),
+    mensagemOriginal: resultado.mensagemOriginal // Preservar mensagem original para treinamento
   };
 }
 
@@ -726,6 +866,13 @@ function limparChat() {
       </div>
     `;
   }
+  
+  // Resetar estados de aguardo
+  aguardandoSelecaoLoja = false;
+  aguardandoCategoria = false;
+  aguardandoValor = false;
+  saidaPendenteLoja = null;
+  saidaPendenteCategoria = null;
 }
 
 // ============================================================================
@@ -809,7 +956,153 @@ function marcarComoPago(firestoreId, saidaId) {
 }
 
 function editarSaida(firestoreId, saidaId) {
-  alert('Funcionalidade de edição em desenvolvimento');
+  const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+  
+  if (!saida) {
+    alert('Saída não encontrada!');
+    return;
+  }
+  
+  // Criar modal de edição
+  const modal = document.getElementById('modalCustom');
+  if (!modal) return;
+  
+  document.getElementById('modalTitulo').textContent = 'Editar Saída';
+  document.getElementById('modalTexto').innerHTML = `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Loja:</label>
+        <select id="editLoja" class="form-select">
+          ${lojas.map(loja => `<option value="${loja}" ${loja === saida.loja ? 'selected' : ''}>${loja}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Categoria:</label>
+        <select id="editCategoria" class="form-select">
+          ${categorias.map(cat => `<option value="${cat}" ${cat === saida.categoria ? 'selected' : ''}>${cat}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-bold">Descrição:</label>
+        <input type="text" id="editDescricao" class="form-control" value="${saida.descricao}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Valor (R$):</label>
+        <input type="text" id="editValor" class="form-control" value="${formatarMoedaBR(saida.valor)}" oninput="formatarMoeda(this)">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Data:</label>
+        <input type="date" id="editData" class="form-control" value="${saida.data}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Recorrente:</label>
+        <select id="editRecorrente" class="form-select" onchange="toggleEditRecorrencia()">
+          <option value="Não" ${saida.recorrente === 'Não' ? 'selected' : ''}>Não</option>
+          <option value="Sim" ${saida.recorrente === 'Sim' ? 'selected' : ''}>Sim</option>
+        </select>
+      </div>
+      <div class="col-md-4" id="editTipoRecorrenciaContainer" style="display: ${saida.recorrente === 'Sim' ? 'block' : 'none'};">
+        <label class="form-label fw-bold">Tipo:</label>
+        <select id="editTipoRecorrencia" class="form-select">
+          <option value="Diária" ${saida.tipoRecorrencia === 'Diária' ? 'selected' : ''}>Diária</option>
+          <option value="Semanal" ${saida.tipoRecorrencia === 'Semanal' ? 'selected' : ''}>Semanal</option>
+          <option value="Mensal" ${saida.tipoRecorrencia === 'Mensal' ? 'selected' : ''}>Mensal</option>
+          <option value="Anual" ${saida.tipoRecorrencia === 'Anual' ? 'selected' : ''}>Anual</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Status:</label>
+        <select id="editPago" class="form-select">
+          <option value="Sim" ${saida.pago === 'Sim' ? 'selected' : ''}>Pago</option>
+          <option value="Não" ${saida.pago === 'Não' ? 'selected' : ''}>Pendente</option>
+        </select>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modalBotoes').innerHTML = `
+    <button class="btn btn-success" onclick="salvarEdicaoSaida(${saidaId})">Salvar</button>
+    <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+  `;
+  
+  modal.style.display = 'flex';
+}
+
+function toggleEditRecorrencia() {
+  const recorrente = document.getElementById('editRecorrente');
+  const container = document.getElementById('editTipoRecorrenciaContainer');
+  
+  if (recorrente && container) {
+    if (recorrente.value === 'Sim') {
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+}
+
+function salvarEdicaoSaida(saidaId) {
+  const loja = document.getElementById('editLoja')?.value;
+  const categoria = document.getElementById('editCategoria')?.value;
+  const descricao = document.getElementById('editDescricao')?.value;
+  const valorInput = document.getElementById('editValor')?.value;
+  const valor = extrairValorNumerico(valorInput);
+  const data = document.getElementById('editData')?.value;
+  const recorrente = document.getElementById('editRecorrente')?.value;
+  const tipoRecorrencia = document.getElementById('editTipoRecorrencia')?.value;
+  const pago = document.getElementById('editPago')?.value;
+  
+  if (!loja || !categoria || !descricao || valor <= 0 || !data) {
+    alert('Preencha todos os campos obrigatórios!');
+    return;
+  }
+  
+  // Encontrar e atualizar a saída
+  let saidaEncontrada = saidas.find(s => s.id === saidaId);
+  let listaSaidas = saidas;
+  
+  if (!saidaEncontrada) {
+    saidaEncontrada = saidasPendentes.find(s => s.id === saidaId);
+    listaSaidas = saidasPendentes;
+  }
+  
+  if (!saidaEncontrada) {
+    alert('Saída não encontrada!');
+    return;
+  }
+  
+  // Remover da lista atual
+  const indexAtual = listaSaidas.findIndex(s => s.id === saidaId);
+  if (indexAtual !== -1) {
+    listaSaidas.splice(indexAtual, 1);
+  }
+  
+  // Remover também da outra lista (caso tenha mudado o status)
+  saidas = saidas.filter(s => s.id !== saidaId);
+  saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+  
+  // Atualizar dados
+  saidaEncontrada.loja = loja;
+  saidaEncontrada.categoria = categoria;
+  saidaEncontrada.descricao = descricao;
+  saidaEncontrada.valor = valor;
+  saidaEncontrada.data = data;
+  saidaEncontrada.recorrente = recorrente;
+  saidaEncontrada.tipoRecorrencia = recorrente === 'Sim' ? tipoRecorrencia : null;
+  saidaEncontrada.pago = pago;
+  saidaEncontrada.editadoEm = new Date().toISOString();
+  
+  // Adicionar na lista correta
+  if (pago === 'Sim') {
+    saidas.unshift(saidaEncontrada);
+  } else {
+    saidasPendentes.unshift(saidaEncontrada);
+  }
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  fecharModal();
+  mostrarMensagemSucesso('✅ Saída editada com sucesso!');
 }
 
 // ============================================================================
@@ -1172,7 +1465,7 @@ function atualizarFiltros() {
     });
   }
 
-  // Outros filtros
+  // Filtros de recorrentes
   const filtroRecorrentes = document.getElementById("filtroLojaRecorrentes");
   if (filtroRecorrentes) {
     const valorAtual = filtroRecorrentes.value;
@@ -1187,6 +1480,7 @@ function atualizarFiltros() {
     });
   }
 
+  // Filtro de categorias recorrentes
   const filtroCategoria = document.getElementById("filtroCategoriaRecorrentes");
   if (filtroCategoria) {
     const valorAtual = filtroCategoria.value;
@@ -1200,33 +1494,172 @@ function atualizarFiltros() {
       filtroCategoria.appendChild(option);
     });
   }
+
+  // Filtro de anos
+  const filtroAno = document.getElementById("filtroAnoRecorrentes");
+  if (filtroAno) {
+    const valorAtual = filtroAno.value;
+    const anosDisponiveis = [...new Set([...saidas, ...saidasPendentes].map(s => s.data.substring(0, 4)))].sort().reverse();
+    const anoAtual = new Date().getFullYear().toString();
+    
+    filtroAno.innerHTML = '<option value="">Todos os anos</option>';
+    
+    if (anosDisponiveis.length === 0) {
+      anosDisponiveis.push(anoAtual);
+    }
+    
+    anosDisponiveis.forEach(ano => {
+      const option = document.createElement("option");
+      option.value = ano;
+      option.textContent = ano;
+      if (ano === valorAtual || (!valorAtual && ano === anoAtual)) {
+        option.selected = true;
+      }
+      filtroAno.appendChild(option);
+    });
+  }
+
+  // Filtro de meses
+  preencherMesesDoAno();
+}
+
+function preencherMesesDoAno() {
+  const filtroAno = document.getElementById("filtroAnoRecorrentes");
+  const filtroMes = document.getElementById("filtroMesRecorrentes");
+  
+  if (!filtroMes || !filtroAno) return;
+  
+  const anoSelecionado = filtroAno.value || new Date().getFullYear().toString();
+  const valorAtual = filtroMes.value;
+  const mesAtual = `${anoSelecionado}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+  
+  const meses = [
+    { valor: `${anoSelecionado}-01`, nome: 'Janeiro' },
+    { valor: `${anoSelecionado}-02`, nome: 'Fevereiro' },
+    { valor: `${anoSelecionado}-03`, nome: 'Março' },
+    { valor: `${anoSelecionado}-04`, nome: 'Abril' },
+    { valor: `${anoSelecionado}-05`, nome: 'Maio' },
+    { valor: `${anoSelecionado}-06`, nome: 'Junho' },
+    { valor: `${anoSelecionado}-07`, nome: 'Julho' },
+    { valor: `${anoSelecionado}-08`, nome: 'Agosto' },
+    { valor: `${anoSelecionado}-09`, nome: 'Setembro' },
+    { valor: `${anoSelecionado}-10`, nome: 'Outubro' },
+    { valor: `${anoSelecionado}-11`, nome: 'Novembro' },
+    { valor: `${anoSelecionado}-12`, nome: 'Dezembro' }
+  ];
+  
+  filtroMes.innerHTML = '<option value="">Todos os meses</option>';
+  
+  meses.forEach(mes => {
+    const option = document.createElement("option");
+    option.value = mes.valor;
+    option.textContent = mes.nome;
+    if (mes.valor === valorAtual || (!valorAtual && mes.valor === mesAtual)) {
+      option.selected = true;
+    }
+    filtroMes.appendChild(option);
+  });
+}
+
+function filtrarRecorrentesPorFiltros() {
+  console.log('🔍 Atualizando filtros de recorrentes...');
+  atualizarTabela();
+}
+
+function limparFiltrosRecorrentes() {
+  const filtros = [
+    "filtroLojaRecorrentes",
+    "filtroAnoRecorrentes", 
+    "filtroMesRecorrentes",
+    "filtroCategoriaRecorrentes"
+  ];
+  
+  filtros.forEach(filtroId => {
+    const elemento = document.getElementById(filtroId);
+    if (elemento) {
+      elemento.value = "";
+    }
+  });
+  
+  // Reconfigurar filtros padrão
+  setTimeout(() => {
+    atualizarFiltros();
+    filtrarRecorrentesPorFiltros();
+  }, 100);
 }
 
 function atualizarTabela() {
   const tbody = document.getElementById("tabelaSaidas");
+  const divAtrasadas = document.getElementById("atrasadas");
+  const divVencendoHoje = document.getElementById("vencendoHoje");
+  const divProximas = document.getElementById("proximas");
+  const divPrevisaoRecorrentes = document.getElementById("previsaoRecorrentes");
   
   if (!tbody) return;
   
-  // Limpar tabela
+  // Limpar tabelas
   tbody.innerHTML = "";
+  if (divAtrasadas) divAtrasadas.innerHTML = "";
+  if (divVencendoHoje) divVencendoHoje.innerHTML = "";
+  if (divProximas) divProximas.innerHTML = "";
+  if (divPrevisaoRecorrentes) divPrevisaoRecorrentes.innerHTML = "";
   
   const hoje = new Date();
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   
-  let saidasMes = [...saidas, ...saidasPendentes].filter(s => {
-    const saidaAnoMes = s.data.substring(0, 7);
-    return saidaAnoMes === anoMes;
+  const saidasMes = [];
+  const saidasAtrasadas = [];
+  const saidasVencendoHoje = [];
+  const saidasProximas = [];
+  const saidasRecorrentes = [];
+  
+  [...saidas, ...saidasPendentes].forEach(s => {
+    if (lojaFiltroAtual && s.loja !== lojaFiltroAtual) return;
+    
+    const dataSaida = new Date(s.data + 'T00:00:00');
+    const diffDias = Math.floor((hoje - dataSaida) / (1000 * 60 * 60 * 24));
+    
+    // Saídas recorrentes (sempre aparecem)
+    if (s.recorrente === 'Sim') {
+      saidasRecorrentes.push(s);
+    }
+    
+    // Saídas não pagas por status de data
+    if (s.pago === 'Não') {
+      if (diffDias > 0) {
+        // Atrasadas
+        saidasAtrasadas.push({...s, diasAtrasado: diffDias});
+      } else if (diffDias === 0) {
+        // Vencendo hoje
+        saidasVencendoHoje.push(s);
+      } else if (diffDias >= -7) {
+        // Próximas (próximos 7 dias)
+        saidasProximas.push({...s, diasRestantes: Math.abs(diffDias)});
+      }
+    }
+    
+    // Saídas do mês (pagas ou do mês atual)
+    if (s.data.substring(0, 7) === anoMes) {
+      saidasMes.push(s);
+    }
   });
-
-  if (lojaFiltroAtual) {
-    saidasMes = saidasMes.filter(s => s.loja === lojaFiltroAtual);
-  }
   
-  // Ordenar por data (mais recente primeiro)
+  // Ordenar
   saidasMes.sort((a, b) => new Date(b.data) - new Date(a.data));
+  saidasAtrasadas.sort((a, b) => b.diasAtrasado - a.diasAtrasado);
+  saidasVencendoHoje.sort((a, b) => new Date(a.data) - new Date(b.data));
+  saidasProximas.sort((a, b) => a.diasRestantes - b.diasRestantes);
   
-  // Preencher tabela
-  saidasMes.forEach(s => {
+  // Preencher tabelas
+  preencherTabelaDoMes(tbody, saidasMes);
+  preencherTabelaAtrasadas(divAtrasadas, saidasAtrasadas);
+  preencherTabelaVencendoHoje(divVencendoHoje, saidasVencendoHoje);
+  preencherTabelaProximas(divProximas, saidasProximas);
+  preencherTabelaRecorrentes(divPrevisaoRecorrentes, saidasRecorrentes);
+}
+
+function preencherTabelaDoMes(tbody, saidas) {
+  saidas.forEach(s => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${s.loja}</strong></td>
@@ -1238,17 +1671,259 @@ function atualizarTabela() {
       <td>${s.tipoRecorrencia || '-'}</td>
       <td>
         <span class="badge ${s.pago === 'Sim' ? 'bg-success' : 'bg-warning'}">${s.pago}</span>
-        ${s.pago === 'Não' ? `<button class="btn btn-success btn-sm ms-1" onclick="marcarComoPago('', ${s.id})" title="Marcar como Pago"><i class="fas fa-check"></i></button>` : ''}
-        <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('', ${s.id})" title="Editar">
+        <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
           <i class="fas fa-edit"></i>
         </button>
-        <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('', ${s.id})" title="Excluir">
+        <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
           <i class="fas fa-trash"></i>
         </button>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function preencherTabelaAtrasadas(container, saidas) {
+  if (!container) return;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Nenhuma saída atrasada.</p>';
+    return;
+  }
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Dias Atrasado</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td><span class="badge bg-danger">${s.diasAtrasado} dias</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i> Pagar
+                </button>
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+function preencherTabelaVencendoHoje(container, saidas) {
+  if (!container) return;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Nenhuma saída vencendo hoje.</p>';
+    return;
+  }
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i> Pagar
+                </button>
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+function preencherTabelaProximas(container, saidas) {
+  if (!container) return;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Nenhuma saída próxima ao vencimento.</p>';
+    return;
+  }
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Dias Restantes</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td><span class="badge bg-warning">${s.diasRestantes} dias</span></td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i> Pagar
+                </button>
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+function preencherTabelaRecorrentes(container, saidas) {
+  if (!container) return;
+  
+  // Aplicar filtros de recorrentes
+  let saidasFiltradas = [...saidas];
+  
+  const filtroLoja = document.getElementById("filtroLojaRecorrentes")?.value;
+  const filtroAno = document.getElementById("filtroAnoRecorrentes")?.value;
+  const filtroMes = document.getElementById("filtroMesRecorrentes")?.value;
+  const filtroCategoria = document.getElementById("filtroCategoriaRecorrentes")?.value;
+  
+  if (filtroLoja) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.loja === filtroLoja);
+  }
+  
+  if (filtroAno) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 4) === filtroAno);
+  }
+  
+  if (filtroMes) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 7) === filtroMes);
+  }
+  
+  if (filtroCategoria) {
+    saidasFiltradas = saidasFiltradas.filter(s => s.categoria === filtroCategoria);
+  }
+  
+  if (saidasFiltradas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">Nenhuma saída recorrente encontrada com os filtros aplicados.</p>';
+    atualizarTotalRecorrentes(0);
+    return;
+  }
+  
+  // Ordenar por data
+  saidasFiltradas.sort((a, b) => new Date(b.data) - new Date(a.data));
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidasFiltradas.map(s => `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td><span class="badge bg-info">${s.tipoRecorrencia || 'Mensal'}</span></td>
+              <td><span class="badge ${s.pago === 'Sim' ? 'bg-success' : 'bg-warning'}">${s.pago}</span></td>
+              <td>
+                ${s.pago === 'Não' ? `<button class="btn btn-success btn-sm" onclick="marcarComoPago('${s.firestoreId || ''}', ${s.id})" title="Marcar como Pago"><i class="fas fa-check"></i> Pagar</button>` : ''}
+                <button class="btn btn-warning btn-sm ms-1" onclick="editarSaida('${s.firestoreId || ''}', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm ms-1" onclick="excluirSaida('${s.firestoreId || ''}', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+  
+  // Atualizar total
+  const total = saidasFiltradas.reduce((sum, s) => sum + s.valor, 0);
+  atualizarTotalRecorrentes(total);
+}
+
+function atualizarTotalRecorrentes(total) {
+  const elemento = document.getElementById("totalSaidasRecorrentes");
+  if (elemento) {
+    elemento.textContent = formatarMoedaBR(total);
+  }
 }
 
 function atualizarDashboard() {
@@ -1304,7 +1979,7 @@ function atualizarDashboard() {
 
 function atualizarGraficos() {
   try {
-    console.log('📊 Atualizando gráficos...');
+    console.log('📊 Atualizando TODOS os gráficos...');
     
     const hoje = new Date();
     const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
@@ -1318,12 +1993,172 @@ function atualizarGraficos() {
       dadosGrafico = dadosGrafico.filter(s => s.loja === lojaFiltroAtual);
     }
     
+    // Atualizar todos os gráficos
     atualizarGraficoCategoria(dadosGrafico);
     atualizarGraficoTipo(dadosGrafico);
     atualizarGraficoLojas(dadosGrafico);
+    atualizarGraficoMeses();
+    atualizarGraficoCentrosCusto();
+    
+    console.log('✅ Todos os gráficos atualizados');
     
   } catch (error) {
     console.error('❌ Erro gráficos:', error);
+  }
+}
+
+// Novo gráfico de meses
+function atualizarGraficoMeses() {
+  const ctx = document.getElementById('graficoMes');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartMes) {
+      window.chartMes.destroy();
+    }
+    
+    // Agrupar por mês (últimos 6 meses)
+    const mesesData = {};
+    const hoje = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      const mesKey = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+      const mesNome = data.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      mesesData[mesKey] = { nome: mesNome, valor: 0 };
+    }
+    
+    [...saidas, ...saidasPendentes].forEach(s => {
+      const mesKey = s.data.substring(0, 7);
+      if (mesesData[mesKey]) {
+        if (!lojaFiltroAtual || s.loja === lojaFiltroAtual) {
+          mesesData[mesKey].valor += s.valor;
+        }
+      }
+    });
+    
+    const labels = Object.values(mesesData).map(m => m.nome);
+    const values = Object.values(mesesData).map(m => m.valor);
+    
+    window.chartMes = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Valor Mensal',
+          data: values,
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          borderColor: '#10b981',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico meses:', error);
+  }
+}
+
+// Novo gráfico de centros de custo
+function atualizarGraficoCentrosCusto() {
+  const ctx = document.getElementById('graficoCentrosCusto');
+  if (!ctx) return;
+  
+  try {
+    if (window.chartCentrosCusto) {
+      window.chartCentrosCusto.destroy();
+    }
+    
+    // Agrupar por loja e categoria
+    const lojasCategorias = {};
+    
+    [...saidas, ...saidasPendentes].forEach(s => {
+      if (lojaFiltroAtual && s.loja !== lojaFiltroAtual) return;
+      
+      if (!lojasCategorias[s.loja]) {
+        lojasCategorias[s.loja] = {};
+      }
+      
+      if (!lojasCategorias[s.loja][s.categoria]) {
+        lojasCategorias[s.loja][s.categoria] = 0;
+      }
+      
+      lojasCategorias[s.loja][s.categoria] += s.valor;
+    });
+    
+    const todasCategorias = [...new Set([...saidas, ...saidasPendentes].map(s => s.categoria))];
+    const lojaLabels = Object.keys(lojasCategorias);
+    
+    const cores = [
+      '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', 
+      '#ef4444', '#06b6d4', '#84cc16', '#f97316',
+      '#ec4899', '#6366f1', '#14b8a6', '#eab308'
+    ];
+    
+    const datasets = todasCategorias.map((categoria, index) => ({
+      label: categoria,
+      data: lojaLabels.map(loja => lojasCategorias[loja][categoria] || 0),
+      backgroundColor: cores[index % cores.length],
+      borderColor: cores[index % cores.length],
+      borderWidth: 1
+    }));
+    
+    window.chartCentrosCusto = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: lojaLabels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 15
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erro gráfico centros de custo:', error);
   }
 }
 
@@ -2047,6 +2882,8 @@ window.limparChat = limparChat;
 window.adicionarSaida = adicionarSaida;
 window.excluirSaida = excluirSaida;
 window.editarSaida = editarSaida;
+window.toggleEditRecorrencia = toggleEditRecorrencia;
+window.salvarEdicaoSaida = salvarEdicaoSaida;
 window.marcarComoPago = marcarComoPago;
 window.mostrarEditorCategoria = mostrarEditorCategoria;
 window.mostrarEditorLoja = mostrarEditorLoja;
