@@ -47,34 +47,41 @@
       text-align: center;
     }
 
-    /* ===== CHAT IA STYLES ===== */
+    /* ===== CHAT IA STYLES MELHORADO ===== */
     .chat-ia-container {
       background: linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-dark));
       border-radius: 16px;
-      padding: 20px;
+      padding: 15px;
       margin-bottom: 25px;
       color: white;
       box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
     }
 
     .chat-header {
       display: flex;
       align-items: center;
       gap: 15px;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 2px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+    }
+
+    .chat-header:hover {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 10px;
+      margin: -10px;
     }
 
     .chat-avatar {
-      width: 50px;
-      height: 50px;
-      background: rgba(255,255,255,0.2);
+      width: 45px;
+      height: 45px;
+      background: rgba(255,255,255,0.25);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .chat-title {
@@ -84,28 +91,37 @@
     .chat-title h5 {
       margin: 0;
       font-weight: 700;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
     }
 
     .chat-title small {
       opacity: 0.9;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      display: block;
+      margin-top: 2px;
     }
 
     .chat-messages {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.15);
       border-radius: 12px;
       padding: 15px;
-      height: 200px;
+      height: 180px;
       overflow-y: auto;
       margin-bottom: 15px;
       backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .chat-message {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       gap: 10px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .chat-message.user {
@@ -117,11 +133,12 @@
     }
 
     .chat-bubble {
-      max-width: 80%;
+      max-width: 85%;
       padding: 12px 16px;
       border-radius: 18px;
       word-wrap: break-word;
       position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .chat-message.user .chat-bubble {
@@ -131,45 +148,50 @@
     }
 
     .chat-message.system .chat-bubble {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.25);
       color: white;
       border-bottom-left-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .chat-time {
       font-size: 0.7rem;
       opacity: 0.7;
-      margin-top: 5px;
+      margin-top: 4px;
+      text-align: right;
     }
 
     .chat-input-container {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
+      margin-bottom: 12px;
     }
 
     .chat-input {
       flex: 1;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.25);
       border: 2px solid rgba(255,255,255,0.3);
       border-radius: 25px;
       padding: 12px 20px;
       color: white;
       font-size: 0.95rem;
+      transition: all 0.2s ease;
     }
 
     .chat-input::placeholder {
-      color: rgba(255,255,255,0.7);
+      color: rgba(255,255,255,0.8);
     }
 
     .chat-input:focus {
       outline: none;
-      border-color: rgba(255,255,255,0.5);
-      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.3);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
     }
 
     .chat-send-btn {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.25);
       border: none;
       border-radius: 50%;
       width: 48px;
@@ -180,10 +202,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .chat-send-btn:hover:not(:disabled) {
-      background: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.4);
       transform: scale(1.05);
     }
 
@@ -193,47 +216,51 @@
     }
 
     .chat-examples {
-      margin-top: 15px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
     .chat-example-btn {
       background: rgba(255,255,255,0.2);
       border: 1px solid rgba(255,255,255,0.3);
       border-radius: 20px;
-      padding: 6px 12px;
+      padding: 8px 14px;
       color: white;
       font-size: 0.8rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .chat-example-btn:hover {
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-1px);
+      background: rgba(255,255,255,0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     .typing-indicator {
       display: none;
-      padding: 8px 16px;
+      padding: 10px 16px;
       background: rgba(255,255,255,0.2);
       border-radius: 18px;
       color: white;
       font-style: italic;
       align-items: center;
       gap: 8px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     .typing-dots {
       display: flex;
-      gap: 3px;
+      gap: 4px;
     }
 
     .typing-dots span {
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       background: white;
       border-radius: 50%;
       animation: typing 1.4s infinite ease-in-out;
@@ -245,6 +272,28 @@
     @keyframes typing {
       0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
       40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Animação para status Firebase */
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .status-online {
+      background: #10b981 !important;
+      animation: none !important;
+    }
+
+    .status-offline {
+      background: #6b7280 !important;
+      animation: none !important;
+    }
+
+    .status-error {
+      background: #ef4444 !important;
+      animation: pulse 1s infinite !important;
     }
 
     /* ===== EXISTING STYLES ===== */
@@ -607,71 +656,76 @@
 </head>
 <body>
   <div class="main-container">
-    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center;">
+    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; position: relative;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
+      
+      <!-- Indicador de status Firebase -->
+      <div id="firebaseStatus" style="position: absolute; top: -10px; right: 0; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 20px; font-size: 0.8rem;">
+        <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; animation: pulse 2s infinite;"></div>
+        <span id="statusText">Conectando...</span>
+        <button onclick="window.mostrarInstrucoes && window.mostrarInstrucoes()" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 1rem;" title="Instruções de configuração">
+          <i class="fas fa-question-circle"></i>
+        </button>
+      </div>
     </h1>
 
-    <!-- CHAT IA INTEGRADO -->
-    <div class="chat-ia-container">
-      <div class="chat-header">
-        <div class="chat-avatar">
-          <i class="fas fa-robot"></i>
-        </div>
+    <!-- CHAT IA INTEGRADO - COMPACTO -->
+    <div class="chat-ia-container" id="chatContainer">
+      <!-- Header compacto clicável -->
+      <div class="chat-header" onclick="toggleChat()" style="cursor: pointer;">
         <div class="chat-title">
-          <h5>💬 Chat Inteligente</h5>
-          <small>Digite suas saídas em linguagem natural - ex: "Paguei R$ 500 de aluguel hoje"</small>
+          <h5>💬 IA da iCLUB</h5>
+          <small id="chatStatus">Clique para abrir - IA inteligente para adicionar saídas</small>
         </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; padding: 8px 12px;" onclick="window.limparChat && window.limparChat()">
-            <i class="fas fa-trash"></i>
-          </button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <i class="fas fa-chevron-down" id="chatToggleIcon" style="transition: transform 0.3s ease;"></i>
         </div>
       </div>
       
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-message system">
-          <div class="chat-bubble">
-            <div>👋 Olá! Eu sou a IA do iClub. Digite suas saídas em linguagem natural e eu vou processá-las automaticamente!</div>
-            <div class="chat-time">Agora</div>
+      <!-- Conteúdo do chat (inicialmente oculto) -->
+      <div id="chatContent" style="display: none;">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-message system">
+            <div class="chat-bubble">
+              <div>👋 Olá! Eu sou a IA do iClub. Digite suas saídas agora e eu vou adicionar automatico para você!</div>
+              <div class="chat-time">Agora</div>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div class="typing-indicator" id="typingIndicator">
-        <div class="typing-dots">
-          <span></span>
-          <span></span>
-          <span></span>
+        
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span>IA processando...</span>
         </div>
-        <span>IA processando...</span>
-      </div>
-      
-      <div class="chat-input-container">
-        <input type="text" 
-               class="chat-input" 
-               id="chatInput" 
-               placeholder="Ex: Paguei R$ 500 de aluguel hoje..."
-               autocomplete="off"
-               maxlength="200">
-        <button class="chat-send-btn" id="chatSendBtn" onclick="window.enviarMensagemChat && window.enviarMensagemChat()">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-      
-      <div class="chat-examples">
-        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Paguei R$ 1.200 de aluguel hoje')">
-          Pagar aluguel
-        </button>
-        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Gastei R$ 80 de gasolina ontem')">
-          Gasolina
-        </button>
-        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Comprei R$ 150 de material de escritório')">
-          Material
-        </button>
-        <button class="chat-example-btn" onclick="window.usarExemplo && window.usarExemplo('Devo R$ 300 de energia elétrica')">
-          Conta pendente
-        </button>
+        
+        <div class="chat-input-container">
+          <input type="text" 
+                 class="chat-input" 
+                 id="chatInput" 
+                 placeholder="Ex: Paguei 500 de aluguel hoje..."
+                 autocomplete="off"
+                 maxlength="200">
+          <button class="chat-send-btn" id="chatSendBtn" onclick="window.enviarMensagemChat && window.enviarMensagemChat()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+        
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem;" onclick="window.limparChat && window.limparChat()">
+            <i class="fas fa-trash me-1"></i> Limpar
+          </button>
+          <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem;" onclick="window.mostrarTreinamentoIA && window.mostrarTreinamentoIA()">
+            <i class="fas fa-graduation-cap me-1"></i> Treinar IA
+          </button>
+          <small style="opacity: 0.8; font-size: 0.75rem;">
+            💡 IA aprende com você
+          </small>
+        </div>
       </div>
     </div>
 
@@ -895,6 +949,52 @@
       </div>
     </div>
 
+    <!-- Saídas Atrasadas -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        🚨 Saídas Atrasadas
+      </h4>
+      <div class="table-responsive">
+        <table class="table table-modern">
+          <thead>
+            <tr>
+              <th>Loja</th>
+              <th>Centro de custo</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Data</th>
+              <th>Dias Atrasado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAtrasadas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Saídas Próximas ao Vencimento -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        ⏰ Próximas ao Vencimento
+      </h4>
+      <div class="table-responsive">
+        <table class="table table-modern">
+          <thead>
+            <tr>
+              <th>Loja</th>
+              <th>Centro de custo</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Data</th>
+              <th>Dias Restantes</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProximas"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Dashboard -->
     <div class="card-modern">
       <h4 class="status-title">
@@ -1004,6 +1104,36 @@
 
   <script type="module" src="painel.js"></script>
   <script>
+    // Variáveis globais para gráficos
+    window.chartCategoria = null;
+    window.chartTipo = null;
+    window.chartLojas = null;
+    window.graficoCentrosCusto = null;
+    window.graficoMes = null;
+
+    // Função para toggle do chat
+    function toggleChat() {
+      const content = document.getElementById('chatContent');
+      const icon = document.getElementById('chatToggleIcon');
+      const status = document.getElementById('chatStatus');
+      
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+        status.textContent = 'IA inteligente para adicionar saídas';
+        
+        // Focar no input quando abrir
+        setTimeout(() => {
+          const chatInput = document.getElementById('chatInput');
+          if (chatInput) chatInput.focus();
+        }, 100);
+      } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+        status.textContent = 'Clique para abrir - IA inteligente para adicionar saídas';
+      }
+    }
+
     // Garantir que funções globais funcionem
     window.addEventListener('DOMContentLoaded', function() {
       // Configurar data padrão
@@ -1025,13 +1155,101 @@
         });
       }
       
-      // Focar no chat ao carregar
-      if (chatInput) {
-        chatInput.focus();
-      }
+      // Exportar função toggle para window
+      window.toggleChat = toggleChat;
+      
+      // Exportar função treinar IA
+      window.mostrarTreinamentoIA = function() {
+        const modal = document.getElementById('modalCustom');
+        if (modal) {
+          document.getElementById('modalTitulo').textContent = '🎓 Treinar IA do iClub';
+          document.getElementById('modalTexto').innerHTML = `
+            <div style="text-align: left;">
+              <p><strong>Ensine a IA a reconhecer suas saídas:</strong></p>
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                <strong>Exemplo:</strong><br>
+                📝 Frase: "Paguei 500 de aluguel"<br>
+                🏷️ Categoria: "Aluguel"<br>
+                📋 Descrição: "Aluguel"
+              </div>
+              <p><strong>💡 Dicas para treinar:</strong></p>
+              <ul>
+                <li>Use palavras-chave claras</li>
+                <li>Seja consistente nos termos</li>
+                <li>A IA aprende com o tempo</li>
+                <li>Teste diferentes variações</li>
+              </ul>
+              <p><strong>🚀 Funcionalidades Avançadas:</strong></p>
+              <ul>
+                <li>Múltiplas saídas: "aluguel 2.000 de castanhal, belem e mix"</li>
+                <li>Detecção automática de valores e datas</li>
+                <li>Perguntas inteligentes se faltar informação</li>
+              </ul>
+            </div>
+          `;
+          document.getElementById('modalBotoes').innerHTML = `
+            <button class="btn btn-primary" onclick="fecharModal()">Entendi!</button>
+          `;
+          modal.style.display = 'flex';
+        }
+      };
       
       console.log('✅ HTML carregado e configurado');
     });
+
+    // Função de debug para verificar dados
+    window.debugSistema = function() {
+      console.log('🔍 DEBUG SISTEMA:');
+      console.log('Firebase inicializado:', window.firebaseInicializado || false);
+      console.log('Saídas carregadas:', window.saidas?.length || 0);
+      console.log('Saídas pendentes:', window.saidasPendentes?.length || 0);
+      console.log('Categorias:', window.categorias?.length || 0);
+      console.log('Lojas:', window.lojas?.length || 0);
+      
+      // Verificar localStorage
+      const dadosLocal = localStorage.getItem('iclubSaidas');
+      if (dadosLocal) {
+        const dados = JSON.parse(dadosLocal);
+        console.log('Backup local:', dados.totalSaidas || 0, 'saídas');
+      } else {
+        console.log('Nenhum backup local encontrado');
+      }
+    };
+
+    // Mostrar instruções de configuração
+    window.mostrarInstrucoes = function() {
+      alert(`📋 INSTRUÇÕES DE CONFIGURAÇÃO:
+
+1. 🔥 Configure Firebase:
+   - Acesse: https://console.firebase.google.com
+   - Crie projeto ou selecione existente
+   - Ative Firestore Database
+   - Copie configurações para painel.js
+
+2. 📊 Configure regras Firestore:
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true;
+       }
+     }
+   }
+
+3. 🧪 Teste o sistema:
+   - Digite no chat: "2000 aluguel"
+   - Abra outro navegador
+   - Dados devem sincronizar
+
+Para debug: digite debugSistema() no console`);
+    };
+
+    // Auto-mostrar instruções se Firebase não configurado
+    setTimeout(() => {
+      if (!window.firebaseInicializado) {
+        console.warn('⚠️ Firebase não configurado. Digite mostrarInstrucoes() para ajuda.');
+      }
+    }, 5000);
   </script>
 </body>
 </html>
