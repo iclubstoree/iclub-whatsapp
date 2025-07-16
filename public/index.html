@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>CONTROLE ICLUB SAÍDAS</title>
+  <title>CONTROLE ICLUB SAÍDAS - MULTI-USUÁRIO</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
   <style>
     :root {
       --primary-color: #8b5cf6;
@@ -44,6 +43,396 @@
       font-size: 2rem;
       margin-bottom: 30px;
       text-align: center;
+    }
+
+    .multi-user-badge {
+      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .card-modern {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: none;
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-control, .form-select {
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      padding: 12px 16px;
+      transition: all 0.2s ease;
+      background: var(--light-bg);
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      background: var(--white);
+    }
+
+    .btn-modern {
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+    }
+
+    .btn-primary-modern {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+    }
+
+    .btn-primary-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-success-modern {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+    }
+
+    .btn-success-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-sm-modern {
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .status-section {
+      background: var(--light-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+    }
+
+    .status-atrasadas { border-left-color: var(--danger-color); }
+    .status-vencendo { border-left-color: var(--warning-color); }
+    .status-proximas { border-left-color: #f97316; }
+    .status-recorrentes { border-left-color: var(--success-color); }
+
+    .status-title {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .table-modern {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: none;
+    }
+
+    .table-modern thead {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+    }
+
+    .table-modern th {
+      border: none;
+      padding: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .table-modern td {
+      border: none;
+      padding: 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .table-modern tbody tr:hover {
+      background: var(--light-bg);
+      transition: background 0.2s ease;
+    }
+
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border: none;
+      transition: transform 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .dashboard-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--dark-color);
+      margin-bottom: 5px;
+    }
+
+    .dashboard-label {
+      color: var(--success-color);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .chart-container {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--success-color);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .editor-categoria {
+      background: var(--light-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      border: 2px dashed #d1d5db;
+    }
+
+    .icon-status {
+      font-size: 1.2rem;
+    }
+
+    .badge-modern {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .input-group-modern {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .valor-dourado {
+      background: #ffffff;
+      color: #d4af37;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .valor-total-dourado {
+      background: linear-gradient(135deg, #d4af37, #ffd700);
+      color: #000000;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 15px;
+      box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Modal personalizado */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content-custom {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: var(--shadow-lg);
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title-custom {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-limpar-filtros {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-limpar-filtros:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+    }
+
+    /* Novos estilos para multi-usuário */
+    .user-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .multi-user-section {
+      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      color: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .multi-user-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Estilos para múltiplas saídas (mantidos) */
+    .multiplas-saidas-container {
+      background: var(--light-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 2px solid var(--success-color);
+      display: none;
+    }
+
+    .saida-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .saida-info {
+      flex: 1;
+    }
+
+    .saida-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-multiplas-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 16px;
+      }
+      
+      .dashboard-cards {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+      }
+      
+      .dashboard-value {
+        font-size: 1.4rem;
+      }
+
+      .btn-multiplas-container {
+        flex-direction: column;
+      }
     }
 
     /* Estilos do Chat */
@@ -277,299 +666,378 @@
       background: rgba(255, 255, 255, 0.3);
       transform: translateY(-2px);
     }
-
-    /* Estilos do resto do sistema (mantidos iguais) */
-    .card-modern {
-      background: var(--white);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      border: none;
-      padding: 25px;
-      margin-bottom: 25px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card-modern:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .form-control, .form-select {
-      border-radius: 12px;
-      border: 2px solid #e5e7eb;
-      padding: 12px 16px;
-      transition: all 0.2s ease;
-      background: var(--light-bg);
-    }
-
-    .form-control:focus, .form-select:focus {
-      border-color: var(--success-color);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-      background: var(--white);
-    }
-
-    .btn-modern {
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      border: none;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.85rem;
-    }
-
-    .btn-success-modern {
-      background: linear-gradient(135deg, var(--success-color), #059669);
-      color: white;
-    }
-
-    .btn-success-modern:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-sm-modern {
-      padding: 8px 16px;
-      font-size: 0.75rem;
-      border-radius: 8px;
-    }
-
-    .status-section {
-      background: var(--light-bg);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-left: 4px solid;
-    }
-
-    .status-title {
-      background: linear-gradient(135deg, var(--success-color), #059669);
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-    }
-
-    .table-modern {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: none;
-    }
-
-    .table-modern thead {
-      background: linear-gradient(135deg, var(--success-color), #059669);
-      color: white;
-    }
-
-    .table-modern th, .table-modern td {
-      border: none;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .valor-dourado {
-      background: #ffffff;
-      color: #d4af37;
-      font-weight: bold;
-      padding: 8px 12px;
-      border-radius: 8px;
-      text-align: center;
-    }
-
-    /* Modal personalizado */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-content-custom {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: var(--shadow-lg);
-      max-width: 600px;
-      width: 90%;
-      text-align: center;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .modal-title-custom {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--dark-color);
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .main-container {
-        margin: 10px;
-        padding: 20px;
-        border-radius: 16px;
-      }
-      
-      .chat-examples {
-        flex-direction: column;
-      }
-      
-      .example-chip {
-        text-align: center;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="main-container">
-    <h1 class="header-title">
+    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
+      <span class="multi-user-badge">👥 Multi-Usuário</span>
     </h1>
 
-    <!-- Chat Integrado -->
-    <div class="chat-container">
-      <div class="chat-header">
-        <div>
-          <h3 class="chat-title">
-            <i class="fas fa-comments"></i>
-            Chat Inteligente
-          </h3>
-          <p class="chat-subtitle">Digite suas saídas naturalmente, como: "Paguei R$ 500 de aluguel hoje"</p>
-        </div>
+    <!-- Seção Multi-Usuário -->
+    <div class="multi-user-section">
+      <div class="multi-user-title">
+        <i class="fas fa-users"></i>
+        Sistema Multi-Usuário WhatsApp Ativo
       </div>
-
-      <div class="chat-messages" id="chatMessages">
-        <div class="message system">
-          <div class="message-bubble">
-            <div>👋 Olá! Sou seu assistente de saídas.</div>
-            <div>Digite suas despesas naturalmente que eu interpreto e adiciono automaticamente!</div>
-            <div class="message-time">Agora</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="typing-indicator" id="typingIndicator">
-        <div class="typing-dots">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      </div>
-
-      <div class="chat-input-container">
-        <input 
-          type="text" 
-          class="chat-input" 
-          id="chatInput" 
-          placeholder="Ex: Paguei R$ 2.000 de aluguel hoje..."
-          maxlength="200"
-        />
-        <button class="chat-send-btn" id="chatSendBtn" onclick="enviarMensagem()">
-          <i class="fas fa-paper-plane"></i>
+      <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
+        Você e sua sócia podem adicionar saídas via WhatsApp em números diferentes. 
+        Todos os dados são consolidados neste painel compartilhado.
+      </p>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-light btn-sm" onclick="mostrarGerenciadorUsuarios()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
+          <i class="fas fa-cog"></i> Gerenciar Usuários
         </button>
       </div>
-
-      <div class="chat-examples">
-        <div class="example-chip" onclick="usarExemplo('Paguei R$ 1.500 de aluguel hoje')">
-          💰 Aluguel
-        </div>
-        <div class="example-chip" onclick="usarExemplo('Gastei R$ 80 de gasolina ontem')">
-          ⛽ Combustível
-        </div>
-        <div class="example-chip" onclick="usarExemplo('Devo R$ 200 de internet')">
-          🌐 Internet
-        </div>
-        <div class="example-chip" onclick="usarExemplo('Comprei R$ 150 de material de escritório')">
-          📦 Material
-        </div>
-      </div>
     </div>
 
-    <!-- Formulário Manual (Recolhido) -->
+    <!-- Formulário de Cadastro -->
     <div class="card-modern">
-      <div style="display: flex; align-items: center; justify-content: between; cursor: pointer;" onclick="toggleFormularioManual()">
-        <h5 class="status-title" style="margin: 0; flex: 1;">
-          <i class="fas fa-plus"></i>
-          Formulário Manual (Opcional)
-        </h5>
-        <i class="fas fa-chevron-down" id="formularioIcon" style="color: var(--success-color); transition: transform 0.3s;"></i>
-      </div>
+      <h5 class="status-title">
+        Nova Saída
+      </h5>
       
-      <div id="formularioManual" style="display: none; margin-top: 20px;">
-        <div class="row g-3">
-          <div class="col-md-6 col-lg-2">
-            <label class="form-label fw-bold">Loja</label>
-            <select id="loja" class="form-select"></select>
-          </div>
-          <div class="col-md-6 col-lg-2">
-            <label class="form-label fw-bold">Centro de custo</label>
-            <select id="categoria" class="form-select"></select>
-          </div>
-          <div class="col-md-6 col-lg-2">
-            <label class="form-label fw-bold">Descrição</label>
-            <input type="text" id="descricao" class="form-control" placeholder="Digite a descrição"/>
-          </div>
-          <div class="col-md-6 col-lg-2">
-            <label class="form-label fw-bold">Valor (R$)</label>
-            <input type="text" id="valor" class="form-control" placeholder="R$ 0,00" oninput="formatarMoeda(this)"/>
-          </div>
-          <div class="col-md-6 col-lg-2">
-            <label class="form-label fw-bold">Data</label>
-            <input type="date" id="data" class="form-control"/>
-          </div>
-          <div class="col-md-6 col-lg-2">
-            <label class="form-label fw-bold">Pago?</label>
-            <select id="pago" class="form-select">
-              <option>Sim</option>
-              <option>Não</option>
-            </select>
-          </div>
-          <div class="col-12">
-            <button class="btn btn-success-modern btn-modern" onclick="adicionarSaida()">
-              <i class="fas fa-plus"></i> Adicionar Saída Manual
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Loja</label>
+          <select id="loja" class="form-select"></select>
+          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorLoja()">
+            <i class="fas fa-edit"></i> Editar Lojas
+          </button>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Centro de custo</label>
+          <select id="categoria" class="form-select"></select>
+          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorCategoria()">
+            <i class="fas fa-edit"></i> Editar Centros de custo
+          </button>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Descrição</label>
+          <input type="text" id="descricao" class="form-control" placeholder="Digite a descrição"/>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Valor (R$)</label>
+          <input type="text" id="valor" class="form-control" placeholder="R$ 0,00" oninput="formatarMoeda(this)"/>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Data</label>
+          <input type="date" id="data" class="form-control"/>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Recorrente?</label>
+          <select id="recorrente" class="form-select" onchange="toggleTipoRecorrencia()">
+            <option>Não</option>
+            <option>Sim</option>
+          </select>
+        </div>
+        <div class="col-md-6 col-lg-1" id="colunaTipoRecorrencia" style="display:none;">
+          <label class="form-label fw-bold">Tipo</label>
+          <select id="tipoRecorrencia" class="form-select">
+            <option disabled selected>Selecione</option>
+            <option>Diária</option>
+            <option>Semanal</option>
+            <option>Mensal</option>
+            <option>Anual</option>
+          </select>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Pago?</label>
+          <select id="pago" class="form-select">
+            <option>Sim</option>
+            <option>Não</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <div class="btn-multiplas-container">
+            <button class="btn btn-success-modern btn-modern flex-fill" onclick="adicionarSaida()">
+              <i class="fas fa-plus"></i> Adicionar Saída
+            </button>
+            <button class="btn btn-success-modern btn-modern flex-fill" onclick="iniciarMultiplasSaidas()">
+              <i class="fas fa-clone"></i> Adicionar Múltiplas Saídas
             </button>
           </div>
+          <div id="mensagemSucesso" class="alert alert-success mt-3" style="display:none;">
+            ✅ Saída adicionada!
+          </div>
+        </div>
+      </div>
+
+      <!-- Editor Loja -->
+      <div id="editor-loja" class="editor-categoria" style="display:none">
+        <div class="input-group-modern">
+          <input type="text" id="novaLoja" placeholder="Nova loja" class="form-control"/>
+          <button class="btn btn-success-modern btn-modern" onclick="adicionarLoja()">
+            Adicionar
+          </button>
+          <button class="btn btn-warning btn-modern" onclick="mostrarEditorLojaExistente()">
+            <i class="fas fa-edit"></i> Editar Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor Categoria -->
+      <div id="editor-categoria" class="editor-categoria" style="display:none">
+        <div class="input-group-modern">
+          <input type="text" id="novaCategoria" placeholder="Novo centro de custo" class="form-control"/>
+          <button class="btn btn-success-modern btn-modern" onclick="adicionarCategoria()">
+            Adicionar
+          </button>
+          <button class="btn btn-warning btn-modern" onclick="mostrarEditorCategoriaExistente()">
+            <i class="fas fa-edit"></i> Editar Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- Container para Múltiplas Saídas -->
+      <div id="multiplasSaidasContainer" class="multiplas-saidas-container">
+        <h6 class="mb-3" style="color: var(--success-color); font-weight: 700;">
+          <i class="fas fa-list"></i> Lista de Saídas para Adicionar
+        </h6>
+        <div id="listaSaidas"></div>
+        <div class="mt-3">
+          <button class="btn btn-success-modern btn-modern me-2" onclick="adicionarNovaLinha()">
+            <i class="fas fa-plus"></i> Adicionar Nova Linha
+          </button>
+          <button class="btn btn-success-modern btn-modern me-2" onclick="adicionarTodasSaidas()">
+            <i class="fas fa-save"></i> Adicionar Todas Saídas
+          </button>
+          <button class="btn btn-secondary btn-modern" onclick="cancelarMultiplasSaidas()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Resto do conteúdo mantido igual -->
-    <div id="mensagemSucesso" class="alert alert-success" style="display:none;">
-      ✅ Saída adicionada!
+    <!-- Filtros Globais Multi-Usuário -->
+    <div class="card-modern">
+      <h5 class="status-title">
+        Filtros Gerais Multi-Usuário
+      </h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Visualizar loja:</label>
+          <select id="filtroLojaGlobal" class="form-select" onchange="aplicarFiltroLoja()">
+            <option value="">📊 Todas as lojas (Consolidado)</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Visualizar usuário:</label>
+          <select id="filtroUsuarioGlobal" class="form-select" onchange="aplicarFiltroUsuario()">
+            <option value="">👥 Todos os usuários (Consolidado)</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <!-- Placeholder para o resto do conteúdo -->
+    <!-- Seções de Status -->
+    <div class="status-section status-atrasadas">
+      <h5 class="status-title">
+        Saídas Atrasadas
+      </h5>
+      <div id="atrasadas"></div>
+    </div>
+
+    <div class="status-section status-vencendo">
+      <h5 class="status-title">
+        Saídas Vencendo Hoje
+      </h5>
+      <div id="vencendoHoje"></div>
+    </div>
+
+    <div class="status-section status-proximas">
+      <h5 class="status-title">
+        Próximas Saídas a Vencer
+      </h5>
+      <div id="proximas"></div>
+    </div>
+
+    <div class="status-section status-recorrentes">
+      <h5 class="status-title">
+        Saídas Recorrentes
+      </h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Filtrar por loja:</label>
+          <select id="filtroLojaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todas as lojas</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Filtrar por usuário:</label>
+          <select id="filtroUsuarioRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todos os usuários</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Filtrar por ano:</label>
+          <select id="filtroAnoRecorrentes" class="form-select" onchange="preencherMesesDoAno()">
+            <option value="">Todos os anos</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Filtrar por mês:</label>
+          <select id="filtroMesRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todos os meses</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Filtrar por centro:</label>
+          <select id="filtroCategoriaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todos os centros</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-limpar-filtros w-100" onclick="limparFiltrosRecorrentes()" title="Limpar Filtros">
+            <i class="fas fa-times"></i> Limpar
+          </button>
+        </div>
+      </div>
+      <div id="previsaoRecorrentes"></div>
+      <div class="valor-total-dourado">
+        <strong>Valor total saídas: <span id="totalSaidasRecorrentes">R$ 0,00</span></strong>
+      </div>
+    </div>
+
+    <!-- Saídas do Mês -->
     <div class="card-modern">
-      <h4 class="status-title">Saídas do Mês</h4>
+      <h4 class="status-title">
+        Saídas do Mês Multi-Usuário
+      </h4>
       <div class="table-responsive">
         <table class="table table-modern">
           <thead>
             <tr>
+              <th>👤 Usuário</th>
+              <th>Loja</th>
+              <th>Centro de custo</th>
               <th>Descrição</th>
               <th>Valor</th>
               <th>Data</th>
-              <th>Status</th>
+              <th>Recorrente</th>
+              <th>Tipo</th>
+              <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="tabelaSaidas">
-            <!-- Saídas aparecerão aqui -->
-          </tbody>
+          <tbody id="tabelaSaidas"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        Dashboard Consolidado Multi-Usuário
+      </h4>
+      <div class="dashboard-cards">
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalMes">R$ 0,00</div>
+          <div class="dashboard-label">Total do Mês</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalRecorrente">R$ 0,00</div>
+          <div class="dashboard-label">Total Recorrente</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="maiorGasto">R$ 0,00</div>
+          <div class="dashboard-label">Maior Gasto</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="categoriaTopo">-</div>
+          <div class="dashboard-label">Centro de custo Topo</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalSaidas">0</div>
+          <div class="dashboard-label">Total de Saídas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparativo entre Usuários -->
+    <div class="card-modern" id="comparativoUsuarios">
+      <h4 class="status-title">
+        👥 Comparativo entre Usuários
+      </h4>
+      <div id="tabelaComparativoUsuarios"></div>
+      
+      <!-- Gráfico Comparativo de Usuários -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico Comparativo por Usuário
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 500px; height: 400px;">
+            <canvas id="graficoUsuarios"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparativo entre Lojas -->
+    <div class="card-modern" id="comparativoLojas">
+      <h4 class="status-title">
+        📊 Comparativo entre Lojas
+      </h4>
+      <div id="tabelaComparativo"></div>
+      
+      <!-- Gráfico Comparativo de Lojas -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico Comparativo por Loja
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 600px; height: 400px;">
+            <canvas id="graficoLojas"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gráfico Centros de Custo por Loja -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico de Centros de Custo por Loja
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 700px; height: 400px;">
+            <canvas id="graficoCentrosCusto"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico por Centro de custo
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 400px; height: 400px;">
+          <canvas id="graficoCategoria"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico por Tipo de Gasto
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 400px; height: 400px;">
+          <canvas id="graficoTipo"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico de Saídas por Mês
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 600px; height: 400px;">
+          <canvas id="graficoMes"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -579,246 +1047,12 @@
     <div class="modal-content-custom">
       <div class="modal-title-custom" id="modalTitulo">Título do Modal</div>
       <div id="modalTexto" style="margin-bottom: 20px;"></div>
-      <div id="modalBotoes">
+      <div class="modal-buttons" id="modalBotoes">
         <!-- Botões serão inseridos aqui -->
       </div>
     </div>
   </div>
 
-  <script>
-    // Variáveis globais
-    let categorias = ["Aluguel", "Energia", "Internet", "Combustível", "Material"];
-    let lojas = ["Loja Centro", "Loja Shopping", "Loja Bairro"];
-    let saidas = [];
-
-    // Funções do Chat
-    function enviarMensagem() {
-      const input = document.getElementById('chatInput');
-      const mensagem = input.value.trim();
-      
-      if (!mensagem) return;
-      
-      // Limpar input e desabilitar botão
-      input.value = '';
-      document.getElementById('chatSendBtn').disabled = true;
-      
-      // Adicionar mensagem do usuário
-      adicionarMensagemChat('user', mensagem);
-      
-      // Mostrar indicador de digitação
-      mostrarTyping();
-      
-      // Processar mensagem
-      setTimeout(() => {
-        processarMensagemIA(mensagem);
-      }, 1500);
-    }
-
-    function adicionarMensagemChat(tipo, texto) {
-      const chatMessages = document.getElementById('chatMessages');
-      const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${tipo}`;
-      
-      messageDiv.innerHTML = `
-        <div class="message-bubble">
-          <div>${texto}</div>
-          <div class="message-time">${agora}</div>
-        </div>
-      `;
-      
-      chatMessages.appendChild(messageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function mostrarTyping() {
-      const typing = document.getElementById('typingIndicator');
-      typing.style.display = 'block';
-      document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-    }
-
-    function esconderTyping() {
-      document.getElementById('typingIndicator').style.display = 'none';
-      document.getElementById('chatSendBtn').disabled = false;
-    }
-
-    async function processarMensagemIA(mensagem) {
-      try {
-        // Simular processamento da IA
-        const resultado = interpretarMensagem(mensagem);
-        
-        esconderTyping();
-        
-        if (resultado.sucesso) {
-          // Adicionar saída ao sistema
-          adicionarSaidaViaChat(resultado);
-          
-          // Resposta de sucesso
-          const resposta = `✅ Saída registrada com sucesso!
-          
-💰 Valor: ${formatarMoedaBR(resultado.valor)}
-🏷️ Categoria: ${resultado.categoria}
-📅 Data: ${resultado.data}
-💳 Status: ${resultado.pago}`;
-          
-          adicionarMensagemChat('system', resposta);
-          
-          // Mostrar mensagem de sucesso
-          mostrarMensagemSucesso();
-          
-        } else {
-          // Erro na interpretação
-          const erro = `❌ ${resultado.erro}
-
-💡 Tente frases como:
-• "Paguei R$ 500 de aluguel hoje"
-• "Gastei R$ 80 de gasolina"
-• "Devo R$ 200 de internet"`;
-          
-          adicionarMensagemChat('system', erro);
-        }
-        
-      } catch (error) {
-        esconderTyping();
-        adicionarMensagemChat('system', '❌ Erro ao processar mensagem. Tente novamente.');
-      }
-    }
-
-    function interpretarMensagem(mensagem) {
-      const msgLower = mensagem.toLowerCase();
-      
-      // Extrair valor
-      const regexValor = /r\$?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/i;
-      const matchValor = msgLower.match(regexValor);
-      
-      if (!matchValor) {
-        return { sucesso: false, erro: "Não consegui identificar o valor na mensagem" };
-      }
-      
-      let valorTexto = matchValor[1].replace(/\./g, '').replace(',', '.');
-      const valor = parseFloat(valorTexto);
-      
-      if (isNaN(valor) || valor <= 0) {
-        return { sucesso: false, erro: "Valor inválido identificado" };
-      }
-      
-      // Identificar categoria
-      const categoriaMap = {
-        'aluguel': 'Aluguel',
-        'energia': 'Energia', 'luz': 'Energia',
-        'internet': 'Internet', 'wifi': 'Internet',
-        'gasolina': 'Combustível', 'combustível': 'Combustível',
-        'material': 'Material'
-      };
-      
-      let categoria = 'Outros';
-      for (const [palavra, cat] of Object.entries(categoriaMap)) {
-        if (msgLower.includes(palavra)) {
-          categoria = cat;
-          break;
-        }
-      }
-      
-      // Identificar data
-      let data = new Date().toISOString().split('T')[0];
-      if (msgLower.includes('ontem')) {
-        const ontem = new Date();
-        ontem.setDate(ontem.getDate() - 1);
-        data = ontem.toISOString().split('T')[0];
-      }
-      
-      // Identificar status
-      const pago = msgLower.includes('devo') || msgLower.includes('preciso pagar') ? 'Não' : 'Sim';
-      
-      return {
-        sucesso: true,
-        valor: valor,
-        categoria: categoria,
-        data: data,
-        pago: pago,
-        descricao: mensagem
-      };
-    }
-
-    function adicionarSaidaViaChat(dados) {
-      const saida = {
-        id: Date.now(),
-        loja: 'Chat',
-        categoria: dados.categoria,
-        descricao: dados.descricao,
-        valor: dados.valor,
-        data: dados.data,
-        pago: dados.pago,
-        origem: 'chat'
-      };
-      
-      saidas.push(saida);
-      atualizarTabela();
-    }
-
-    function usarExemplo(exemplo) {
-      document.getElementById('chatInput').value = exemplo;
-      enviarMensagem();
-    }
-
-    function toggleFormularioManual() {
-      const formulario = document.getElementById('formularioManual');
-      const icon = document.getElementById('formularioIcon');
-      
-      if (formulario.style.display === 'none') {
-        formulario.style.display = 'block';
-        icon.style.transform = 'rotate(180deg)';
-      } else {
-        formulario.style.display = 'none';
-        icon.style.transform = 'rotate(0deg)';
-      }
-    }
-
-    // Funções auxiliares
-    function formatarMoedaBR(valor) {
-      return valor.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      });
-    }
-
-    function mostrarMensagemSucesso() {
-      const mensagem = document.getElementById("mensagemSucesso");
-      mensagem.style.display = "block";
-      setTimeout(() => {
-        mensagem.style.display = "none";
-      }, 3000);
-    }
-
-    function atualizarTabela() {
-      const tbody = document.getElementById("tabelaSaidas");
-      tbody.innerHTML = "";
-      
-      saidas.forEach(s => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${s.descricao}</td>
-          <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-          <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
-          <td><span class="badge ${s.pago === 'Sim' ? 'bg-success' : 'bg-warning'}">${s.pago}</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Event listener para Enter no chat
-    document.getElementById('chatInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        enviarMensagem();
-      }
-    });
-
-    // Inicialização
-    window.onload = function() {
-      // Focar no input do chat
-      document.getElementById('chatInput').focus();
-    };
-  </script>
+  <script src="painel.js"></script>
 </body>
 </html>
