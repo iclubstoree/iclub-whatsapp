@@ -158,10 +158,17 @@ function processarTreinamentoNatural(texto) {
   const padroes = [];
   const textoLower = texto.toLowerCase();
   
+  // CORREÇÃO: Melhorar regex para treinamento
   const regexPadroes = [
-    /quando\s+eu\s+falar\s+([^,]+?)\s+(?:você\s+vai\s+adicionar|adicione)\s+(?:ao\s+centro\s+de\s+custos?|na\s+categoria)\s+([^,.]+)/gi,
-    /quando\s+falar\s+([^,]+?)\s+(?:adicione|vai\s+para)\s+(?:na\s+categoria|ao\s+centro\s+de\s+custos?)\s+([^,.]+)/gi,
+    // "quando eu falar X adicione na categoria Y"
+    /quando\s+(?:eu\s+)?falar\s+([^,]+?)\s+(?:adicione|vai\s+para)\s+(?:na\s+categoria|ao\s+centro\s+de\s+custos?)\s+([^,.]+)/gi,
+    // "quando falar X você vai adicionar ao centro de custos Y"
+    /quando\s+falar\s+([^,]+?)\s+(?:você\s+vai\s+adicionar|adicione)\s+(?:ao\s+centro\s+de\s+custos?|na\s+categoria)\s+([^,.]+)/gi,
+    // "X vai para categoria Y"
     /([^,]+?)\s+vai\s+para\s+(?:categoria|centro\s+de\s+custos?)\s+([^,.]+)/gi,
+    // "trafego é marketing" ou "trafego = marketing"
+    /([^,=]+?)\s+(?:é|=|significa)\s+([^,.]+)/gi,
+    // "adicione centro de custo X e quando falar Y adicione no centro de custo Z"
     /adicione\s+centro\s+de\s+custo\s+([^,]+?)\s+e\s+quando\s+falar\s+([^,]+?)\s+adicione\s+no\s+centro\s+de\s+custo\s+([^,.]+)/gi
   ];
   
@@ -172,9 +179,12 @@ function processarTreinamentoNatural(texto) {
         let palavra, categoria;
         
         if (match.length === 4) {
-          // Para o regex com 3 grupos: adicione centro de custo X e quando falar Y adicione no centro de custo Z
+          // Para o regex com 3 grupos
           categoria = match[1].trim();
           palavra = match[2].trim();
+          if (match[3]) {
+            categoria = match[3].trim(); // Usar o último grupo como categoria
+          }
         } else {
           // Para outros regex
           palavra = match[1].trim();
@@ -182,10 +192,16 @@ function processarTreinamentoNatural(texto) {
         }
         
         if (palavra && categoria) {
-          padroes.push({
-            palavra: palavra,
-            categoria: categoria.charAt(0).toUpperCase() + categoria.slice(1).trim()
-          });
+          // Limpar palavras comuns
+          palavra = palavra.replace(/\b(?:toda|todo|qualquer|a|o|as|os|de|da|do|das|dos)\b/g, '').trim();
+          categoria = categoria.replace(/\b(?:toda|todo|qualquer|a|o|as|os|de|da|do|das|dos)\b/g, '').trim();
+          
+          if (palavra.length > 2 && categoria.length > 2) {
+            padroes.push({
+              palavra: palavra,
+              categoria: categoria.charAt(0).toUpperCase() + categoria.slice(1).trim()
+            });
+          }
         }
       }
     }
@@ -301,6 +317,12 @@ function enviarMensagemChat() {
   const sendBtn = document.getElementById('chatSendBtn');
   if (sendBtn) sendBtn.disabled = true;
   
+  // CORREÇÃO: Verificar se está aguardando resposta sobre nova loja
+  if (window.aguardandoResposta === 'nova_loja') {
+    processarRespostaNovaLoja(mensagem);
+    return;
+  }
+  
   // Comando direto de treinamento
   if (mensagem.toLowerCase().includes('adicione centro de custo')) {
     processarComandoTreinamentoDireto(mensagem);
@@ -318,6 +340,45 @@ function enviarMensagemChat() {
   setTimeout(() => {
     processarMensagemIA(mensagem);
   }, 1500);
+}
+
+// CORREÇÃO: Adicionar função para processar resposta sobre nova loja
+function processarRespostaNovaLoja(resposta) {
+  const dados = window.dadosTemporarios;
+  
+  adicionarMensagemChat('user', resposta);
+  
+  if (resposta === '1' || resposta.toLowerCase().includes('sim') || resposta.toLowerCase().includes('criar')) {
+    // Criar nova loja
+    const novaLoja = dados.nomeLoja.charAt(0).toUpperCase() + dados.nomeLoja.slice(1);
+    lojas.push(novaLoja);
+    salvarDadosLocal();
+    atualizarLojas();
+    
+    adicionarMensagemChat('system', `✅ Loja "${novaLoja}" criada com sucesso!`);
+    
+    // Finalizar adição da saída com a nova loja
+    const saidaData = criarDadosSaida(dados.resultado, novaLoja);
+    finalizarAdicaoSaida(saidaData);
+    
+  } else {
+    // Não criar, solicitar seleção de loja existente
+    adicionarMensagemChat('system', `Entendi! Vou mostrar as lojas existentes:`);
+    
+    const opcoesTexto = lojas.map((loja, index) => `${index + 1}. ${loja}`).join('\n');
+    adicionarMensagemChat('system', `Escolha uma opção:\n\n${opcoesTexto}`);
+    
+    // Configurar para aguardar seleção de loja
+    saidaPendenteLoja = criarDadosSaida(dados.resultado, null);
+    aguardandoSelecaoLoja = true;
+  }
+  
+  // Limpar estado
+  window.aguardandoResposta = null;
+  window.dadosTemporarios = null;
+  
+  const sendBtn = document.getElementById('chatSendBtn');
+  if (sendBtn) sendBtn.disabled = false;
 }
 
 function processarComandoTreinamentoDireto(mensagem) {
@@ -439,6 +500,13 @@ async function processarMensagemIA(mensagem) {
     
     const lojaMencionada = detectarLojaNaMensagem(mensagem);
     
+    // CORREÇÃO: Verificar se é loja nova
+    if (lojaMencionada && lojaMencionada.startsWith('NOVA_LOJA:')) {
+      const novaLoja = lojaMencionada.replace('NOVA_LOJA:', '');
+      await perguntarSobreNovaLoja(novaLoja, resultado);
+      return;
+    }
+    
     if (lojaMencionada) {
       const saidaData = criarDadosSaida(resultado, lojaMencionada);
       await finalizarAdicaoSaida(saidaData);
@@ -453,12 +521,33 @@ async function processarMensagemIA(mensagem) {
   }
 }
 
+// CORREÇÃO: Adicionar função para perguntar sobre nova loja
+async function perguntarSobreNovaLoja(nomeLoja, resultado) {
+  const pergunta = `🏪 Encontrei uma loja nova: "${nomeLoja}"
+
+Quer que eu crie esta loja para você?
+
+1. ✅ Sim, criar loja "${nomeLoja}"
+2. ❌ Não, escolher loja existente`;
+
+  adicionarMensagemChat('system', pergunta);
+  
+  // Salvar dados temporários para usar depois da resposta
+  window.dadosTemporarios = { resultado, nomeLoja };
+  window.aguardandoResposta = 'nova_loja';
+}
+
 function interpretarMensagemIA(mensagem) {
   try {
     const msgOriginal = mensagem.trim();
     const msgLower = mensagem.toLowerCase().trim();
     
     console.log('🧠 IA analisando:', msgLower.substring(0, 50));
+
+    // CORREÇÃO: Verificar se é comando para adicionar loja
+    if (msgLower.includes('adicionar loja') || msgLower.includes('criar loja') || msgLower.includes('nova loja')) {
+      return { sucesso: false, erro: "Para adicionar lojas, use o botão 'Editar Lojas' no formulário" };
+    }
 
     // Detectar múltiplas lojas
     const multiplasLojas = detectarMultiplasLojas(msgLower);
@@ -490,13 +579,16 @@ function interpretarMensagemIA(mensagem) {
     }
 
     const padroes = {
-      valor: /(?:r\$?\s*)?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{1,2})?)\s*(?:reais?|real|pila|conto|pau|dinheiro)?/i,
+      // CORREÇÃO: Melhorar regex de valor
+      valor: /(?:r\$?\s*)?(\d{1,6}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{1,2})?)\s*(?:reais?|real|pila|conto|pau|dinheiro)?/i,
       dataHoje: /\b(?:hoje|hj|agora)\b/i,
       dataOntem: /\b(?:ontem|onte)\b/i,
       dataAmanha: /\b(?:amanhã|amanha|tomorrow)\b/i,
+      // CORREÇÃO: Melhorar reconhecimento de datas
+      dataEspecifica: /\b(?:dia\s*)?(\d{1,2})\s*(?:de\s*)?(?:janeiro|jan|fevereiro|fev|março|mar|abril|abr|maio|mai|junho|jun|julho|jul|agosto|ago|setembro|set|outubro|out|novembro|nov|dezembro|dez)?/i,
       diaSemana: /\b(?:segunda|terca|quarta|quinta|sexta|sabado|domingo|seg|ter|qua|qui|sex|sab|dom)\b/i,
       acoesPago: /\b(?:pague[i]?|gaste[i]?|compre[i]?|pago|pagou|gastou|comprou|saída|despesa|débito|desembolsei?|pagas?)\b/i,
-      acoesNaoPago: /\b(?:devo|deve|preciso\s+pagar|vou\s+pagar|pendente|conta\s+para\s+pagar|a\s+pagar|fatura|boleto)\b/i,
+      acoesNaoPago: /\b(?:devo|deve|preciso\s+pagar|vou\s+pagar|pendente|conta\s+para\s+pagar|a\s+pagar|fatura|boleto|atrasad[oa])\b/i,
       recorrente: /\b(?:mensal|todo\s+mês|mensalmente|recorrente|fixo|sempre|mensalidade)\b/i
     };
 
@@ -508,7 +600,7 @@ function interpretarMensagemIA(mensagem) {
       'Material': { regex: /\b(?:material|escritório|papelaria|equipamento|ferramenta|suprimento)\b/i, confianca: 0.8 },
       'Transporte': { regex: /\b(?:transporte|uber|taxi|ônibus|onibus|metrô|metro|passagem|viagem|corrida)\b/i, confianca: 0.85 },
       'Alimentação': { regex: /\b(?:alimentação|comida|mercado|supermercado|restaurante|lanche|café|delivery)\b/i, confianca: 0.8 },
-      'Marketing': { regex: /\b(?:marketing|publicidade|anúncio|anuncio|propaganda|google\s+ads|facebook\s+ads|tráfego)\b/i, confianca: 0.8 },
+      'Marketing': { regex: /\b(?:marketing|publicidade|anúncio|anuncio|propaganda|google\s+ads|facebook\s+ads|tráfego|trafego)\b/i, confianca: 0.8 },
       'Saúde': { regex: /\b(?:saúde|saude|médico|medico|hospital|farmácia|farmacia|remédio|remedio)\b/i, confianca: 0.85 }
     };
 
@@ -524,7 +616,7 @@ function interpretarMensagemIA(mensagem) {
       return { sucesso: false, erro: `Valor inválido: ${matchValor[1]}` };
     }
 
-    // Reconhecimento de dias da semana
+    // CORREÇÃO: Melhorar reconhecimento de datas
     let data = new Date().toISOString().split('T')[0];
     
     if (padroes.dataOntem.test(msgLower)) {
@@ -537,6 +629,9 @@ function interpretarMensagemIA(mensagem) {
       data = amanha.toISOString().split('T')[0];
     } else if (padroes.diaSemana.test(msgLower)) {
       data = calcularDataDiaSemana(msgLower);
+    } else if (padroes.dataEspecifica.test(msgLower)) {
+      // CORREÇÃO: Processar data específica como "dia 10 de julho"
+      data = processarDataEspecifica(msgLower);
     }
 
     let melhorCategoria = treinamentoNatural ? treinamentoNatural.categoria : "Outros";
@@ -551,12 +646,19 @@ function interpretarMensagemIA(mensagem) {
       }
     }
 
-    let pago = "Sim";
+    // CORREÇÃO: Melhorar detecção de status de pagamento
+    let pago = "Sim"; // Default
     
     if (padroes.acoesNaoPago.test(msgLower)) {
       pago = "Não";
     } else if (padroes.acoesPago.test(msgLower)) {
       pago = "Sim";
+    } else {
+      // CORREÇÃO: Se for data futura, marcar como "Não"
+      const hoje = new Date().toISOString().split('T')[0];
+      if (data > hoje) {
+        pago = "Não";
+      }
     }
 
     let recorrente = "Não";
@@ -593,9 +695,9 @@ function processarValorBrasileiro(valorTexto) {
   // Remove espaços e converte para string
   let valor = valorTexto.toString().trim();
   
-  // Casos especiais para valores brasileiros
+  // CORREÇÃO: Casos especiais para valores brasileiros
   if (/^\d+$/.test(valor)) {
-    // Número simples: 500 → 500
+    // Número simples: 2000 → 2000 (não dividir por 100!)
     return parseInt(valor);
   }
   
@@ -617,6 +719,45 @@ function processarValorBrasileiro(valorTexto) {
   }
   
   return parseFloat(valor) || 0;
+}
+
+// CORREÇÃO: Adicionar função para processar data específica
+function processarDataEspecifica(mensagem) {
+  const regex = /\b(?:dia\s*)?(\d{1,2})\s*(?:de\s*)?(?:(janeiro|jan|fevereiro|fev|março|mar|abril|abr|maio|mai|junho|jun|julho|jul|agosto|ago|setembro|set|outubro|out|novembro|nov|dezembro|dez))?/i;
+  const match = mensagem.match(regex);
+  
+  if (match) {
+    const dia = parseInt(match[1]);
+    let mes = new Date().getMonth(); // Mês atual por default
+    
+    if (match[2]) {
+      const meses = {
+        'janeiro': 0, 'jan': 0,
+        'fevereiro': 1, 'fev': 1,
+        'março': 2, 'mar': 2,
+        'abril': 3, 'abr': 3,
+        'maio': 4, 'mai': 4,
+        'junho': 5, 'jun': 5,
+        'julho': 6, 'jul': 6,
+        'agosto': 7, 'ago': 7,
+        'setembro': 8, 'set': 8,
+        'outubro': 9, 'out': 9,
+        'novembro': 10, 'nov': 10,
+        'dezembro': 11, 'dez': 11
+      };
+      mes = meses[match[2].toLowerCase()] || mes;
+    }
+    
+    const ano = new Date().getFullYear();
+    const dataCalculada = new Date(ano, mes, dia);
+    
+    // Validar se a data é válida
+    if (dataCalculada.getDate() === dia && dataCalculada.getMonth() === mes) {
+      return dataCalculada.toISOString().split('T')[0];
+    }
+  }
+  
+  return new Date().toISOString().split('T')[0];
 }
 
 function calcularDataDiaSemana(mensagem) {
@@ -943,6 +1084,7 @@ function criarDadosSaida(resultado, loja) {
 function detectarLojaNaMensagem(mensagem) {
   const msgLower = mensagem.toLowerCase();
   
+  // CORREÇÃO: Primeiro verificar lojas existentes
   for (const loja of lojas) {
     if (msgLower.includes(loja.toLowerCase())) {
       return loja;
@@ -959,6 +1101,16 @@ function detectarLojaNaMensagem(mensagem) {
   for (const [chave, loja] of Object.entries(mapeamentoLojas)) {
     if (msgLower.includes(chave)) {
       return loja;
+    }
+  }
+  
+  // CORREÇÃO: Se não encontrou loja conhecida, verificar se há palavra que pode ser loja
+  const palavras = msgLower.split(' ');
+  for (const palavra of palavras) {
+    // Se a palavra não é uma categoria conhecida e tem mais de 2 letras
+    if (palavra.length > 2 && !['aluguel', 'energia', 'internet', 'combustível', 'material', 'transporte', 'alimentação', 'marketing', 'saúde', 'paguei', 'gastei', 'devo', 'hoje', 'ontem', 'amanha', 'dia'].includes(palavra)) {
+      // Pode ser uma loja nova - vamos perguntar
+      return `NOVA_LOJA:${palavra}`;
     }
   }
   
@@ -1849,7 +2001,7 @@ function atualizarTabela() {
   const dataHoje = hoje.toISOString().split('T')[0];
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   
-  // Separação correta das seções
+  // CORREÇÃO: Separação correta das seções
   const saidasMes = []; // APENAS saídas pagas do mês atual
   const saidasAtrasadas = []; // APENAS saídas vencidas não pagas
   const saidasVencendoHoje = []; // APENAS saídas vencendo hoje não pagas
@@ -1860,28 +2012,29 @@ function atualizarTabela() {
     if (lojaFiltroAtual && s.loja !== lojaFiltroAtual) return;
     
     const dataSaida = s.data;
+    const saidaAnoMes = s.data.substring(0, 7);
     
-    // Separar recorrentes primeiro
+    // CORREÇÃO: Separar recorrentes primeiro
     if (s.recorrente === 'Sim') {
       saidasRecorrentes.push(s);
     }
     
-    // Saídas do mês: APENAS pagas do mês atual
-    if (s.data.substring(0, 7) === anoMes && s.pago === 'Sim') {
+    // CORREÇÃO: Saídas do mês - APENAS saídas pagas do mês atual
+    if (saidaAnoMes === anoMes && s.pago === 'Sim') {
       saidasMes.push(s);
     }
     
-    // Saídas pendentes por status de data
+    // CORREÇÃO: Saídas pendentes por status de data - APENAS se pago = "Não"
     if (s.pago === 'Não') {
       if (dataSaida < dataHoje) {
-        // Atrasadas
+        // Atrasadas - data no passado e não pago
         const diasAtrasado = Math.floor((hoje - new Date(dataSaida + 'T00:00:00')) / (1000 * 60 * 60 * 24));
         saidasAtrasadas.push({...s, diasAtrasado});
       } else if (dataSaida === dataHoje) {
-        // Vencendo hoje
+        // Vencendo hoje - data hoje e não pago
         saidasVencendoHoje.push(s);
       } else {
-        // Próximas (futuras)
+        // Próximas - data futura e não pago
         const diasRestantes = Math.floor((new Date(dataSaida + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
         if (diasRestantes <= 30) { // Próximos 30 dias
           saidasProximas.push({...s, diasRestantes});
