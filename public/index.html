@@ -30,94 +30,8 @@
       background: #ffffff;
       min-height: 100vh;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      padding: 0;
     }
 
-    /* ===== LOGIN CONTAINER ===== */
-    .login-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .login-box {
-      background: white;
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-    }
-
-    .login-title {
-      color: #10b981;
-      font-weight: 800;
-      font-size: 1.8rem;
-      margin-bottom: 30px;
-    }
-
-    .login-form .form-control {
-      border-radius: 12px;
-      border: 2px solid #e5e7eb;
-      padding: 15px;
-      margin-bottom: 20px;
-      font-size: 1rem;
-    }
-
-    .login-form .form-control:focus {
-      border-color: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-      outline: none;
-    }
-
-    .login-btn {
-      background: var(--ai-gradient);
-      border: none;
-      border-radius: 12px;
-      padding: 15px 30px;
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
-      width: 100%;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
-    .login-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-    }
-
-    .login-error {
-      background: #fee2e2;
-      border: 2px solid #ef4444;
-      color: #dc2626;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .demo-credentials {
-      background: #f0f9ff;
-      border: 2px solid #0ea5e9;
-      border-radius: 12px;
-      padding: 15px;
-      margin-top: 20px;
-      font-size: 0.85rem;
-      color: #0c4a6e;
-    }
-
-    /* ===== MAIN CONTAINER ===== */
     .main-container {
       background: var(--white);
       border-radius: 20px;
@@ -125,16 +39,6 @@
       margin: 20px auto;
       padding: 30px;
       max-width: 1400px;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.5s ease;
-      display: none;
-    }
-
-    .main-container.show {
-      opacity: 1;
-      transform: translateY(0);
-      display: block;
     }
 
     .header-title {
@@ -144,6 +48,96 @@
       margin-bottom: 30px;
       text-align: center;
       position: relative;
+    }
+
+    /* ===== CHAT FIXO NO TOPO ===== */
+    .chat-container-topo {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      display: none;
+      flex-direction: column;
+      z-index: 2000;
+      animation: slideDownIn 0.3s ease-out;
+    }
+
+    @keyframes slideDownIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .chat-header-topo {
+      background: var(--whatsapp-green);
+      border-radius: 20px 20px 0 0;
+      padding: 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-close-btn-topo {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chat-body-topo {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+    }
+
+    .chat-messages-topo {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      padding: 10px;
+      max-height: 250px;
+    }
+
+    .chat-input-topo {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chat-input-topo input {
+      flex: 1;
+      border: 2px solid #e5e7eb;
+      border-radius: 25px;
+      padding: 10px 15px;
+      outline: none;
+    }
+
+    .chat-send-btn-topo {
+      background: var(--whatsapp-green);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: white;
+      cursor: pointer;
     }
 
     /* ===== NOTIFICAÇÃO INTELIGENTE ===== */
@@ -179,7 +173,816 @@
       box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
     }
 
-    /* ===== DASHBOARD ===== */
+    /* ===== RECORRÊNCIA PERSONALIZADA ===== */
+    .recorrencia-avancada {
+      background: #f0f9ff;
+      border: 2px solid #0ea5e9;
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .recorrencia-avancada.show {
+      display: block;
+    }
+
+    .recorrencia-avancada label {
+      font-weight: 600;
+      color: #0c4a6e;
+      font-size: 0.85rem;
+      margin-bottom: 5px;
+    }
+
+    .recorrencia-avancada input,
+    .recorrencia-avancada select {
+      background: white;
+      border: 2px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 8px 12px;
+      width: 100%;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .recorrencia-avancada input:focus,
+    .recorrencia-avancada select:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+
+    /* ===== MODAL EDIÇÃO MÚLTIPLA ===== */
+    .modal-edicao-multipla {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2001;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-edicao-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 900px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    .modal-edicao-header {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 25px 30px;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-edicao-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-edicao-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-edicao-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .modal-edicao-body {
+      padding: 30px;
+    }
+
+    /* ===== SELEÇÃO MÚLTIPLA ===== */
+    .checkbox-selecao {
+      transform: scale(1.2);
+      margin-right: 10px;
+    }
+
+    .linha-selecionada {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-left: 4px solid var(--success-color) !important;
+    }
+
+    .botoes-multipla-acao {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .botoes-multipla-acao.show {
+      display: block;
+    }
+
+    .contador-selecionados {
+      font-weight: 700;
+      color: var(--success-color);
+      margin-bottom: 10px;
+    }
+
+    /* ===== MODAL TREINAMENTO IA MELHORADO ===== */
+    .modal-treinamento {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2001;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-treinamento-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    .modal-treinamento-header {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 25px 30px;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-treinamento-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-treinamento-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-treinamento-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .modal-treinamento-body {
+      padding: 30px;
+    }
+
+    .treinamento-item {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .treinamento-input {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      width: 100%;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      resize: vertical;
+    }
+
+    .treinamento-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .treinamento-natural {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .treinamento-natural h6 {
+      color: #065f46;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .treinamento-natural textarea {
+      background: white;
+      border: 2px solid #10b981;
+      border-radius: 8px;
+      padding: 15px;
+      width: 100%;
+      min-height: 100px;
+      font-size: 0.95rem;
+      resize: vertical;
+    }
+
+    .treinamento-natural textarea:focus {
+      outline: none;
+      border-color: #059669;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .exemplo-treinamento {
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #0c4a6e;
+    }
+
+    .btn-analise-inteligente {
+      background: var(--ai-gradient);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 12px 25px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .btn-analise-inteligente:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      color: white;
+    }
+
+    .btn-analise-inteligente:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-analise-inteligente:hover:before {
+      left: 100%;
+    }
+
+    .header-actions {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    /* ===== MODAL ANÁLISE INTELIGENTE ===== */
+    .modal-analise {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-analise-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 1000px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    .modal-analise-header {
+      background: var(--ai-gradient);
+      color: white;
+      padding: 25px 30px;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-analise-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-analise-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-analise-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .modal-analise-body {
+      padding: 30px;
+    }
+
+    .analise-loading {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .analise-loading .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--ai-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .analise-resultado {
+      display: none;
+    }
+
+    .insight-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .insight-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border-color: var(--ai-color);
+    }
+
+    .insight-card.tipo-tendencia {
+      border-left: 6px solid #3b82f6;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    }
+
+    .insight-card.tipo-alerta {
+      border-left: 6px solid #ef4444;
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    }
+
+    .insight-card.tipo-oportunidade {
+      border-left: 6px solid #10b981;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    }
+
+    .insight-card.tipo-insight {
+      border-left: 6px solid #8b5cf6;
+      background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .insight-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: white;
+    }
+
+    .insight-icon.tendencia { background: #3b82f6; }
+    .insight-icon.alerta { background: #ef4444; }
+    .insight-icon.oportunidade { background: #10b981; }
+    .insight-icon.insight { background: #8b5cf6; }
+
+    .insight-titulo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin: 0;
+    }
+
+    .insight-valor {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    .insight-descricao {
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .insight-acoes {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .insight-acao {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 16px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .insight-acao:hover {
+      border-color: var(--ai-color);
+      color: var(--ai-color);
+      transform: translateY(-1px);
+    }
+
+    .resumo-executivo {
+      background: var(--ai-gradient);
+      color: white;
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .resumo-titulo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .resumo-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .resumo-stat {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .resumo-stat-valor {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .resumo-stat-label {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .progresso-analise {
+      background: #f1f5f9;
+      border-radius: 10px;
+      height: 8px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .progresso-barra {
+      background: var(--ai-gradient);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    /* ===== PERGUNTAS INTELIGENTES ===== */
+    .pergunta-inteligente {
+      background: #f0f9ff;
+      border: 2px solid #0ea5e9;
+      border-radius: 12px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+
+    .pergunta-titulo {
+      font-weight: 700;
+      color: #0c4a6e;
+      margin-bottom: 10px;
+    }
+
+    .pergunta-opcoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pergunta-opcao {
+      background: white;
+      border: 2px solid #0ea5e9;
+      border-radius: 20px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #0c4a6e;
+      transition: all 0.2s ease;
+    }
+
+    .pergunta-opcao:hover {
+      background: #0ea5e9;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .pergunta-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid #0ea5e9;
+      border-radius: 8px;
+      background: white;
+      color: #0c4a6e;
+    }
+
+    /* ===== REMAINING STYLES ===== */
+    .card-modern {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: none;
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-control, .form-select {
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      padding: 12px 16px;
+      transition: all 0.2s ease;
+      background: var(--light-bg);
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+      background: var(--white);
+    }
+
+    .campo-obrigatorio {
+      border-color: var(--danger-color) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .btn-modern {
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-primary-modern {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+    }
+
+    .btn-primary-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-success-modern {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+    }
+
+    .btn-success-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-warning-modern {
+      background: linear-gradient(135deg, var(--warning-color), #d97706);
+      color: white;
+    }
+
+    .btn-warning-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-danger-modern {
+      background: linear-gradient(135deg, var(--danger-color), #dc2626);
+      color: white;
+    }
+
+    .btn-danger-modern:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-sm-modern {
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .status-section {
+      background: var(--light-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+    }
+
+    .status-atrasadas { border-left-color: var(--danger-color); }
+    .status-vencendo { border-left-color: var(--warning-color); }
+    .status-proximas { border-left-color: #f97316; }
+    .status-recorrentes { border-left-color: var(--success-color); }
+
+    .status-title {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .table-modern {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: none;
+    }
+
+    .table-modern thead {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+      color: white;
+    }
+
+    .table-modern th {
+      border: none;
+      padding: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .table-modern td {
+      border: none;
+      padding: 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .table-modern tbody tr:hover {
+      background: var(--light-bg);
+      transition: background 0.2s ease;
+    }
+
     .dashboard-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -228,126 +1031,249 @@
       letter-spacing: 0.5px;
     }
 
-    /* ===== FORM STYLES ===== */
-    .card-modern {
+    .chart-container {
       background: var(--white);
       border-radius: 16px;
-      box-shadow: var(--shadow);
-      border: none;
       padding: 25px;
       margin-bottom: 25px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow);
     }
 
-    .card-modern:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
+    .chart-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--success-color);
+      margin-bottom: 20px;
+      text-align: center;
     }
 
-    .form-control, .form-select {
-      border-radius: 12px;
-      border: 2px solid #e5e7eb;
-      padding: 12px 16px;
-      transition: all 0.2s ease;
+    .editor-categoria {
       background: var(--light-bg);
-    }
-
-    .form-control:focus, .form-select:focus {
-      border-color: var(--success-color);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-      background: var(--white);
-      outline: none;
-    }
-
-    .btn-modern {
       border-radius: 12px;
-      padding: 12px 24px;
+      padding: 20px;
+      margin: 15px 0;
+      border: 2px dashed #d1d5db;
+    }
+
+    .icon-status {
+      font-size: 1.2rem;
+    }
+
+    .badge-modern {
+      padding: 6px 12px;
+      border-radius: 20px;
       font-weight: 600;
-      transition: all 0.2s ease;
+      font-size: 0.75rem;
+    }
+
+    .input-group-modern {
+      display: flex;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .valor-dourado {
+      background: #ffffff;
+      color: #d4af37;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .valor-total-dourado {
+      background: linear-gradient(135deg, #d4af37, #ffd700);
+      color: #000000;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 15px;
+      box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content-custom {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: var(--shadow-lg);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title-custom {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-limpar-filtros {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      color: white;
       border: none;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.85rem;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
       cursor: pointer;
     }
 
-    .btn-success-modern {
-      background: linear-gradient(135deg, var(--success-color), #059669);
-      color: white;
-    }
-
-    .btn-success-modern:hover {
+    .btn-limpar-filtros:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
     }
 
-    .btn-primary-modern {
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: white;
-    }
-
-    .btn-primary-modern:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
-    }
-
-    .btn-warning-modern {
-      background: linear-gradient(135deg, var(--warning-color), #d97706);
-      color: white;
-    }
-
-    .btn-warning-modern:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 15px rgba(245, 158, 11, 0.3);
-    }
-
-    .btn-danger-modern {
-      background: linear-gradient(135deg, var(--danger-color), #dc2626);
-      color: white;
-    }
-
-    .btn-danger-modern:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 15px rgba(239, 68, 68, 0.3);
-    }
-
-    /* ===== TABLE STYLES ===== */
-    .table-modern {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: none;
-    }
-
-    .table-modern thead {
-      background: linear-gradient(135deg, var(--success-color), #059669);
-      color: white;
-    }
-
-    .table-modern th {
-      border: none;
-      padding: 16px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.85rem;
-      text-align: center;
-    }
-
-    .table-modern td {
-      border: none;
-      padding: 16px;
-      vertical-align: middle;
-      border-bottom: 1px solid #f1f5f9;
-      text-align: center;
-    }
-
-    .table-modern tbody tr:hover {
+    .multiplas-saidas-container {
       background: var(--light-bg);
-      transition: background 0.2s ease;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 2px solid var(--success-color);
+      display: none;
     }
 
-    /* ===== RESPONSIVE ===== */
+    .saida-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .saida-info {
+      flex: 1;
+    }
+
+    .saida-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: 15px;
+    }
+
+    .btn-multiplas-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .recorrencia-personalizada {
+      margin-top: 10px;
+    }
+
+    .recorrencia-personalizada input, .recorrencia-personalizada select {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 12px;
+      width: 100%;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .recorrencia-personalizada input:focus, .recorrencia-personalizada select:focus {
+      outline: none;
+      border-color: var(--success-color);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .ver-mais-container {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .btn-ver-mais {
+      background: var(--ai-gradient);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-ver-mais:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .paginacao-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+      padding: 15px;
+      background: var(--light-bg);
+      border-radius: 12px;
+    }
+
+    .paginacao-btn {
+      background: var(--success-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .paginacao-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .paginacao-btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .paginacao-info {
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+
+    /* ===== ERRO DE MÚLTIPLAS SAÍDAS ===== */
+    .erro-item {
+      background: #fef2f2;
+      border: 2px solid #ef4444;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      color: #dc2626;
+      font-weight: 600;
+    }
+
     @media (max-width: 768px) {
       .main-container {
         margin: 10px;
@@ -364,105 +1290,95 @@
         font-size: 1.4rem;
       }
 
+      .btn-multiplas-container {
+        flex-direction: column;
+      }
+
+      .chat-container-topo {
+        width: 95%;
+        height: 350px;
+      }
+
+      .header-actions {
+        position: static;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
       .header-title {
         margin-bottom: 10px;
-        font-size: 1.5rem;
       }
 
-      .login-box {
-        padding: 30px 20px;
+      .modal-analise-content {
+        width: 95%;
+        margin: 20px;
+        max-height: 85vh;
       }
 
-      .table-modern {
-        font-size: 0.85rem;
+      .modal-analise-header {
+        padding: 20px;
       }
 
-      .table-modern th,
-      .table-modern td {
-        padding: 12px 8px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .header-title {
-        font-size: 1.3rem;
+      .modal-analise-body {
+        padding: 20px;
       }
 
-      .dashboard-value {
-        font-size: 1.2rem;
+      .resumo-stats {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
       }
 
-      .dashboard-label {
-        font-size: 0.8rem;
+      .insight-acoes {
+        justify-content: center;
       }
 
-      .table-modern th,
-      .table-modern td {
-        padding: 8px 4px;
-        font-size: 0.75rem;
+      .notificacao-inteligente {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100px);
       }
 
-      .btn-modern {
-        padding: 6px 12px;
-        font-size: 0.75rem;
+      .notificacao-inteligente.show {
+        transform: translateY(0);
       }
-
-      .form-control,
-      .form-select {
-        padding: 10px 12px;
-        font-size: 0.9rem;
-      }
-    }
-
-    /* ===== LOADING ===== */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--success-color);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 10px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-  <!-- LOGIN CONTAINER -->
-  <div id="loginContainer" class="login-container">
-    <div class="login-box">
-      <h2 class="login-title">
-        <i class="fas fa-chart-line"></i><br>
-        iClub Saídas
-      </h2>
-      <div id="loginError" class="login-error">
-        <i class="fas fa-exclamation-circle"></i>
-        <span id="loginErrorText">Usuário ou senha incorretos!</span>
+  <!-- CHAT CONTAINER NO TOPO -->
+  <div id="chatContainerTopo" class="chat-container-topo">
+    <div class="chat-header-topo">
+      <div>
+        <strong>💬 Chat IA</strong>
+        <div style="font-size: 0.8rem; opacity: 0.9;">Digite suas saídas naturalmente</div>
       </div>
-      <form class="login-form" id="loginForm">
-        <input type="text" id="loginUsuario" class="form-control" placeholder="Usuário" required autocomplete="username">
-        <input type="password" id="loginSenha" class="form-control" placeholder="Senha" required autocomplete="current-password">
-        <button type="submit" class="login-btn" id="loginButton">
-          <i class="fas fa-sign-in-alt"></i> Entrar
+      <button class="chat-close-btn-topo" onclick="toggleChatTopo()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="chat-body-topo">
+      <div class="chat-messages-topo" id="chatMessagesTopo">
+        <div class="chat-message system">
+          <div class="chat-bubble">
+            <div>👋 Olá! Digite suas saídas em linguagem natural - ex: "Paguei R$ 500 de aluguel hoje"</div>
+            <div class="chat-time">Agora</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-topo">
+        <input type="text" id="chatInputTopo" placeholder="Ex: Paguei R$ 500 de aluguel hoje..." maxlength="200">
+        <button class="chat-send-btn-topo" onclick="enviarMensagemChatTopo()">
+          <i class="fas fa-paper-plane"></i>
         </button>
-      </form>
-      <div class="demo-credentials">
-        <strong>👤 Credenciais Demo:</strong><br>
-        <small>
-          <strong>Admin:</strong> admin / admin123<br>
-          <strong>Usuário 1:</strong> user1 / user123<br>
-          <strong>Usuário 2:</strong> user2 / user456
-        </small>
+      </div>
+      <div style="margin-top: 10px; text-align: center;">
+        <button class="btn btn-sm" style="background: rgba(0,0,0,0.1); border: none; border-radius: 15px; padding: 5px 15px; margin-right: 10px;" onclick="limparChatTopo()">
+          Limpar
+        </button>
+        <button class="btn btn-sm" style="background: rgba(0,0,0,0.1); border: none; border-radius: 15px; padding: 5px 15px;" onclick="mostrarTreinamentoIA()">
+          Treinar IA
+        </button>
       </div>
     </div>
   </div>
@@ -472,510 +1388,571 @@
     <span id="textoNotificacao"></span>
   </div>
 
-  <!-- MAIN CONTAINER -->
-  <div id="mainContainer" class="main-container">
-    <h1 class="header-title">
+  <div class="main-container">
+    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; position: relative;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
+      <div class="header-actions">
+        <button class="btn-analise-inteligente" onclick="toggleChatTopo()" style="margin-right: 15px;">
+          <i class="fas fa-comments"></i> Chat IA
+        </button>
+        <button class="btn-analise-inteligente" onclick="abrirAnaliseInteligente()">
+          <i class="fas fa-brain"></i> Análise Inteligente
+        </button>
+      </div>
     </h1>
 
-    <!-- DASHBOARD -->
-    <div class="dashboard-cards">
-      <div class="dashboard-card">
-        <div class="dashboard-value" id="totalMes">R$ 0,00</div>
-        <div class="dashboard-label">Total do Mês</div>
-      </div>
-      <div class="dashboard-card">
-        <div class="dashboard-value" id="totalRecorrente">R$ 0,00</div>
-        <div class="dashboard-label">Recorrente</div>
-      </div>
-      <div class="dashboard-card">
-        <div class="dashboard-value" id="maiorGasto">R$ 0,00</div>
-        <div class="dashboard-label">Maior Gasto</div>
-      </div>
-      <div class="dashboard-card">
-        <div class="dashboard-value" id="categoriaTopo">-</div>
-        <div class="dashboard-label">Categoria Top</div>
-      </div>
-      <div class="dashboard-card">
-        <div class="dashboard-value" id="totalSaidas">0</div>
-        <div class="dashboard-label">Total Saídas</div>
+    <!-- MODAL TREINAMENTO IA MELHORADO -->
+    <div id="modalTreinamentoIA" class="modal-treinamento">
+      <div class="modal-treinamento-content">
+        <div class="modal-treinamento-header">
+          <h3 class="modal-treinamento-title">
+            <i class="fas fa-graduation-cap"></i>
+            Treinar IA - Ensine Padrões
+          </h3>
+          <button class="modal-treinamento-close" onclick="fecharTreinamentoIA()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-treinamento-body">
+          <!-- Treinamento Natural -->
+          <div class="treinamento-natural">
+            <h6>🎯 Treinamento Inteligente em Linguagem Natural</h6>
+            <p style="color: #065f46; margin-bottom: 15px; font-size: 0.9rem;">
+              Ensine a IA com frases naturais. Ela vai aprender automaticamente!
+            </p>
+            <textarea id="treinamentoNatural" placeholder="Exemplo: 'Quando eu falar adicione cartão você vai adicionar ao centro de custos Cartões. Quando falar adicione tráfego pago você vai adicionar ao centro de custo Marketing.'"></textarea>
+            <div class="exemplo-treinamento">
+              <strong>💡 Exemplos:</strong><br>
+              • "Quando eu falar combustível, adicione na categoria Combustível"<br>
+              • "Quando eu falar uber, adicione na categoria Transporte"<br>
+              • "Quando eu falar conta de luz, adicione na categoria Energia"
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+              <button class="btn-analise-inteligente" onclick="salvarTreinamentoNatural()">
+                <i class="fas fa-brain"></i> Treinar IA
+              </button>
+            </div>
+          </div>
+
+          <!-- Treinamento Manual (Opcional) -->
+          <div class="treinamento-item">
+            <h6 style="color: #374151; margin-bottom: 15px;">📝 Treinamento Manual (Opcional)</h6>
+            <input type="text" id="treinamentoFrase" class="treinamento-input" 
+                   placeholder="Ex: Paguei R$ 500 de aluguel da loja centro hoje">
+            
+            <div class="row g-2 mt-3">
+              <div class="col-md-4">
+                <select id="treinamentoCategoria" class="treinamento-input">
+                  <option value="">Selecione categoria...</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <input type="text" id="treinamentoValor" class="treinamento-input" placeholder="500">
+              </div>
+              <div class="col-md-4">
+                <select id="treinamentoLoja" class="treinamento-input">
+                  <option value="">Selecione loja...</option>
+                </select>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px;">
+              <button class="btn btn-success btn-modern" onclick="salvarTreinamentoManual()">
+                <i class="fas fa-save"></i> Salvar Treinamento Manual
+              </button>
+            </div>
+          </div>
+
+          <div id="listaTreinamentos" style="margin-top: 25px;">
+            <!-- Lista de treinamentos será inserida aqui -->
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- FORMULÁRIO ADICIONAR SAÍDA -->
-    <div class="card-modern">
-      <h5 class="mb-3">➕ Adicionar Saída</h5>
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Loja:</label>
-          <select id="loja" class="form-select">
-            <option>Loja Centro</option>
-            <option>Loja Shopping</option>
-            <option>Loja Bairro</option>
-          </select>
+    <!-- MODAL ANÁLISE INTELIGENTE -->
+    <div id="modalAnaliseInteligente" class="modal-analise">
+      <div class="modal-analise-content">
+        <div class="modal-analise-header">
+          <h2 class="modal-analise-title">
+            <i class="fas fa-brain"></i>
+            Análise Inteligente de Dados
+          </h2>
+          <button class="modal-analise-close" onclick="fecharAnaliseInteligente()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Centro de Custo:</label>
-          <select id="categoria" class="form-select">
-            <option>Aluguel</option>
-            <option>Energia</option>
-            <option>Internet</option>
-            <option>Combustível</option>
-            <option>Material</option>
-            <option>Transporte</option>
-            <option>Alimentação</option>
-            <option>Marketing</option>
-            <option>Saúde</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Descrição:</label>
-          <input type="text" id="descricao" class="form-control" placeholder="Descrição da saída">
+        <div class="modal-analise-body">
+          <!-- Loading -->
+          <div id="analiseLoading" class="analise-loading">
+            <div class="spinner"></div>
+            <h4>🧠 Analisando seus dados...</h4>
+            <p>Nossa IA está processando padrões, tendências e insights</p>
+            <div class="progresso-analise">
+              <div id="progressoBarra" class="progresso-barra"></div>
+            </div>
+            <p id="etapaAnalise">Carregando dados...</p>
+          </div>
+
+          <!-- Resultado -->
+          <div id="analiseResultado" class="analise-resultado">
+            <!-- Conteúdo será inserido via JavaScript -->
+          </div>
         </div>
       </div>
+    </div>
 
-      <div class="row g-3 mt-2">
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Valor (R$):</label>
-          <input type="text" id="valor" class="form-control" placeholder="R$ 0,00">
+    <!-- MODAL EDIÇÃO MÚLTIPLA -->
+    <div id="modalEdicaoMultipla" class="modal-edicao-multipla">
+      <div class="modal-edicao-content">
+        <div class="modal-edicao-header">
+          <h3 class="modal-edicao-title">
+            <i class="fas fa-edit"></i>
+            Editar Múltiplas Saídas
+          </h3>
+          <button class="modal-edicao-close" onclick="fecharEdicaoMultipla()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Data:</label>
-          <input type="date" id="data" class="form-control">
+        <div class="modal-edicao-body">
+          <div id="conteudoEdicaoMultipla">
+            <!-- Conteúdo será inserido via JavaScript -->
+          </div>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Recorrente:</label>
-          <select id="recorrente" class="form-select">
+      </div>
+    </div>
+
+    <!-- Formulário de Cadastro -->
+    <div class="card-modern">
+      <h5 class="status-title">
+        Nova Saída
+      </h5>
+      
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Loja</label>
+          <select id="loja" class="form-select"></select>
+          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorLoja()">
+            <i class="fas fa-edit"></i> Editar Lojas
+          </button>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Centro de custo</label>
+          <select id="categoria" class="form-select"></select>
+          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorCategoria()">
+            <i class="fas fa-edit"></i> Editar Centros de custo
+          </button>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Descrição</label>
+          <input type="text" id="descricao" class="form-control" placeholder="Digite a descrição"/>
+        </div>
+        <div class="col-md-6 col-lg-2">
+          <label class="form-label fw-bold">Valor (R$)</label>
+          <input type="text" id="valor" class="form-control" placeholder="R$ 0,00" oninput="formatarMoeda(this)"/>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Data</label>
+          <input type="date" id="data" class="form-control"/>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Recorrente?</label>
+          <select id="recorrente" class="form-select" onchange="toggleTipoRecorrencia()">
             <option>Não</option>
             <option>Sim</option>
           </select>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Status:</label>
+        <div class="col-md-6 col-lg-1" id="colunaTipoRecorrencia" style="display:none;">
+          <label class="form-label fw-bold">Tipo</label>
+          <select id="tipoRecorrencia" class="form-select" onchange="toggleRecorrenciaPersonalizada()">
+            <option disabled selected>Selecione</option>
+            <option>Diária</option>
+            <option>Semanal</option>
+            <option>Mensal</option>
+            <option>Anual</option>
+            <option>Personalizada</option>
+          </select>
+          <!-- NOVA RECORRÊNCIA AVANÇADA -->
+          <div id="recorrenciaAvancada" class="recorrencia-avancada">
+            <div class="row g-2">
+              <div class="col-6">
+                <label>A cada X dias:</label>
+                <input type="number" id="diasPersonalizado" placeholder="Ex: 15" min="1" max="365">
+              </div>
+              <div class="col-6">
+                <label>Meses:</label>
+                <select id="mesesRecorrencia" multiple style="height: 80px;">
+                  <option value="1">Janeiro</option>
+                  <option value="2">Fevereiro</option>
+                  <option value="3">Março</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Maio</option>
+                  <option value="6">Junho</option>
+                  <option value="7">Julho</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Setembro</option>
+                  <option value="10">Outubro</option>
+                  <option value="11">Novembro</option>
+                  <option value="12">Dezembro</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label>Ano da recorrência:</label>
+                <input type="number" id="anoRecorrencia" placeholder="Ex: 2025" min="2024" max="2030" value="2025">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-1">
+          <label class="form-label fw-bold">Pago?</label>
           <select id="pago" class="form-select">
             <option>Sim</option>
             <option>Não</option>
           </select>
         </div>
+        <div class="col-12">
+          <div class="btn-multiplas-container">
+            <button class="btn btn-success-modern btn-modern flex-fill" onclick="adicionarSaida()">
+              <i class="fas fa-plus"></i> Adicionar Saída
+            </button>
+            <button class="btn btn-success-modern btn-modern flex-fill" onclick="iniciarMultiplasSaidas()">
+              <i class="fas fa-clone"></i> Adicionar Múltiplas Saídas
+            </button>
+          </div>
+          <div id="mensagemSucesso" class="alert alert-success mt-3" style="display:none;">
+            ✅ Saída adicionada!
+          </div>
+        </div>
       </div>
 
-      <div class="mt-3">
-        <button class="btn btn-success-modern btn-modern" onclick="adicionarSaida()">
-          <i class="fas fa-plus"></i> Adicionar Saída
-        </button>
-        <button class="btn btn-secondary btn-modern" onclick="fazerLogout()">
-          <i class="fas fa-sign-out-alt"></i> Sair
-        </button>
+      <!-- Editor Loja -->
+      <div id="editor-loja" class="editor-categoria" style="display:none">
+        <div class="input-group-modern">
+          <input type="text" id="novaLoja" placeholder="Nova loja" class="form-control"/>
+          <button class="btn btn-success-modern btn-modern" onclick="adicionarLoja()">
+            Adicionar
+          </button>
+          <button class="btn btn-warning btn-modern" onclick="mostrarEditorLojaExistente()">
+            <i class="fas fa-edit"></i> Editar Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor Categoria -->
+      <div id="editor-categoria" class="editor-categoria" style="display:none">
+        <div class="input-group-modern">
+          <input type="text" id="novaCategoria" placeholder="Novo centro de custo" class="form-control"/>
+          <button class="btn btn-success-modern btn-modern" onclick="adicionarCategoria()">
+            Adicionar
+          </button>
+          <button class="btn btn-warning btn-modern" onclick="mostrarEditorCategoriaExistente()">
+            <i class="fas fa-edit"></i> Editar Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- Container para Múltiplas Saídas -->
+      <div id="multiplasSaidasContainer" class="multiplas-saidas-container">
+        <h6 class="mb-3" style="color: var(--success-color); font-weight: 700;">
+          <i class="fas fa-list"></i> Lista de Saídas para Adicionar
+        </h6>
+        <div id="errosMultiplas" style="margin-bottom: 15px;"></div>
+        <div id="listaSaidas"></div>
+        <div class="mt-3">
+          <button class="btn btn-success-modern btn-modern me-2" onclick="adicionarNovaLinha()">
+            <i class="fas fa-plus"></i> Adicionar Nova Linha
+          </button>
+          <button class="btn btn-success-modern btn-modern me-2" onclick="adicionarTodasSaidas()">
+            <i class="fas fa-save"></i> Adicionar Todas Saídas
+          </button>
+          <button class="btn btn-secondary btn-modern" onclick="cancelarMultiplasSaidas()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- SAÍDAS DO MÊS -->
+    <!-- Filtro Global por Loja -->
     <div class="card-modern">
-      <h5 class="mb-3">📊 Saídas do Mês Atual</h5>
+      <h5 class="status-title">
+        Filtros Gerais
+      </h5>
+      <div class="row g-2">
+        <div class="col-md-12">
+          <label class="form-label fw-bold">Visualizar loja:</label>
+          <select id="filtroLojaGlobal" class="form-select" onchange="aplicarFiltroLoja()">
+            <option value="">📊 Todas as lojas (Consolidado)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seções de Status -->
+    <div class="status-section status-atrasadas">
+      <h5 class="status-title">
+        <i class="fas fa-exclamation-triangle"></i> Saídas Atrasadas
+      </h5>
+      <div id="atrasadas"></div>
+    </div>
+
+    <div class="status-section status-vencendo">
+      <h5 class="status-title">
+        <i class="fas fa-clock"></i> Saídas Vencendo Hoje
+      </h5>
+      <div id="vencendoHoje"></div>
+    </div>
+
+    <div class="status-section status-proximas">
+      <h5 class="status-title">
+        <i class="fas fa-calendar-alt"></i> Próximas Saídas
+      </h5>
+      <div id="proximasControles" class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex gap-2">
+          <button class="paginacao-btn" onclick="paginacaoAnteriorProximas()">
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <span class="paginacao-info">
+            Página <span id="paginaAtualProximas">1</span> de <span id="totalPaginasProximas">1</span>
+          </span>
+          <button class="paginacao-btn" onclick="paginacaoProximaProximas()">
+            Próxima <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div>
+          <span class="badge bg-info">Total: <span id="totalItensProximas">0</span> saídas</span>
+        </div>
+      </div>
+      <div id="proximas"></div>
+    </div>
+
+    <div class="status-section status-recorrentes">
+      <h5 class="status-title">
+        <i class="fas fa-repeat"></i> Saídas Recorrentes
+      </h5>
+      <div class="row g-2 mb-3">
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por loja:</label>
+          <select id="filtroLojaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todas as lojas</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por ano:</label>
+          <select id="filtroAnoRecorrentes" class="form-select" onchange="preencherMesesDoAno()">
+            <option value="">Todos os anos</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por mês:</label>
+          <select id="filtroMesRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+            <option value="">Todos os meses</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Filtrar por centro de custo:</label>
+          <div class="d-flex gap-2">
+            <select id="filtroCategoriaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
+              <option value="">Todos os centros de custo</option>
+            </select>
+            <button class="btn btn-limpar-filtros" onclick="limparFiltrosRecorrentes()" title="Limpar Filtros">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- BOTÕES DE AÇÃO MÚLTIPLA PARA RECORRENTES -->
+      <div id="botoesAcaoRecorrentes" class="botoes-multipla-acao">
+        <div class="contador-selecionados" id="contadorRecorrentes">0 saídas selecionadas</div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-success-modern btn-sm" onclick="pagarSaidasSelecionadas('recorrentes')">
+            <i class="fas fa-check"></i> Pagar Selecionadas
+          </button>
+          <button class="btn btn-warning-modern btn-sm" onclick="editarSaidasSelecionadas('recorrentes')">
+            <i class="fas fa-edit"></i> Editar Selecionadas
+          </button>
+          <button class="btn btn-danger-modern btn-sm" onclick="excluirSaidasSelecionadas('recorrentes')">
+            <i class="fas fa-trash"></i> Excluir Selecionadas
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="limparSelecaoRecorrentes()">
+            <i class="fas fa-times"></i> Limpar Seleção
+          </button>
+        </div>
+      </div>
+      
+      <div id="previsaoRecorrentes"></div>
+      <div class="valor-total-dourado">
+        <strong>Valor total saídas: <span id="totalSaidasRecorrentes">R$ 0,00</span></strong>
+      </div>
+    </div>
+
+    <!-- Saídas do Mês -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        Saídas do Mês
+      </h4>
+      
+      <!-- BOTÕES DE AÇÃO MÚLTIPLA PARA SAÍDAS DO MÊS -->
+      <div id="botoesAcaoSaidasMes" class="botoes-multipla-acao">
+        <div class="contador-selecionados" id="contadorSaidasMes">0 saídas selecionadas</div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-success-modern btn-sm" onclick="pagarSaidasSelecionadas('saidasMes')">
+            <i class="fas fa-check"></i> Pagar Selecionadas
+          </button>
+          <button class="btn btn-warning-modern btn-sm" onclick="editarSaidasSelecionadas('saidasMes')">
+            <i class="fas fa-edit"></i> Editar Selecionadas
+          </button>
+          <button class="btn btn-danger-modern btn-sm" onclick="excluirSaidasSelecionadas('saidasMes')">
+            <i class="fas fa-trash"></i> Excluir Selecionadas
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="limparSelecaoSaidasMes()">
+            <i class="fas fa-times"></i> Limpar Seleção
+          </button>
+        </div>
+      </div>
       
       <div class="table-responsive">
         <table class="table table-modern">
           <thead>
             <tr>
-              <th>Usuário</th>
+              <th><input type="checkbox" id="selecionarTodasSaidasMes" onchange="selecionarTodasLinhas('saidasMes')"></th>
               <th>Loja</th>
-              <th>Centro de Custo</th>
+              <th>Centro de custo</th>
               <th>Descrição</th>
               <th>Valor</th>
               <th>Data</th>
               <th>Recorrente</th>
-              <th>Status</th>
+              <th>Tipo</th>
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="tabelaSaidas">
-            <!-- Saídas serão inseridas aqui -->
-          </tbody>
+          <tbody id="tabelaSaidas"></tbody>
         </table>
+      </div>
+      
+      <!-- Paginação -->
+      <div id="paginacaoSaidasMes" class="paginacao-container" style="display:none;">
+        <button class="paginacao-btn" onclick="paginacaoAnterior('saidasMes')">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="paginacao-info">
+          Página <span id="paginaAtualSaidasMes">1</span> de <span id="totalPaginasSaidasMes">1</span>
+        </span>
+        <button class="paginacao-btn" onclick="paginacaoProxima('saidasMes')">
+          Próxima <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
 
-    <!-- LOADING -->
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Carregando dados...</p>
+    <!-- Dashboard -->
+    <div class="card-modern">
+      <h4 class="status-title">
+        Dashboard total saídas do mês
+      </h4>
+      <div class="dashboard-cards">
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalMes">R$ 0,00</div>
+          <div class="dashboard-label">Total do Mês</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalRecorrente">R$ 0,00</div>
+          <div class="dashboard-label">Total Recorrente</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="maiorGasto">R$ 0,00</div>
+          <div class="dashboard-label">Maior Gasto</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="categoriaTopo">-</div>
+          <div class="dashboard-label">Centro de custo Topo</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="dashboard-value" id="totalSaidas">0</div>
+          <div class="dashboard-label">Total de Saídas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparativo entre Lojas -->
+    <div class="card-modern" id="comparativoLojas">
+      <h4 class="status-title">
+        📊 Comparativo entre Lojas
+      </h4>
+      <div id="tabelaComparativo"></div>
+      
+      <!-- Gráfico Comparativo de Lojas -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico Comparativo por Loja
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 600px; height: 400px;">
+            <canvas id="graficoLojas"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Gráfico Centros de Custo por Loja -->
+      <div class="chart-container mt-4">
+        <h4 class="chart-title">
+          Gráfico de Centros de Custo por Loja
+        </h4>
+        <div class="d-flex justify-content-center align-items-center">
+          <div style="width: 700px; height: 400px;">
+            <canvas id="graficoCentrosCusto"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico por Centro de custo
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 400px; height: 400px;">
+          <canvas id="graficoCategoria"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico por Tipo de Gasto
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 400px; height: 400px;">
+          <canvas id="graficoTipo"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h4 class="chart-title">
+        Gráfico de Saídas por Mês
+      </h4>
+      <div class="d-flex justify-content-center align-items-center">
+        <div style="width: 600px; height: 400px;">
+          <canvas id="graficoMes"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script>
-    // Variáveis globais
-    let usuarioAtual = null;
-    let saidas = [];
+  <!-- Modal personalizado -->
+  <div id="modalCustom" class="modal-overlay" style="display: none;">
+    <div class="modal-content-custom">
+      <div class="modal-title-custom" id="modalTitulo">Título do Modal</div>
+      <div id="modalTexto" style="margin-bottom: 20px;"></div>
+      <div class="modal-buttons" id="modalBotoes">
+        <!-- Botões serão inseridos aqui -->
+      </div>
+    </div>
+  </div>
 
-    // Credenciais de login
-    const usuarios = {
-      'admin': 'admin123',
-      'user1': 'user123',
-      'user2': 'user456'
-    };
-
-    // Função de notificação
-    function mostrarNotificacaoInteligente(mensagem, tipo = 'success') {
-      const notificacao = document.getElementById('notificacaoInteligente');
-      const texto = document.getElementById('textoNotificacao');
-      
-      if (!notificacao || !texto) return;
-      
-      texto.textContent = mensagem;
-      
-      // Remove classes anteriores
-      notificacao.classList.remove('error', 'warning');
-      
-      // Adiciona classe do tipo
-      if (tipo === 'error') {
-        notificacao.classList.add('error');
-      } else if (tipo === 'warning') {
-        notificacao.classList.add('warning');
-      }
-      
-      // Mostra notificação
-      notificacao.classList.add('show');
-      
-      // Auto-ocultar após 3 segundos
-      setTimeout(() => {
-        notificacao.classList.remove('show');
-      }, 3000);
-    }
-
-    // Função de login
-    function fazerLogin(event) {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      
-      const usuario = document.getElementById('loginUsuario').value.trim();
-      const senha = document.getElementById('loginSenha').value.trim();
-      const errorDiv = document.getElementById('loginError');
-      const errorText = document.getElementById('loginErrorText');
-      
-      console.log('Tentativa de login:', usuario, senha); // Debug
-      
-      if (!usuario || !senha) {
-        if (errorDiv && errorText) {
-          errorText.textContent = 'Por favor, preencha todos os campos!';
-          errorDiv.style.display = 'block';
-          setTimeout(() => errorDiv.style.display = 'none', 3000);
-        }
-        return false;
-      }
-      
-      // Verifica credenciais
-      if (usuarios[usuario] && usuarios[usuario] === senha) {
-        console.log('Login bem-sucedido!'); // Debug
-        
-        usuarioAtual = usuario;
-        
-        // Salva no localStorage
-        try {
-          localStorage.setItem('usuarioLogado', usuario);
-        } catch (e) {
-          console.warn('LocalStorage não disponível');
-        }
-        
-        // Esconde login e mostra painel
-        const loginContainer = document.getElementById('loginContainer');
-        const mainContainer = document.getElementById('mainContainer');
-        
-        if (loginContainer) {
-          loginContainer.style.transition = 'opacity 0.5s ease';
-          loginContainer.style.opacity = '0';
-          setTimeout(() => {
-            loginContainer.style.display = 'none';
-          }, 500);
-        }
-        
-        if (mainContainer) {
-          mainContainer.style.display = 'block';
-          setTimeout(() => {
-            mainContainer.classList.add('show');
-          }, 100);
-        }
-        
-        mostrarNotificacaoInteligente(`✅ Bem-vindo, ${usuario}!`);
-        inicializarSistema();
-        
-      } else {
-        console.log('Credenciais inválidas'); // Debug
-        
-        if (errorDiv && errorText) {
-          errorText.textContent = 'Usuário ou senha incorretos!';
-          errorDiv.style.display = 'block';
-          setTimeout(() => errorDiv.style.display = 'none', 3000);
-        }
-      }
-      
-      return false;
-    }
-
-    // Função de logout
-    function fazerLogout() {
-      try {
-        localStorage.removeItem('usuarioLogado');
-      } catch (e) {
-        console.warn('LocalStorage não disponível');
-      }
-      
-      usuarioAtual = null;
-      
-      const loginContainer = document.getElementById('loginContainer');
-      const mainContainer = document.getElementById('mainContainer');
-      
-      if (loginContainer) {
-        loginContainer.style.display = 'flex';
-        loginContainer.style.opacity = '1';
-      }
-      
-      if (mainContainer) {
-        mainContainer.classList.remove('show');
-        setTimeout(() => mainContainer.style.display = 'none', 300);
-      }
-      
-      // Limpa formulário
-      document.getElementById('loginUsuario').value = '';
-      document.getElementById('loginSenha').value = '';
-      
-      mostrarNotificacaoInteligente('👋 Logout realizado com sucesso!');
-    }
-
-    // Verifica sessão existente
-    function verificarSessao() {
-      try {
-        const usuarioSalvo = localStorage.getItem('usuarioLogado');
-        if (usuarioSalvo && usuarios[usuarioSalvo]) {
-          usuarioAtual = usuarioSalvo;
-          
-          const loginContainer = document.getElementById('loginContainer');
-          const mainContainer = document.getElementById('mainContainer');
-          
-          if (loginContainer) loginContainer.style.display = 'none';
-          if (mainContainer) {
-            mainContainer.style.display = 'block';
-            mainContainer.classList.add('show');
-          }
-          
-          inicializarSistema();
-          return true;
-        }
-      } catch (e) {
-        console.warn('Erro ao verificar sessão:', e);
-      }
-      return false;
-    }
-
-    // Inicializar sistema
-    function inicializarSistema() {
-      console.log('Sistema inicializado para:', usuarioAtual);
-      
-      // Define data atual
-      const hoje = new Date().toISOString().split('T')[0];
-      const campoData = document.getElementById('data');
-      if (campoData) {
-        campoData.value = hoje;
-      }
-      
-      // Carrega dados salvos
-      carregarDados();
-      atualizarDashboard();
-      atualizarTabela();
-    }
-
-    // Adicionar saída
-    function adicionarSaida() {
-      const loja = document.getElementById('loja').value;
-      const categoria = document.getElementById('categoria').value;
-      const descricao = document.getElementById('descricao').value;
-      const valor = document.getElementById('valor').value;
-      const data = document.getElementById('data').value;
-      const recorrente = document.getElementById('recorrente').value;
-      const pago = document.getElementById('pago').value;
-      
-      if (!descricao || !valor || !data) {
-        mostrarNotificacaoInteligente('Preencha todos os campos obrigatórios!', 'error');
-        return;
-      }
-      
-      const novaSaida = {
-        id: Date.now(),
-        usuario: usuarioAtual,
-        loja,
-        categoria,
-        descricao,
-        valor: parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) || 0,
-        data,
-        recorrente,
-        pago,
-        timestamp: new Date().toISOString()
-      };
-      
-      saidas.push(novaSaida);
-      salvarDados();
-      
-      // Limpa formulário
-      document.getElementById('descricao').value = '';
-      document.getElementById('valor').value = '';
-      
-      mostrarNotificacaoInteligente('✅ Saída adicionada com sucesso!');
-      atualizarDashboard();
-      atualizarTabela();
-    }
-
-    // Atualizar dashboard
-    function atualizarDashboard() {
-      const mesAtual = new Date().getMonth() + 1;
-      const anoAtual = new Date().getFullYear();
-      
-      const saidasMes = saidas.filter(s => {
-        const dataSaida = new Date(s.data);
-        return dataSaida.getMonth() + 1 === mesAtual && dataSaida.getFullYear() === anoAtual;
-      });
-      
-      const totalMes = saidasMes.reduce((sum, s) => sum + s.valor, 0);
-      const totalRecorrente = saidasMes.filter(s => s.recorrente === 'Sim').reduce((sum, s) => sum + s.valor, 0);
-      const maiorGasto = Math.max(...saidasMes.map(s => s.valor), 0);
-      
-      // Categoria mais frequente
-      const categorias = {};
-      saidasMes.forEach(s => {
-        categorias[s.categoria] = (categorias[s.categoria] || 0) + 1;
-      });
-      const categoriaTopo = Object.keys(categorias).length > 0 ? 
-        Object.keys(categorias).reduce((a, b) => categorias[a] > categorias[b] ? a : b) : '-';
-      
-      // Atualiza elementos
-      const elementos = {
-        totalMes: `R$ ${totalMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        totalRecorrente: `R$ ${totalRecorrente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        maiorGasto: `R$ ${maiorGasto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        categoriaTopo: categoriaTopo,
-        totalSaidas: saidas.length
-      };
-      
-      Object.keys(elementos).forEach(id => {
-        const elemento = document.getElementById(id);
-        if (elemento) {
-          elemento.textContent = elementos[id];
-        }
-      });
-    }
-
-    // Atualizar tabela
-    function atualizarTabela() {
-      const tbody = document.getElementById('tabelaSaidas');
-      if (!tbody) return;
-      
-      tbody.innerHTML = '';
-      
-      if (saidas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center">Nenhuma saída cadastrada</td></tr>';
-        return;
-      }
-      
-      // Ordena por data (mais recente primeiro)
-      const saidasOrdenadas = [...saidas].sort((a, b) => new Date(b.data) - new Date(a.data));
-      
-      saidasOrdenadas.forEach(saida => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${saida.usuario}</td>
-          <td>${saida.loja}</td>
-          <td>${saida.categoria}</td>
-          <td>${saida.descricao}</td>
-          <td>R$ ${saida.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-          <td>${new Date(saida.data).toLocaleDateString('pt-BR')}</td>
-          <td><span class="badge ${saida.recorrente === 'Sim' ? 'bg-success' : 'bg-secondary'}">${saida.recorrente}</span></td>
-          <td><span class="badge ${saida.pago === 'Sim' ? 'bg-success' : 'bg-warning'}">${saida.pago}</span></td>
-          <td>
-            <button class="btn btn-danger btn-sm" onclick="excluirSaida(${saida.id})">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Excluir saída
-    function excluirSaida(id) {
-      if (confirm('Tem certeza que deseja excluir esta saída?')) {
-        saidas = saidas.filter(s => s.id !== id);
-        salvarDados();
-        mostrarNotificacaoInteligente('🗑️ Saída excluída com sucesso!');
-        atualizarDashboard();
-        atualizarTabela();
-      }
-    }
-
-    // Salvar dados
-    function salvarDados() {
-      try {
-        localStorage.setItem('saidasIClub', JSON.stringify(saidas));
-      } catch (e) {
-        console.warn('Erro ao salvar dados:', e);
-      }
-    }
-
-    // Carregar dados
-    function carregarDados() {
-      try {
-        const dados = localStorage.getItem('saidasIClub');
-        if (dados) {
-          saidas = JSON.parse(dados);
-        }
-      } catch (e) {
-        console.warn('Erro ao carregar dados:', e);
-        saidas = [];
-      }
-    }
-
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM carregado');
-      
-      // Configura o formulário de login
-      const loginForm = document.getElementById('loginForm');
-      if (loginForm) {
-        loginForm.addEventListener('submit', fazerLogin);
-      }
-      
-      // Verifica se já tem sessão ativa
-      if (!verificarSessao()) {
-        // Se não tem sessão, mostra o login
-        const loginContainer = document.getElementById('loginContainer');
-        if (loginContainer) {
-          loginContainer.style.display = 'flex';
-        }
-      }
-      
-      // Focus no campo de usuário
-      const campoUsuario = document.getElementById('loginUsuario');
-      if (campoUsuario) {
-        campoUsuario.focus();
-      }
-    });
-
-    // Tecla Enter no login
-    document.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter' && document.getElementById('loginContainer').style.display !== 'none') {
-        fazerLogin(e);
-      }
-    });
-
-    // Formatação de moeda
-    document.getElementById('valor')?.addEventListener('input', function(e) {
-      let value = e.target.value.replace(/\D/g, '');
-      value = (value/100).toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      });
-      e.target.value = value;
-    });
-  </script>
+  <!-- Incluir o painel.js -->
+  <script src="painel.js"></script>
 </body>
 </html>
