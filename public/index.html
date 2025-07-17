@@ -32,6 +32,88 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
+    /* ===== LOGIN CONTAINER ===== */
+    .login-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .login-box {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .login-title {
+      color: #10b981;
+      font-weight: 800;
+      font-size: 1.8rem;
+      margin-bottom: 30px;
+    }
+
+    .login-form .form-control {
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+
+    .login-form .form-control:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .login-btn {
+      background: var(--ai-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 15px 30px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .login-error {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      color: #dc2626;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .demo-credentials {
+      background: #f0f9ff;
+      border: 2px solid #0ea5e9;
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #0c4a6e;
+    }
+
+    /* ===== MAIN CONTAINER ===== */
     .main-container {
       background: var(--white);
       border-radius: 20px;
@@ -39,6 +121,14 @@
       margin: 20px auto;
       padding: 30px;
       max-width: 1400px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+
+    .main-container.show {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .header-title {
@@ -48,6 +138,86 @@
       margin-bottom: 30px;
       text-align: center;
       position: relative;
+    }
+
+    /* ===== MENU CONFIGURAÇÕES ===== */
+    .config-dropdown {
+      position: relative;
+    }
+
+    .config-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      border: 2px solid #e5e7eb;
+      width: 280px;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .config-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .config-menu-header {
+      background: var(--ai-gradient);
+      color: white;
+      padding: 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .config-menu-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .config-menu-item:hover {
+      background: #f8fafc;
+      color: #10b981;
+    }
+
+    .config-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .config-menu-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .user-info {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin: 15px 20px;
+      border: 2px solid #e5e7eb;
+    }
+
+    .user-name {
+      font-weight: 700;
+      color: #10b981;
+      font-size: 1rem;
+    }
+
+    .user-role {
+      color: #6b7280;
+      font-size: 0.8rem;
     }
 
     /* ===== CHAT FIXO NO TOPO ===== */
@@ -114,6 +284,35 @@
       margin-bottom: 15px;
       padding: 10px;
       max-height: 250px;
+    }
+
+    .chat-message {
+      margin-bottom: 15px;
+    }
+
+    .chat-bubble {
+      background: #f1f5f9;
+      border-radius: 15px;
+      padding: 12px 16px;
+      max-width: 80%;
+      position: relative;
+    }
+
+    .chat-message.user .chat-bubble {
+      background: #10b981;
+      color: white;
+      margin-left: auto;
+    }
+
+    .chat-message.system .chat-bubble {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .chat-time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 5px;
     }
 
     .chat-input-topo {
@@ -1066,6 +1265,26 @@
       font-size: 0.75rem;
     }
 
+    .badge-recorrente {
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .badge-recorrente.sim {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-recorrente.nao {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      color: white;
+      box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+    }
+
     .input-group-modern {
       display: flex;
       gap: 10px;
@@ -1274,6 +1493,48 @@
       font-weight: 600;
     }
 
+    /* ===== COMPARATIVO LOJAS ===== */
+    .comparativo-loja-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--success-color);
+    }
+
+    .comparativo-loja-header {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--success-color);
+      margin-bottom: 10px;
+    }
+
+    .comparativo-loja-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .comparativo-stat {
+      text-align: center;
+      padding: 10px;
+      background: var(--light-bg);
+      border-radius: 8px;
+    }
+
+    .comparativo-stat-valor {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--dark-color);
+    }
+
+    .comparativo-stat-label {
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
     @media (max-width: 768px) {
       .main-container {
         margin: 10px;
@@ -1303,10 +1564,12 @@
         position: static;
         justify-content: center;
         margin-top: 20px;
+        flex-wrap: wrap;
       }
 
       .header-title {
         margin-bottom: 10px;
+        font-size: 1.5rem;
       }
 
       .modal-analise-content {
@@ -1342,53 +1605,181 @@
       .notificacao-inteligente.show {
         transform: translateY(0);
       }
+
+      .login-box {
+        padding: 30px 20px;
+      }
+
+      .config-menu {
+        width: 260px;
+        right: -10px;
+      }
+
+      .table-modern {
+        font-size: 0.85rem;
+      }
+
+      .table-modern th,
+      .table-modern td {
+        padding: 12px 8px;
+      }
+
+      .chart-container {
+        padding: 15px;
+      }
+
+      .chart-container .d-flex {
+        flex-direction: column;
+        align-items: center !important;
+      }
+
+      .chart-container canvas {
+        width: 100% !important;
+        max-width: 350px !important;
+        height: auto !important;
+      }
+
+      .comparativo-loja-stats {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      }
+
+      .modal-content-custom {
+        margin: 20px;
+        padding: 20px;
+        max-height: 70vh;
+      }
+
+      .status-section {
+        padding: 15px;
+      }
+
+      .paginacao-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .paginacao-btn {
+        padding: 10px 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-title {
+        font-size: 1.3rem;
+      }
+
+      .dashboard-value {
+        font-size: 1.2rem;
+      }
+
+      .dashboard-label {
+        font-size: 0.8rem;
+      }
+
+      .chat-container-topo {
+        width: 98%;
+        height: 300px;
+        top: 10px;
+      }
+
+      .table-modern th,
+      .table-modern td {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+      }
+
+      .btn-modern {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
+
+      .status-title {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+
+      .form-control,
+      .form-select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- CHAT CONTAINER NO TOPO -->
-  <div id="chatContainerTopo" class="chat-container-topo">
-    <div class="chat-header-topo">
-      <div>
-        <strong>💬 Chat IA</strong>
-        <div style="font-size: 0.8rem; opacity: 0.9;">Digite suas saídas naturalmente</div>
+  <!-- LOGIN CONTAINER -->
+  <div id="loginContainer" class="login-container">
+    <div class="login-box">
+      <h2 class="login-title">
+        <i class="fas fa-chart-line"></i><br>
+        iClub Saídas
+      </h2>
+      <div id="loginError" class="login-error">
+        <i class="fas fa-exclamation-circle"></i>
+        Usuário ou senha incorretos!
       </div>
-      <button class="chat-close-btn-topo" onclick="toggleChatTopo()">
-        <i class="fas fa-times"></i>
-      </button>
+      <form class="login-form" onsubmit="fazerLogin(event)">
+        <input type="text" id="loginUsuario" class="form-control" placeholder="Usuário" required>
+        <input type="password" id="loginSenha" class="form-control" placeholder="Senha" required>
+        <button type="submit" class="login-btn">
+          <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+      </form>
+      <div class="demo-credentials">
+        <strong>👤 Credenciais Demo:</strong><br>
+        <small>
+          <strong>Admin:</strong> admin / admin123<br>
+          <strong>Usuário 1:</strong> user1 / user123<br>
+          <strong>Usuário 2:</strong> user2 / user456
+        </small>
+      </div>
     </div>
-    <div class="chat-body-topo">
-      <div class="chat-messages-topo" id="chatMessagesTopo">
-        <div class="chat-message system">
-          <div class="chat-bubble">
-            <div>👋 Olá! Digite suas saídas em linguagem natural - ex: "Paguei R$ 500 de aluguel hoje"</div>
-            <div class="chat-time">Agora</div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div id="mainContainer" class="main-container">
+    <!-- CHAT CONTAINER NO TOPO -->
+    <div id="chatContainerTopo" class="chat-container-topo">
+      <div class="chat-header-topo">
+        <div>
+          <strong>💬 Chat IA</strong>
+          <div style="font-size: 0.8rem; opacity: 0.9;">Digite suas saídas naturalmente</div>
+        </div>
+        <button class="chat-close-btn-topo" onclick="toggleChatTopo()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="chat-body-topo">
+        <div class="chat-messages-topo" id="chatMessagesTopo">
+          <div class="chat-message system">
+            <div class="chat-bubble">
+              <div>👋 Olá! Digite suas saídas em linguagem natural - ex: "Paguei R$ 500 de aluguel hoje"</div>
+              <div class="chat-time">Agora</div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="chat-input-topo">
-        <input type="text" id="chatInputTopo" placeholder="Ex: Paguei R$ 500 de aluguel hoje..." maxlength="200">
-        <button class="chat-send-btn-topo" onclick="enviarMensagemChatTopo()">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-      <div style="margin-top: 10px; text-align: center;">
-        <button class="btn btn-sm" style="background: rgba(0,0,0,0.1); border: none; border-radius: 15px; padding: 5px 15px; margin-right: 10px;" onclick="limparChatTopo()">
-          Limpar
-        </button>
-        <button class="btn btn-sm" style="background: rgba(0,0,0,0.1); border: none; border-radius: 15px; padding: 5px 15px;" onclick="mostrarTreinamentoIA()">
-          Treinar IA
-        </button>
+        <div class="chat-input-topo">
+          <input type="text" id="chatInputTopo" placeholder="Ex: Paguei R$ 500 de aluguel hoje..." maxlength="200">
+          <button class="chat-send-btn-topo" onclick="enviarMensagemChatTopo()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+        <div style="margin-top: 10px; text-align: center;">
+          <button class="btn btn-sm" style="background: rgba(0,0,0,0.1); border: none; border-radius: 15px; padding: 5px 15px; margin-right: 10px;" onclick="limparChatTopo()">
+            Limpar
+          </button>
+          <button class="btn btn-sm" style="background: rgba(0,0,0,0.1); border: none; border-radius: 15px; padding: 5px 15px;" onclick="mostrarTreinamentoIA()">
+            Treinar IA
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- NOTIFICAÇÃO INTELIGENTE -->
-  <div id="notificacaoInteligente" class="notificacao-inteligente">
-    <span id="textoNotificacao"></span>
-  </div>
+    <!-- NOTIFICAÇÃO INTELIGENTE -->
+    <div id="notificacaoInteligente" class="notificacao-inteligente">
+      <span id="textoNotificacao"></span>
+    </div>
 
-  <div class="main-container">
     <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; position: relative;">
       <span style="margin-right: 15px; font-size: 2.5rem;">📊</span>
       <span>CONTROLE ICLUB SAÍDAS</span>
@@ -1399,6 +1790,44 @@
         <button class="btn-analise-inteligente" onclick="abrirAnaliseInteligente()">
           <i class="fas fa-brain"></i> Análise Inteligente
         </button>
+        <div class="config-dropdown">
+          <button class="btn-analise-inteligente" onclick="toggleConfigMenu()">
+            <i class="fas fa-cog"></i> <span id="usuarioAtual">Usuário</span>
+          </button>
+          <div id="configMenu" class="config-menu">
+            <div class="config-menu-header">
+              <i class="fas fa-user-circle"></i> Configurações
+            </div>
+            <div class="user-info">
+              <div class="user-name" id="nomeUsuarioMenu">Usuário</div>
+              <div class="user-role">Administrador</div>
+            </div>
+            <div class="config-menu-item" onclick="abrirGerenciarConta()">
+              <i class="fas fa-user-cog"></i>
+              <span>Gerenciar Conta</span>
+            </div>
+            <div class="config-menu-item" onclick="abrirPermissoes()">
+              <i class="fas fa-shield-alt"></i>
+              <span>Permissões de Acesso</span>
+            </div>
+            <div class="config-menu-item" onclick="abrirColunas()">
+              <i class="fas fa-columns"></i>
+              <span>Exibir/Ocultar Colunas</span>
+            </div>
+            <div class="config-menu-item" onclick="abrirAlertas()">
+              <i class="fas fa-bell"></i>
+              <span>Alertas e Notificações</span>
+            </div>
+            <div class="config-menu-item" onclick="abrirBackup()">
+              <i class="fas fa-download"></i>
+              <span>Backup e Exportação</span>
+            </div>
+            <div class="config-menu-item" onclick="abrirIntegracoes()">
+              <i class="fas fa-plug"></i>
+              <span>Integrações</span>
+            </div>
+          </div>
+        </div>
       </div>
     </h1>
 
@@ -1707,6 +2136,25 @@
       <h5 class="status-title">
         <i class="fas fa-calendar-alt"></i> Próximas Saídas
       </h5>
+      <!-- BOTÕES DE AÇÃO MÚLTIPLA PARA PRÓXIMAS SAÍDAS -->
+      <div id="botoesAcaoProximas" class="botoes-multipla-acao">
+        <div class="contador-selecionados" id="contadorProximas">0 saídas selecionadas</div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-success-modern btn-sm" onclick="pagarSaidasSelecionadas('proximas')">
+            <i class="fas fa-check"></i> Pagar Selecionadas
+          </button>
+          <button class="btn btn-warning-modern btn-sm" onclick="editarSaidasSelecionadas('proximas')">
+            <i class="fas fa-edit"></i> Editar Selecionadas
+          </button>
+          <button class="btn btn-danger-modern btn-sm" onclick="excluirSaidasSelecionadas('proximas')">
+            <i class="fas fa-trash"></i> Excluir Selecionadas
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="limparSelecaoProximas()">
+            <i class="fas fa-times"></i> Limpar Seleção
+          </button>
+        </div>
+      </div>
+      
       <div id="proximasControles" class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex gap-2">
           <button class="paginacao-btn" onclick="paginacaoAnteriorProximas()">
@@ -1780,6 +2228,24 @@
           </button>
         </div>
       </div>
+
+      <!-- Paginação Recorrentes -->
+      <div id="recorrentesControles" class="d-flex justify-content-between align-items-center mb-3" style="display:none;">
+        <div class="d-flex gap-2">
+          <button class="paginacao-btn" onclick="paginacaoAnteriorRecorrentes()">
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <span class="paginacao-info">
+            Página <span id="paginaAtualRecorrentes">1</span> de <span id="totalPaginasRecorrentes">1</span>
+          </span>
+          <button class="paginacao-btn" onclick="paginacaoProximaRecorrentes()">
+            Próxima <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div>
+          <span class="badge bg-info">Total: <span id="totalItensRecorrentes">0</span> saídas</span>
+        </div>
+      </div>
       
       <div id="previsaoRecorrentes"></div>
       <div class="valor-total-dourado">
@@ -1817,6 +2283,7 @@
           <thead>
             <tr>
               <th><input type="checkbox" id="selecionarTodasSaidasMes" onchange="selecionarTodasLinhas('saidasMes')"></th>
+              <th>Usuário</th>
               <th>Loja</th>
               <th>Centro de custo</th>
               <th>Descrição</th>
