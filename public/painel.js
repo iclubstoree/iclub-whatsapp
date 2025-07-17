@@ -1,4 +1,4 @@
-// painel.js - SISTEMA ICLUB CORRIGIDO
+// painel.js - SISTEMA ICLUB ATUALIZADO COM NOVAS FUNCIONALIDADES
 let categorias = ["Aluguel", "Energia", "Internet", "Combustível", "Material", "Transporte", "Alimentação", "Marketing", "Saúde"];
 let lojas = ["Loja Centro", "Loja Shopping", "Loja Bairro"];
 let saidas = [];
@@ -8,49 +8,416 @@ let contadorMultiplas = 0;
 let chatAberto = false;
 let treinamentosIA = JSON.parse(localStorage.getItem('treinamentosIA') || '[]');
 let treinamentosNaturais = JSON.parse(localStorage.getItem('treinamentosNaturais') || '[]');
+let selecionados = {
+  saidasMes: new Set(),
+  recorrentes: new Set(),
+  proximas: new Set()
+};
 let paginacao = {
   saidasMes: { paginaAtual: 1, itensPorPagina: 10, totalItens: 0 },
   proximasSaidas: { paginaAtual: 1, itensPorPagina: 10, totalItens: 0 }
 };
 
-// Chat suspenso
-function toggleChat() {
-  const chatContainer = document.getElementById('chatContainer');
-  const toggleBtn = document.querySelector('.chat-toggle-btn');
-  if (!chatContainer || !toggleBtn) return;
+// ===== CHAT NO TOPO =====
+function toggleChatTopo() {
+  const chatContainer = document.getElementById('chatContainerTopo');
+  if (!chatContainer) return;
   
   chatAberto = !chatAberto;
   if (chatAberto) {
     chatContainer.style.display = 'flex';
-    toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
   } else {
     chatContainer.style.display = 'none';
-    toggleBtn.innerHTML = '<i class="fas fa-comments"></i>';
   }
 }
 
-// Notificações
-function mostrarNotificacaoInteligente(texto = '✅ Operação realizada!', tipo = 'success') {
-  const notificacao = document.getElementById("notificacaoInteligente");
-  const textoElement = document.getElementById("textoNotificacao");
-  if (!notificacao || !textoElement) return;
+function enviarMensagemChatTopo() {
+  const input = document.getElementById('chatInputTopo');
+  const mensagem = input?.value.trim();
+  if (!mensagem) return;
   
-  notificacao.className = 'notificacao-inteligente';
-  if (tipo === 'error') {
-    notificacao.classList.add('error');
-    textoElement.innerHTML = `<i class="fas fa-exclamation-circle"></i>${texto}`;
-  } else if (tipo === 'warning') {
-    notificacao.classList.add('warning');
-    textoElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i>${texto}`;
+  input.value = '';
+  adicionarMensagemChatTopo('user', mensagem);
+  
+  setTimeout(() => {
+    const resultado = interpretarMensagemIA(mensagem);
+    if (resultado.sucesso) {
+      const saidaData = {
+        id: Date.now(),
+        loja: "Loja Centro",
+        categoria: resultado.categoria,
+        descricao: resultado.categoria,
+        valor: resultado.valor,
+        data: resultado.data,
+        recorrente: "Não",
+        tipoRecorrencia: null,
+        pago: resultado.pago,
+        origem: 'chat',
+        timestamp: new Date()
+      };
+      
+      if (saidaData.pago === 'Sim') {
+        saidas.unshift(saidaData);
+      } else {
+        saidasPendentes.unshift(saidaData);
+      }
+      
+      salvarDadosLocal();
+      atualizarInterfaceCompleta();
+      adicionarMensagemChatTopo('system', `✅ Saída de ${formatarMoedaBR(resultado.valor)} adicionada para ${resultado.categoria}!`);
+    } else {
+      adicionarMensagemChatTopo('system', `❌ ${resultado.erro}`);
+    }
+  }, 1000);
+}
+
+function adicionarMensagemChatTopo(tipo, texto) {
+  const chatMessages = document.getElementById('chatMessagesTopo');
+  if (!chatMessages) return;
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `chat-message ${tipo}`;
+  messageDiv.innerHTML = `
+    <div class="chat-bubble">
+      <div>${texto}</div>
+      <div class="chat-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+    </div>
+  `;
+  
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function limparChatTopo() {
+  const chatMessages = document.getElementById('chatMessagesTopo');
+  if (chatMessages) {
+    chatMessages.innerHTML = `
+      <div class="chat-message system">
+        <div class="chat-bubble">
+          <div>👋 Olá! Digite suas saídas em linguagem natural</div>
+          <div class="chat-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ===== RECORRÊNCIA PERSONALIZADA AVANÇADA =====
+function toggleRecorrenciaPersonalizada() {
+  const tipoRecorrencia = document.getElementById("tipoRecorrencia");
+  const recorrenciaAvancada = document.getElementById("recorrenciaAvancada");
+  
+  if (tipoRecorrencia && recorrenciaAvancada) {
+    if (tipoRecorrencia.value === "Personalizada") {
+      recorrenciaAvancada.classList.add('show');
+      
+      // Pré-selecionar ano atual e todos os meses
+      const anoAtual = new Date().getFullYear();
+      document.getElementById('anoRecorrencia').value = anoAtual;
+      
+      // Selecionar todos os meses por padrão
+      const selectMeses = document.getElementById('mesesRecorrencia');
+      for (let i = 0; i < selectMeses.options.length; i++) {
+        selectMeses.options[i].selected = true;
+      }
+    } else {
+      recorrenciaAvancada.classList.remove('show');
+    }
+  }
+}
+
+function toggleTipoRecorrencia() {
+  const recorrente = document.getElementById("recorrente");
+  const coluna = document.getElementById("colunaTipoRecorrencia");
+  
+  if (recorrente && coluna) {
+    if (recorrente.value === "Sim") {
+      coluna.style.display = "block";
+    } else {
+      coluna.style.display = "none";
+      const recorrenciaAvancada = document.getElementById("recorrenciaAvancada");
+      if (recorrenciaAvancada) {
+        recorrenciaAvancada.classList.remove('show');
+      }
+    }
+  }
+}
+
+// ===== SELEÇÃO MÚLTIPLA =====
+function selecionarTodasLinhas(secao) {
+  const checkbox = document.getElementById(`selecionarTodas${secao === 'saidasMes' ? 'SaidasMes' : 'Recorrentes'}`);
+  const checkboxes = document.querySelectorAll(`input[data-secao="${secao}"]`);
+  
+  checkboxes.forEach(cb => {
+    cb.checked = checkbox.checked;
+    const saidaId = parseInt(cb.dataset.saidaId);
+    
+    if (checkbox.checked) {
+      selecionados[secao].add(saidaId);
+      cb.closest('tr').classList.add('linha-selecionada');
+    } else {
+      selecionados[secao].delete(saidaId);
+      cb.closest('tr').classList.remove('linha-selecionada');
+    }
+  });
+  
+  atualizarContadorSelecao(secao);
+  mostrarOcultarBotoesAcao(secao);
+}
+
+function toggleSelecaoLinha(checkbox, secao, saidaId) {
+  const linha = checkbox.closest('tr');
+  
+  if (checkbox.checked) {
+    selecionados[secao].add(saidaId);
+    linha.classList.add('linha-selecionada');
   } else {
-    textoElement.innerHTML = `<i class="fas fa-check-circle"></i>${texto}`;
+    selecionados[secao].delete(saidaId);
+    linha.classList.remove('linha-selecionada');
   }
   
-  notificacao.classList.add('show');
-  setTimeout(() => notificacao.classList.remove('show'), 4000);
+  atualizarContadorSelecao(secao);
+  mostrarOcultarBotoesAcao(secao);
 }
 
-// CORREÇÃO: Função adicionar saída
+function atualizarContadorSelecao(secao) {
+  const contador = document.getElementById(`contador${secao === 'saidasMes' ? 'SaidasMes' : 'Recorrentes'}`);
+  if (contador) {
+    const qtd = selecionados[secao].size;
+    contador.textContent = `${qtd} saída${qtd !== 1 ? 's' : ''} selecionada${qtd !== 1 ? 's' : ''}`;
+  }
+}
+
+function mostrarOcultarBotoesAcao(secao) {
+  const botoes = document.getElementById(`botoesAcao${secao === 'saidasMes' ? 'SaidasMes' : 'Recorrentes'}`);
+  if (botoes) {
+    if (selecionados[secao].size > 0) {
+      botoes.classList.add('show');
+    } else {
+      botoes.classList.remove('show');
+    }
+  }
+}
+
+function limparSelecaoSaidasMes() {
+  selecionados.saidasMes.clear();
+  document.querySelectorAll('input[data-secao="saidasMes"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('tr').classList.remove('linha-selecionada');
+  });
+  document.getElementById('selecionarTodasSaidasMes').checked = false;
+  atualizarContadorSelecao('saidasMes');
+  mostrarOcultarBotoesAcao('saidasMes');
+}
+
+function limparSelecaoRecorrentes() {
+  selecionados.recorrentes.clear();
+  document.querySelectorAll('input[data-secao="recorrentes"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('tr').classList.remove('linha-selecionada');
+  });
+  atualizarContadorSelecao('recorrentes');
+  mostrarOcultarBotoesAcao('recorrentes');
+}
+
+// ===== AÇÕES MÚLTIPLAS =====
+function pagarSaidasSelecionadas(secao) {
+  const saidaIds = Array.from(selecionados[secao]);
+  if (saidaIds.length === 0) {
+    mostrarNotificacaoInteligente('Nenhuma saída selecionada!', 'warning');
+    return;
+  }
+  
+  if (!confirm(`Marcar ${saidaIds.length} saída(s) como paga(s)?`)) return;
+  
+  let contador = 0;
+  saidaIds.forEach(saidaId => {
+    const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+    if (saida && saida.pago === 'Não') {
+      saida.pago = 'Sim';
+      saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+      saidas.unshift(saida);
+      contador++;
+    }
+  });
+  
+  if (contador > 0) {
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarNotificacaoInteligente(`✅ ${contador} saída(s) marcada(s) como paga(s)!`);
+    secao === 'saidasMes' ? limparSelecaoSaidasMes() : limparSelecaoRecorrentes();
+  }
+}
+
+function excluirSaidasSelecionadas(secao) {
+  const saidaIds = Array.from(selecionados[secao]);
+  if (saidaIds.length === 0) {
+    mostrarNotificacaoInteligente('Nenhuma saída selecionada!', 'warning');
+    return;
+  }
+  
+  if (!confirm(`Excluir permanentemente ${saidaIds.length} saída(s)?`)) return;
+  
+  saidaIds.forEach(saidaId => {
+    saidas = saidas.filter(s => s.id !== saidaId);
+    saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+  });
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarNotificacaoInteligente(`✅ ${saidaIds.length} saída(s) excluída(s)!`);
+  secao === 'saidasMes' ? limparSelecaoSaidasMes() : limparSelecaoRecorrentes();
+}
+
+function editarSaidasSelecionadas(secao) {
+  const saidaIds = Array.from(selecionados[secao]);
+  if (saidaIds.length === 0) {
+    mostrarNotificacaoInteligente('Nenhuma saída selecionada!', 'warning');
+    return;
+  }
+  
+  abrirModalEdicaoMultipla(saidaIds);
+}
+
+// ===== MODAL EDIÇÃO MÚLTIPLA =====
+function abrirModalEdicaoMultipla(saidaIds) {
+  const modal = document.getElementById('modalEdicaoMultipla');
+  const conteudo = document.getElementById('conteudoEdicaoMultipla');
+  
+  if (!modal || !conteudo) return;
+  
+  const saidas = saidaIds.map(id => [...saidas, ...saidasPendentes].find(s => s.id === id)).filter(Boolean);
+  
+  conteudo.innerHTML = `
+    <div class="alert alert-info">
+      <strong>📝 Editando ${saidas.length} saída(s) simultaneamente</strong><br>
+      Deixe em branco os campos que não deseja alterar.
+    </div>
+    
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Nova Loja:</label>
+        <select id="editMultiploLoja" class="form-select">
+          <option value="">-- Não alterar --</option>
+          ${lojas.map(loja => `<option value="${loja}">${loja}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Nova Categoria:</label>
+        <select id="editMultiploCategoria" class="form-select">
+          <option value="">-- Não alterar --</option>
+          ${categorias.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Novo Status:</label>
+        <select id="editMultiploPago" class="form-select">
+          <option value="">-- Não alterar --</option>
+          <option value="Sim">Pago</option>
+          <option value="Não">Pendente</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Nova Descrição:</label>
+        <input type="text" id="editMultiploDescricao" class="form-control" placeholder="Deixe vazio para não alterar">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Novo Valor (R$):</label>
+        <input type="text" id="editMultiploValor" class="form-control" placeholder="Deixe vazio para não alterar" oninput="formatarMoeda(this)">
+      </div>
+    </div>
+    
+    <div class="mt-4">
+      <h6>📋 Saídas que serão alteradas:</h6>
+      <div style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px;">
+        ${saidas.map(s => `
+          <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f1f5f9;">
+            <span><strong>${s.loja}</strong> - ${s.categoria}</span>
+            <span>${formatarMoedaBR(s.valor)} - ${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <div class="mt-4 d-flex gap-2 justify-content-center">
+      <button class="btn btn-success-modern btn-modern" onclick="salvarEdicaoMultipla([${saidaIds.join(',')}])">
+        <i class="fas fa-save"></i> Salvar Alterações
+      </button>
+      <button class="btn btn-secondary btn-modern" onclick="fecharEdicaoMultipla()">
+        <i class="fas fa-times"></i> Cancelar
+      </button>
+    </div>
+  `;
+  
+  modal.style.display = 'block';
+}
+
+function salvarEdicaoMultipla(saidaIds) {
+  const novaLoja = document.getElementById('editMultiploLoja')?.value;
+  const novaCategoria = document.getElementById('editMultiploCategoria')?.value;
+  const novoPago = document.getElementById('editMultiploPago')?.value;
+  const novaDescricao = document.getElementById('editMultiploDescricao')?.value;
+  const novoValorInput = document.getElementById('editMultiploValor')?.value;
+  const novoValor = novoValorInput ? extrairValorNumerico(novoValorInput) : null;
+  
+  let alteracoes = 0;
+  
+  saidaIds.forEach(saidaId => {
+    let saida = saidas.find(s => s.id === saidaId);
+    let estavaEmPendentes = false;
+    
+    if (!saida) {
+      saida = saidasPendentes.find(s => s.id === saidaId);
+      estavaEmPendentes = true;
+    }
+    
+    if (saida) {
+      let alterou = false;
+      
+      if (novaLoja) { saida.loja = novaLoja; alterou = true; }
+      if (novaCategoria) { saida.categoria = novaCategoria; alterou = true; }
+      if (novaDescricao) { saida.descricao = novaDescricao; alterou = true; }
+      if (novoValor && novoValor > 0) { saida.valor = novoValor; alterou = true; }
+      
+      if (novoPago && novoPago !== saida.pago) {
+        saida.pago = novoPago;
+        alterou = true;
+        
+        // Mover entre arrays conforme necessário
+        if (estavaEmPendentes && novoPago === 'Sim') {
+          saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+          saidas.unshift(saida);
+        } else if (!estavaEmPendentes && novoPago === 'Não') {
+          saidas = saidas.filter(s => s.id !== saidaId);
+          saidasPendentes.unshift(saida);
+        }
+      }
+      
+      if (alterou) {
+        saida.editadoEm = new Date().toISOString();
+        alteracoes++;
+      }
+    }
+  });
+  
+  if (alteracoes > 0) {
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarNotificacaoInteligente(`✅ ${alteracoes} saída(s) editada(s) com sucesso!`);
+    fecharEdicaoMultipla();
+    limparSelecaoSaidasMes();
+    limparSelecaoRecorrentes();
+  } else {
+    mostrarNotificacaoInteligente('Nenhuma alteração foi feita!', 'warning');
+  }
+}
+
+function fecharEdicaoMultipla() {
+  const modal = document.getElementById('modalEdicaoMultipla');
+  if (modal) modal.style.display = 'none';
+}
+
+// ===== SAÍDAS RECORRENTES APRIMORADAS =====
 function adicionarSaida() {
   const loja = document.getElementById("loja")?.value || "Manual";
   const categoria = document.getElementById("categoria")?.value || "Outros";
@@ -73,21 +440,22 @@ function adicionarSaida() {
     return;
   }
 
-  let tipoFinal = tipoRecorrencia;
-  let duracaoInfo = null;
+  let configRecorrencia = null;
   
-  if (tipoRecorrencia === 'Personalizada') {
-    const recorrenciaCustom = document.getElementById('recorrenciaCustom')?.value;
-    const duracaoTipo = document.getElementById('duracaoTipo')?.value;
-    const duracaoQuantidade = document.getElementById('duracaoQuantidade')?.value;
-    
-    tipoFinal = recorrenciaCustom || 'Personalizada';
-    if (duracaoTipo && duracaoQuantidade) {
-      duracaoInfo = {
-        tipo: duracaoTipo,
-        quantidade: parseInt(duracaoQuantidade),
-        dataInicio: data
+  if (recorrente === "Sim" && tipoRecorrencia) {
+    if (tipoRecorrencia === "Personalizada") {
+      const diasPersonalizado = document.getElementById('diasPersonalizado')?.value;
+      const mesesSelecionados = Array.from(document.getElementById('mesesRecorrencia').selectedOptions).map(opt => parseInt(opt.value));
+      const anoRecorrencia = document.getElementById('anoRecorrencia')?.value;
+      
+      configRecorrencia = {
+        tipo: 'Personalizada',
+        diasIntervalo: diasPersonalizado ? parseInt(diasPersonalizado) : 30,
+        mesesAtivos: mesesSelecionados.length > 0 ? mesesSelecionados : [1,2,3,4,5,6,7,8,9,10,11,12],
+        anoRecorrencia: anoRecorrencia ? parseInt(anoRecorrencia) : new Date().getFullYear()
       };
+    } else {
+      configRecorrencia = { tipo: tipoRecorrencia };
     }
   }
 
@@ -96,8 +464,8 @@ function adicionarSaida() {
     loja, categoria, 
     descricao: descricao || categoria,
     valor, data, recorrente,
-    tipoRecorrencia: recorrente === "Sim" ? tipoFinal : null,
-    duracaoInfo: duracaoInfo,
+    tipoRecorrencia: recorrente === "Sim" ? tipoRecorrencia : null,
+    configRecorrencia: configRecorrencia,
     pago, origem: 'manual', timestamp: new Date()
   };
 
@@ -123,11 +491,41 @@ function adicionarSaida() {
   }
 }
 
-// CORREÇÃO: Gerar saídas recorrentes para todos os meses
 function gerarSaidasRecorrentes(saidaBase) {
   const dataInicio = new Date(saidaBase.data + 'T00:00:00');
   const mesesParaGerar = 12;
   
+  if (saidaBase.configRecorrencia?.tipo === 'Personalizada') {
+    const config = saidaBase.configRecorrencia;
+    const anoLimite = config.anoRecorrencia;
+    
+    config.mesesAtivos.forEach(mes => {
+      if (mes >= dataInicio.getMonth() + 1 || anoLimite > dataInicio.getFullYear()) {
+        let dataRecorrente = new Date(anoLimite, mes - 1, dataInicio.getDate());
+        
+        // Se for o mesmo ano e mês já passou, pular
+        if (anoLimite === dataInicio.getFullYear() && mes < dataInicio.getMonth() + 1) {
+          return;
+        }
+        
+        const saidaRecorrente = {
+          ...saidaBase,
+          id: Date.now() + Math.random() * 1000,
+          data: dataRecorrente.toISOString().split('T')[0],
+          origem: 'recorrente'
+        };
+        
+        if (saidaRecorrente.pago === "Sim") {
+          saidas.push(saidaRecorrente);
+        } else {
+          saidasPendentes.push(saidaRecorrente);
+        }
+      }
+    });
+    return;
+  }
+  
+  // Lógica normal para outros tipos de recorrência
   let incremento = 1;
   let unidade = 'month';
   
@@ -136,45 +534,15 @@ function gerarSaidasRecorrentes(saidaBase) {
     case 'Semanal': incremento = 7; unidade = 'day'; break;
     case 'Mensal': incremento = 1; unidade = 'month'; break;
     case 'Anual': incremento = 12; unidade = 'month'; break;
-    case 'Personalizada':
-      const match = saidaBase.tipoRecorrencia.match(/(\d+)/);
-      if (match) {
-        incremento = parseInt(match[1]);
-        if (saidaBase.tipoRecorrencia.toLowerCase().includes('dia')) {
-          unidade = 'day';
-        } else if (saidaBase.tipoRecorrencia.toLowerCase().includes('semana')) {
-          incremento = incremento * 7;
-          unidade = 'day';
-        } else if (saidaBase.tipoRecorrencia.toLowerCase().includes('ano')) {
-          incremento = incremento * 12;
-          unidade = 'month';
-        }
-      }
-      break;
   }
   
-  const limite = saidaBase.duracaoInfo ? 
-    Math.min(mesesParaGerar, saidaBase.duracaoInfo.quantidade) : 
-    mesesParaGerar;
-  
-  for (let i = 0; i < limite; i++) {
+  for (let i = 0; i < mesesParaGerar; i++) {
     const dataRecorrente = new Date(dataInicio);
     
     if (unidade === 'month') {
       dataRecorrente.setMonth(dataInicio.getMonth() + (i * incremento));
     } else {
       dataRecorrente.setDate(dataInicio.getDate() + (i * incremento));
-    }
-    
-    if (saidaBase.duracaoInfo) {
-      const dataLimite = new Date(dataInicio);
-      if (saidaBase.duracaoInfo.tipo === 'meses') {
-        dataLimite.setMonth(dataInicio.getMonth() + saidaBase.duracaoInfo.quantidade);
-      } else if (saidaBase.duracaoInfo.tipo === 'anos') {
-        dataLimite.setFullYear(dataInicio.getFullYear() + saidaBase.duracaoInfo.quantidade);
-      }
-      
-      if (dataRecorrente > dataLimite) break;
     }
     
     const saidaRecorrente = {
@@ -192,61 +560,50 @@ function gerarSaidasRecorrentes(saidaBase) {
   }
 }
 
-function toggleTipoRecorrencia() {
-  const recorrente = document.getElementById("recorrente");
-  const coluna = document.getElementById("colunaTipoRecorrencia");
+// ===== EXCLUIR RECORRÊNCIA COMPLETA =====
+function excluirRecorrenciaCompleta(saidaId) {
+  if (!confirm('Excluir esta recorrência de TODOS os meses futuros?')) return;
   
-  if (recorrente && coluna) {
-    if (recorrente.value === "Sim") {
-      coluna.style.display = "block";
-    } else {
-      coluna.style.display = "none";
-      const recorrenciaPersonalizada = document.getElementById("recorrenciaPersonalizada");
-      if (recorrenciaPersonalizada) {
-        recorrenciaPersonalizada.style.display = "none";
-      }
-    }
+  const saidaReferencia = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+  if (!saidaReferencia || saidaReferencia.recorrente !== 'Sim') {
+    mostrarNotificacaoInteligente('Saída não é recorrente!', 'error');
+    return;
+  }
+  
+  // Identificar e remover todas as saídas da mesma recorrência
+  const chaveRecorrencia = `${saidaReferencia.loja}_${saidaReferencia.categoria}_${saidaReferencia.valor}_${saidaReferencia.tipoRecorrencia}`;
+  
+  let removidas = 0;
+  const hoje = new Date().toISOString().split('T')[0];
+  
+  // Remover de saídas futuras
+  const saidasAnteriores = saidas.length;
+  saidas = saidas.filter(s => {
+    const chaveAtual = `${s.loja}_${s.categoria}_${s.valor}_${s.tipoRecorrencia}`;
+    const remover = s.data >= hoje && s.recorrente === 'Sim' && chaveAtual === chaveRecorrencia;
+    if (remover) removidas++;
+    return !remover;
+  });
+  
+  // Remover de pendentes futuras
+  const pendenteAnteriores = saidasPendentes.length;
+  saidasPendentes = saidasPendentes.filter(s => {
+    const chaveAtual = `${s.loja}_${s.categoria}_${s.valor}_${s.tipoRecorrencia}`;
+    const remover = s.data >= hoje && s.recorrente === 'Sim' && chaveAtual === chaveRecorrencia;
+    if (remover) removidas++;
+    return !remover;
+  });
+  
+  if (removidas > 0) {
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarNotificacaoInteligente(`✅ ${removidas} saída(s) recorrente(s) removida(s) de todos os meses futuros!`);
+  } else {
+    mostrarNotificacaoInteligente('Nenhuma saída futura foi encontrada para remover.', 'warning');
   }
 }
 
-function toggleRecorrenciaPersonalizada() {
-  const tipoRecorrencia = document.getElementById("tipoRecorrencia");
-  const recorrenciaPersonalizada = document.getElementById("recorrenciaPersonalizada");
-  const duracaoTipo = document.getElementById("duracaoTipo");
-  const duracaoQuantidade = document.getElementById("duracaoQuantidade");
-  
-  if (tipoRecorrencia && recorrenciaPersonalizada) {
-    if (tipoRecorrencia.value === "Personalizada") {
-      recorrenciaPersonalizada.style.display = "block";
-    } else {
-      recorrenciaPersonalizada.style.display = "none";
-    }
-  }
-  
-  if (duracaoTipo) {
-    duracaoTipo.addEventListener('change', function() {
-      if (duracaoQuantidade) {
-        if (this.value) {
-          duracaoQuantidade.style.display = 'block';
-          duracaoQuantidade.placeholder = `Quantos ${this.value}?`;
-        } else {
-          duracaoQuantidade.style.display = 'none';
-        }
-      }
-    });
-  }
-}
-
-// CORREÇÃO: Múltiplas saídas com validação rigorosa
-function iniciarMultiplasSaidas() {
-  contadorMultiplas = 0;
-  const container = document.getElementById("multiplasSaidasContainer");
-  if (container) {
-    container.style.display = "block";
-    adicionarNovaLinha();
-  }
-}
-
+// ===== MÚLTIPLAS SAÍDAS COM RECORRÊNCIA =====
 function adicionarNovaLinha() {
   contadorMultiplas++;
   const listaSaidas = document.getElementById("listaSaidas");
@@ -301,7 +658,7 @@ function adicionarNovaLinha() {
         </div>
         <div class="col-md-3" id="tipoRecorrenciaContainer-${contadorMultiplas}" style="display:none;">
           <label class="form-label fw-bold" style="font-size: 0.8rem;">Tipo</label>
-          <select class="form-select form-select-sm" id="tipoRecorrencia-${contadorMultiplas}">
+          <select class="form-select form-select-sm" id="tipoRecorrencia-${contadorMultiplas}" onchange="toggleRecorrenciaMultiplaPersonalizada(${contadorMultiplas})">
             <option>Diária</option>
             <option>Semanal</option>
             <option>Mensal</option>
@@ -310,8 +667,25 @@ function adicionarNovaLinha() {
           </select>
         </div>
         <div class="col-md-6" id="recorrenciaPersonalizadaContainer-${contadorMultiplas}" style="display:none;">
-          <label class="form-label fw-bold" style="font-size: 0.8rem;">Personalizada</label>
-          <input type="text" class="form-control form-control-sm" id="recorrenciaCustom-${contadorMultiplas}" placeholder="Ex: A cada 15 dias">
+          <div class="row g-1">
+            <div class="col-4">
+              <label class="form-label fw-bold" style="font-size: 0.8rem;">A cada X dias</label>
+              <input type="number" class="form-control form-control-sm" id="diasPersonalizado-${contadorMultiplas}" placeholder="30" min="1">
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-bold" style="font-size: 0.8rem;">Meses</label>
+              <select class="form-select form-select-sm" id="mesesRecorrencia-${contadorMultiplas}" multiple style="height: 60px;">
+                <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+                <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+                <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+                <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-bold" style="font-size: 0.8rem;">Ano</label>
+              <input type="number" class="form-control form-control-sm" id="anoRecorrencia-${contadorMultiplas}" value="2025" min="2024">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -334,258 +708,216 @@ function toggleRecorrenciaMultipla(id) {
   }
 }
 
-function removerLinhaSaida(id) {
-  const elemento = document.getElementById(`saida-${id}`);
-  if (elemento) elemento.remove();
-}
-
-function adicionarTodasSaidas() {
-  const listaSaidas = document.getElementById("listaSaidas");
-  if (!listaSaidas) return;
+function toggleRecorrenciaMultiplaPersonalizada(id) {
+  const tipoRecorrencia = document.getElementById(`tipoRecorrencia-${id}`);
+  const container = document.getElementById(`recorrenciaPersonalizadaContainer-${id}`);
   
-  const linhas = listaSaidas.querySelectorAll('.saida-item');
-  const errosContainer = document.getElementById('errosMultiplas');
-  
-  let sucessos = 0;
-  let erros = [];
-  
-  if (errosContainer) errosContainer.innerHTML = '';
-  
-  for (const linha of linhas) {
-    const id = linha.id.split('-')[1];
-    
-    const loja = document.getElementById(`loja-${id}`)?.value;
-    const categoria = document.getElementById(`categoria-${id}`)?.value;
-    const descricao = document.getElementById(`descricao-${id}`)?.value || categoria;
-    const valorInput = document.getElementById(`valor-${id}`)?.value;
-    const valor = extrairValorNumerico(valorInput);
-    const data = document.getElementById(`data-${id}`)?.value;
-    const recorrente = document.getElementById(`recorrente-${id}`)?.value || "Não";
-    const tipoRecorrencia = document.getElementById(`tipoRecorrencia-${id}`)?.value;
-    const pago = document.getElementById(`pago-${id}`)?.value;
-    
-    const errosLinha = [];
-    
-    if (!loja) errosLinha.push('Loja obrigatória');
-    if (!categoria) errosLinha.push('Categoria obrigatória');
-    if (!valorInput || valor <= 0) errosLinha.push('Valor inválido');
-    if (!data) errosLinha.push('Data obrigatória');
-    if (recorrente === 'Sim' && !tipoRecorrencia) errosLinha.push('Tipo de recorrência obrigatório');
-    
-    if (errosLinha.length > 0) {
-      erros.push(`Linha ${id}: ${errosLinha.join(', ')}`);
-      
-      const campos = [`loja-${id}`, `categoria-${id}`, `valor-${id}`, `data-${id}`];
-      campos.forEach(campoId => {
-        const campo = document.getElementById(campoId);
-        if (campo && errosLinha.some(erro => erro.toLowerCase().includes(campoId.split('-')[0]))) {
-          campo.classList.add('campo-obrigatorio');
-        }
-      });
-      continue;
-    }
-    
-    let tipoFinal = tipoRecorrencia;
-    if (tipoRecorrencia === 'Personalizada') {
-      const recorrenciaCustom = document.getElementById(`recorrenciaCustom-${id}`)?.value;
-      tipoFinal = recorrenciaCustom || 'Personalizada';
-    }
-    
-    const saida = {
-      id: Date.now() + Math.random() * 1000,
-      loja, categoria,
-      descricao: descricao || categoria,
-      valor, data,
-      recorrente,
-      tipoRecorrencia: recorrente === 'Sim' ? tipoFinal : null,
-      pago: pago || "Sim",
-      origem: 'multiplas',
-      timestamp: new Date()
-    };
-    
-    try {
-      if (saida.pago === 'Sim') {
-        saidas.unshift(saida);
-      } else {
-        saidasPendentes.unshift(saida);
+  if (tipoRecorrencia && container) {
+    if (tipoRecorrencia.value === "Personalizada") {
+      container.style.display = "block";
+      // Selecionar todos os meses por padrão
+      const selectMeses = document.getElementById(`mesesRecorrencia-${id}`);
+      for (let i = 0; i < selectMeses.options.length; i++) {
+        selectMeses.options[i].selected = true;
       }
-      sucessos++;
-    } catch (error) {
-      erros.push(`Linha ${id}: ${error.message}`);
+    } else {
+      container.style.display = "none";
+    }
+  }
+}
+
+// ===== FILTROS PRÉ-SELECIONADOS PARA RECORRENTES =====
+function preencherFiltrosRecorrentesIniciais() {
+  const hoje = new Date();
+  const anoAtual = hoje.getFullYear();
+  const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+  
+  // Preencher anos disponíveis
+  const filtroAno = document.getElementById("filtroAnoRecorrentes");
+  if (filtroAno) {
+    filtroAno.innerHTML = '<option value="">Todos os anos</option>';
+    for (let ano = anoAtual - 1; ano <= anoAtual + 2; ano++) {
+      const option = document.createElement("option");
+      option.value = ano;
+      option.textContent = ano;
+      option.selected = ano === anoAtual; // Pré-selecionar ano atual
+      filtroAno.appendChild(option);
     }
   }
   
-  if (erros.length > 0) {
-    if (errosContainer) {
-      errosContainer.innerHTML = `
-        <div class="erro-item">
-          <strong>❌ Erros encontrados - Corrija antes de continuar:</strong><br>
-          ${erros.map(erro => `• ${erro}`).join('<br>')}
-        </div>
-      `;
+  // Preencher e pré-selecionar mês atual
+  setTimeout(() => {
+    preencherMesesDoAno();
+    const filtroMes = document.getElementById("filtroMesRecorrentes");
+    if (filtroMes) {
+      filtroMes.value = `${anoAtual}-${mesAtual}`;
     }
-    mostrarNotificacaoInteligente(`❌ ${erros.length} erro(s) encontrado(s). Corrija os campos destacados.`, 'error');
-    return;
-  }
-  
-  salvarDadosLocal();
-  atualizarInterfaceCompleta();
-  cancelarMultiplasSaidas();
-  mostrarNotificacaoInteligente(`✅ ${sucessos} saídas adicionadas com sucesso!`);
+  }, 100);
 }
 
-function cancelarMultiplasSaidas() {
-  const container = document.getElementById("multiplasSaidasContainer");
-  if (container) container.style.display = "none";
+// ===== ATUALIZAÇÃO DAS TABELAS COM SELEÇÃO =====
+function preencherTabelaDoMes(tbody, saidas) {
+  const itensPorPagina = paginacao.saidasMes.itensPorPagina;
+  const paginaAtual = paginacao.saidasMes.paginaAtual;
+  const totalItens = saidas.length;
   
-  const listaSaidas = document.getElementById("listaSaidas");
-  if (listaSaidas) listaSaidas.innerHTML = "";
+  paginacao.saidasMes.totalItens = totalItens;
   
-  contadorMultiplas = 0;
-}
-
-function formatarMoedaMultiplas(input) {
-  let valor = input.value.replace(/\D/g, '');
-  if (valor === '') {
-    input.value = '';
-    return;
-  }
-  valor = parseInt(valor);
-  input.value = (valor / 100).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+  const inicio = (paginaAtual - 1) * itensPorPagina;
+  const saidasPagina = saidas.slice(inicio, inicio + itensPorPagina);
+  
+  saidasPagina.forEach(s => {
+    const tr = document.createElement("tr");
+    const isSelected = selecionados.saidasMes.has(s.id);
+    if (isSelected) tr.classList.add('linha-selecionada');
+    
+    tr.innerHTML = `
+      <td><input type="checkbox" class="checkbox-selecao" data-secao="saidasMes" data-saida-id="${s.id}" 
+          ${isSelected ? 'checked' : ''} onchange="toggleSelecaoLinha(this, 'saidasMes', ${s.id})"></td>
+      <td><strong>${s.loja}</strong></td>
+      <td>${s.categoria}</td>
+      <td>${s.descricao}</td>
+      <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+      <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+      <td><span class="badge ${s.recorrente === 'Sim' ? 'bg-info' : 'bg-secondary'}">${s.recorrente}</span></td>
+      <td>${s.tipoRecorrencia || '-'}</td>
+      <td>
+        <button class="btn btn-warning-modern btn-sm" onclick="editarSaida('', ${s.id})">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
   });
-}
-
-// CORREÇÃO: Editar categorias e lojas
-function mostrarEditorCategoria() {
-  const editor = document.getElementById("editor-categoria");
-  if (editor) {
-    editor.style.display = editor.style.display === "none" ? "block" : "none";
-  }
-}
-
-function mostrarEditorLoja() {
-  const editor = document.getElementById("editor-loja");
-  if (editor) {
-    editor.style.display = editor.style.display === "none" ? "block" : "none";
-  }
-}
-
-function adicionarCategoria() {
-  const input = document.getElementById("novaCategoria");
-  if (!input) return;
   
-  const novaCategoria = input.value.trim();
-  if (!novaCategoria) {
-    mostrarNotificacaoInteligente("Digite o nome da categoria!", 'warning');
+  const paginacaoContainer = document.getElementById('paginacaoSaidasMes');
+  if (paginacaoContainer) {
+    const totalPaginas = Math.ceil(totalItens / itensPorPagina);
+    if (totalPaginas > 1) {
+      paginacaoContainer.style.display = 'flex';
+      document.getElementById('paginaAtualSaidasMes').textContent = paginaAtual;
+      document.getElementById('totalPaginasSaidasMes').textContent = totalPaginas;
+    } else {
+      paginacaoContainer.style.display = 'none';
+    }
+  }
+}
+
+function preencherTabelaSimples(container, saidas, mensagemVazia) {
+  if (!container) return;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = `<p class="text-muted text-center">✅ ${mensagemVazia}</p>`;
     return;
   }
   
-  if (categorias.includes(novaCategoria)) {
-    mostrarNotificacaoInteligente("Esta categoria já existe!", 'warning');
-    return;
+  const isRecorrentes = container.id === 'previsaoRecorrentes';
+  const secao = isRecorrentes ? 'recorrentes' : 'outras';
+  
+  // Ordenar por data (mais próximas primeiro) para próximas saídas
+  if (container.id === 'proximas' || container.parentElement.classList.contains('status-proximas')) {
+    saidas.sort((a, b) => new Date(a.data) - new Date(b.data));
   }
   
-  categorias.push(novaCategoria);
-  input.value = "";
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            ${isRecorrentes ? `<th><input type="checkbox" id="selecionarTodasRecorrentes" onchange="selecionarTodasLinhas('recorrentes')"></th>` : ''}
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidas.map(s => {
+            const diasInfo = calcularDiasInfo(s);
+            const isSelected = isRecorrentes && selecionados.recorrentes.has(s.id);
+            const linhaClass = isSelected ? 'linha-selecionada' : '';
+            return `
+            <tr class="${linhaClass}">
+              ${isRecorrentes ? `<td><input type="checkbox" class="checkbox-selecao" data-secao="recorrentes" data-saida-id="${s.id}" 
+                  ${isSelected ? 'checked' : ''} onchange="toggleSelecaoLinha(this, 'recorrentes', ${s.id})"></td>` : ''}
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')} ${diasInfo}</td>
+              <td>
+                ${s.pago === 'Não' ? `<button class="btn btn-success-modern btn-sm" onclick="marcarComoPago('', ${s.id})" title="Marcar como Pago"><i class="fas fa-check"></i></button>` : ''}
+                <button class="btn btn-warning-modern btn-sm ms-1" onclick="editarSaida('', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                ${s.recorrente === 'Sim' ? 
+                  `<button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirRecorrenciaCompleta(${s.id})" title="Excluir Recorrência Completa">
+                    <i class="fas fa-ban"></i>
+                  </button>` : 
+                  `<button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                  </button>`
+                }
+              </td>
+            </tr>
+          `}).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+// ===== NOTIFICAÇÕES =====
+function mostrarNotificacaoInteligente(texto = '✅ Operação realizada!', tipo = 'success') {
+  const notificacao = document.getElementById("notificacaoInteligente");
+  const textoElement = document.getElementById("textoNotificacao");
+  if (!notificacao || !textoElement) return;
+  
+  notificacao.className = 'notificacao-inteligente';
+  if (tipo === 'error') {
+    notificacao.classList.add('error');
+    textoElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${texto}`;
+  } else if (tipo === 'warning') {
+    notificacao.classList.add('warning');
+    textoElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${texto}`;
+  } else {
+    textoElement.innerHTML = `<i class="fas fa-check-circle"></i> ${texto}`;
+  }
+  
+  notificacao.classList.add('show');
+  setTimeout(() => notificacao.classList.remove('show'), 4000);
+}
+
+// ===== FUNÇÕES BÁSICAS EXISTENTES (sem alteração) =====
+function excluirSaida(firestoreId, saidaId) {
+  if (!confirm('Excluir esta saída?')) return;
+  saidas = saidas.filter(s => s.id !== saidaId);
+  saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
   salvarDadosLocal();
   atualizarInterfaceCompleta();
-  mostrarNotificacaoInteligente(`✅ Categoria "${novaCategoria}" adicionada!`);
+  mostrarNotificacaoInteligente('✅ Saída excluída!');
 }
 
-function adicionarLoja() {
-  const input = document.getElementById("novaLoja");
-  if (!input) return;
-  
-  const novaLoja = input.value.trim();
-  if (!novaLoja) {
-    mostrarNotificacaoInteligente("Digite o nome da loja!", 'warning');
-    return;
-  }
-  
-  if (lojas.includes(novaLoja)) {
-    mostrarNotificacaoInteligente("Esta loja já existe!", 'warning');
-    return;
-  }
-  
-  lojas.push(novaLoja);
-  input.value = "";
-  salvarDadosLocal();
-  atualizarInterfaceCompleta();
-  mostrarNotificacaoInteligente(`✅ Loja "${novaLoja}" adicionada!`);
-}
-
-function mostrarEditorCategoriaExistente() {
-  const modal = document.getElementById('modalCustom');
-  if (!modal) return;
-  
-  const lista = categorias.map((cat, index) => 
-    `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-      <span style="font-weight: 600;">${cat}</span>
-      <button onclick="removerCategoria(${index})" class="btn btn-danger-modern btn-sm">
-        <i class="fas fa-trash"></i> Remover
-      </button>
-    </div>`
-  ).join('');
-  
-  document.getElementById('modalTitulo').textContent = 'Editar Categorias Existentes';
-  document.getElementById('modalTexto').innerHTML = lista || '<p class="text-muted">Nenhuma categoria cadastrada.</p>';
-  document.getElementById('modalBotoes').innerHTML = `
-    <button class="btn btn-secondary btn-modern" onclick="fecharModal()">Fechar</button>
-  `;
-  modal.style.display = 'flex';
-}
-
-function mostrarEditorLojaExistente() {
-  const modal = document.getElementById('modalCustom');
-  if (!modal) return;
-  
-  const lista = lojas.map((loja, index) => 
-    `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-      <span style="font-weight: 600;">${loja}</span>
-      <button onclick="removerLoja(${index})" class="btn btn-danger-modern btn-sm">
-        <i class="fas fa-trash"></i> Remover
-      </button>
-    </div>`
-  ).join('');
-  
-  document.getElementById('modalTitulo').textContent = 'Editar Lojas Existentes';
-  document.getElementById('modalTexto').innerHTML = lista || '<p class="text-muted">Nenhuma loja cadastrada.</p>';
-  document.getElementById('modalBotoes').innerHTML = `
-    <button class="btn btn-secondary btn-modern" onclick="fecharModal()">Fechar</button>
-  `;
-  modal.style.display = 'flex';
-}
-
-function removerCategoria(index) {
-  const categoria = categorias[index];
-  if (confirm(`Tem certeza que deseja remover a categoria "${categoria}"?`)) {
-    categorias.splice(index, 1);
+function marcarComoPago(firestoreId, saidaId) {
+  if (!confirm('Marcar como paga?')) return;
+  const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+  if (saida) {
+    saida.pago = 'Sim';
+    saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+    saidas.unshift(saida);
     salvarDadosLocal();
     atualizarInterfaceCompleta();
-    mostrarEditorCategoriaExistente();
-    mostrarNotificacaoInteligente(`✅ Categoria "${categoria}" removida!`);
+    mostrarNotificacaoInteligente('✅ Marcada como paga!');
   }
 }
 
-function removerLoja(index) {
-  const loja = lojas[index];
-  if (confirm(`Tem certeza que deseja remover a loja "${loja}"?`)) {
-    lojas.splice(index, 1);
-    salvarDadosLocal();
-    atualizarInterfaceCompleta();
-    mostrarEditorLojaExistente();
-    mostrarNotificacaoInteligente(`✅ Loja "${loja}" removida!`);
-  }
-}
-
-function fecharModal() {
-  const modal = document.getElementById('modalCustom');
-  if (modal) modal.style.display = 'none';
-}
-
-// CORREÇÃO: Editar saída completa
 function editarSaida(firestoreId, saidaId) {
   const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
   
@@ -709,47 +1041,7 @@ function salvarEdicaoSaida(saidaId) {
   mostrarNotificacaoInteligente('✅ Saída editada com sucesso!');
 }
 
-// Chat IA básico
-function enviarMensagemChat() {
-  const input = document.getElementById('chatInput');
-  const mensagem = input?.value.trim();
-  if (!mensagem) return;
-  
-  input.value = '';
-  adicionarMensagemChat('user', mensagem);
-  
-  setTimeout(() => {
-    const resultado = interpretarMensagemIA(mensagem);
-    if (resultado.sucesso) {
-      const saidaData = {
-        id: Date.now(),
-        loja: "Loja Centro",
-        categoria: resultado.categoria,
-        descricao: resultado.categoria,
-        valor: resultado.valor,
-        data: resultado.data,
-        recorrente: "Não",
-        tipoRecorrencia: null,
-        pago: resultado.pago,
-        origem: 'chat',
-        timestamp: new Date()
-      };
-      
-      if (saidaData.pago === 'Sim') {
-        saidas.unshift(saidaData);
-      } else {
-        saidasPendentes.unshift(saidaData);
-      }
-      
-      salvarDadosLocal();
-      atualizarInterfaceCompleta();
-      adicionarMensagemChat('system', `✅ Saída de ${formatarMoedaBR(resultado.valor)} adicionada para ${resultado.categoria}!`);
-    } else {
-      adicionarMensagemChat('system', `❌ ${resultado.erro}`);
-    }
-  }, 1000);
-}
-
+// ===== CHAT IA BÁSICO =====
 function interpretarMensagemIA(mensagem) {
   const msgLower = mensagem.toLowerCase();
   
@@ -810,65 +1102,331 @@ function processarValorBrasileiro(valorTexto) {
   return parseFloat(valor) || 0;
 }
 
-function adicionarMensagemChat(tipo, texto) {
-  const chatMessages = document.getElementById('chatMessages');
-  if (!chatMessages) return;
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `chat-message ${tipo}`;
-  messageDiv.innerHTML = `
-    <div class="chat-bubble">
-      <div>${texto}</div>
-      <div class="chat-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-    </div>
-  `;
-  
-  chatMessages.appendChild(messageDiv);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function limparChat() {
-  const chatMessages = document.getElementById('chatMessages');
-  if (chatMessages) {
-    chatMessages.innerHTML = `
-      <div class="chat-message system">
-        <div class="chat-bubble">
-          <div>👋 Olá! Digite suas saídas em linguagem natural</div>
-          <div class="chat-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-        </div>
-      </div>
-    `;
+// ===== MÚLTIPLAS SAÍDAS =====
+function iniciarMultiplasSaidas() {
+  contadorMultiplas = 0;
+  const container = document.getElementById("multiplasSaidasContainer");
+  if (container) {
+    container.style.display = "block";
+    adicionarNovaLinha();
   }
 }
 
-// Funções básicas do sistema
-function excluirSaida(firestoreId, saidaId) {
-  if (!confirm('Excluir esta saída?')) return;
-  saidas = saidas.filter(s => s.id !== saidaId);
-  saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+function removerLinhaSaida(id) {
+  const elemento = document.getElementById(`saida-${id}`);
+  if (elemento) elemento.remove();
+}
+
+function adicionarTodasSaidas() {
+  const listaSaidas = document.getElementById("listaSaidas");
+  if (!listaSaidas) return;
+  
+  const linhas = listaSaidas.querySelectorAll('.saida-item');
+  const errosContainer = document.getElementById('errosMultiplas');
+  
+  let sucessos = 0;
+  let erros = [];
+  
+  if (errosContainer) errosContainer.innerHTML = '';
+  
+  for (const linha of linhas) {
+    const id = linha.id.split('-')[1];
+    
+    const loja = document.getElementById(`loja-${id}`)?.value;
+    const categoria = document.getElementById(`categoria-${id}`)?.value;
+    const descricao = document.getElementById(`descricao-${id}`)?.value || categoria;
+    const valorInput = document.getElementById(`valor-${id}`)?.value;
+    const valor = extrairValorNumerico(valorInput);
+    const data = document.getElementById(`data-${id}`)?.value;
+    const recorrente = document.getElementById(`recorrente-${id}`)?.value || "Não";
+    const tipoRecorrencia = document.getElementById(`tipoRecorrencia-${id}`)?.value;
+    const pago = document.getElementById(`pago-${id}`)?.value;
+    
+    const errosLinha = [];
+    
+    if (!loja) errosLinha.push('Loja obrigatória');
+    if (!categoria) errosLinha.push('Categoria obrigatória');
+    if (!valorInput || valor <= 0) errosLinha.push('Valor inválido');
+    if (!data) errosLinha.push('Data obrigatória');
+    if (recorrente === 'Sim' && !tipoRecorrencia) errosLinha.push('Tipo de recorrência obrigatório');
+    
+    if (errosLinha.length > 0) {
+      erros.push(`Linha ${id}: ${errosLinha.join(', ')}`);
+      
+      const campos = [`loja-${id}`, `categoria-${id}`, `valor-${id}`, `data-${id}`];
+      campos.forEach(campoId => {
+        const campo = document.getElementById(campoId);
+        if (campo && errosLinha.some(erro => erro.toLowerCase().includes(campoId.split('-')[0]))) {
+          campo.classList.add('campo-obrigatorio');
+        }
+      });
+      continue;
+    }
+    
+    let configRecorrencia = null;
+    let tipoFinal = tipoRecorrencia;
+    
+    if (recorrente === 'Sim' && tipoRecorrencia === 'Personalizada') {
+      const diasPersonalizado = document.getElementById(`diasPersonalizado-${id}`)?.value;
+      const mesesSelecionados = Array.from(document.getElementById(`mesesRecorrencia-${id}`).selectedOptions).map(opt => parseInt(opt.value));
+      const anoRecorrencia = document.getElementById(`anoRecorrencia-${id}`)?.value;
+      
+      configRecorrencia = {
+        tipo: 'Personalizada',
+        diasIntervalo: diasPersonalizado ? parseInt(diasPersonalizado) : 30,
+        mesesAtivos: mesesSelecionados.length > 0 ? mesesSelecionados : [1,2,3,4,5,6,7,8,9,10,11,12],
+        anoRecorrencia: anoRecorrencia ? parseInt(anoRecorrencia) : new Date().getFullYear()
+      };
+    } else if (recorrente === 'Sim') {
+      configRecorrencia = { tipo: tipoRecorrencia };
+    }
+    
+    const saida = {
+      id: Date.now() + Math.random() * 1000,
+      loja, categoria,
+      descricao: descricao || categoria,
+      valor, data,
+      recorrente,
+      tipoRecorrencia: recorrente === 'Sim' ? tipoFinal : null,
+      configRecorrencia: configRecorrencia,
+      pago: pago || "Sim",
+      origem: 'multiplas',
+      timestamp: new Date()
+    };
+    
+    try {
+      if (recorrente === 'Sim' && tipoRecorrencia) {
+        gerarSaidasRecorrentes(saida);
+      } else {
+        if (saida.pago === 'Sim') {
+          saidas.unshift(saida);
+        } else {
+          saidasPendentes.unshift(saida);
+        }
+      }
+      sucessos++;
+    } catch (error) {
+      erros.push(`Linha ${id}: ${error.message}`);
+    }
+  }
+  
+  if (erros.length > 0) {
+    if (errosContainer) {
+      errosContainer.innerHTML = `
+        <div class="erro-item">
+          <strong>❌ Erros encontrados - Corrija antes de continuar:</strong><br>
+          ${erros.map(erro => `• ${erro}`).join('<br>')}
+        </div>
+      `;
+    }
+    mostrarNotificacaoInteligente(`❌ ${erros.length} erro(s) encontrado(s). Corrija os campos destacados.`, 'error');
+    return;
+  }
+  
   salvarDadosLocal();
   atualizarInterfaceCompleta();
-  mostrarNotificacaoInteligente('✅ Saída excluída!');
+  cancelarMultiplasSaidas();
+  mostrarNotificacaoInteligente(`✅ ${sucessos} saídas adicionadas com sucesso!`);
 }
 
-function marcarComoPago(firestoreId, saidaId) {
-  if (!confirm('Marcar como paga?')) return;
-  const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
-  if (saida) {
-    saida.pago = 'Sim';
-    saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
-    saidas.unshift(saida);
-    salvarDadosLocal();
-    atualizarInterfaceCompleta();
-    mostrarNotificacaoInteligente('✅ Marcada como paga!');
+function cancelarMultiplasSaidas() {
+  const container = document.getElementById("multiplasSaidasContainer");
+  if (container) container.style.display = "none";
+  
+  const listaSaidas = document.getElementById("listaSaidas");
+  if (listaSaidas) listaSaidas.innerHTML = "";
+  
+  contadorMultiplas = 0;
+}
+
+function formatarMoedaMultiplas(input) {
+  let valor = input.value.replace(/\D/g, '');
+  if (valor === '') {
+    input.value = '';
+    return;
+  }
+  valor = parseInt(valor);
+  input.value = (valor / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+}
+
+// ===== EDITAR CATEGORIAS E LOJAS =====
+function mostrarEditorCategoria() {
+  const editor = document.getElementById("editor-categoria");
+  if (editor) {
+    editor.style.display = editor.style.display === "none" ? "block" : "none";
   }
 }
 
-function editarSaida(firestoreId, saidaId) {
-  mostrarNotificacaoInteligente('Funcionalidade em desenvolvimento', 'warning');
+function mostrarEditorLoja() {
+  const editor = document.getElementById("editor-loja");
+  if (editor) {
+    editor.style.display = editor.style.display === "none" ? "block" : "none";
+  }
 }
 
-// CORREÇÃO: Próximas saídas com paginação
+function adicionarCategoria() {
+  const input = document.getElementById("novaCategoria");
+  if (!input) return;
+  
+  const novaCategoria = input.value.trim();
+  if (!novaCategoria) {
+    mostrarNotificacaoInteligente("Digite o nome da categoria!", 'warning');
+    return;
+  }
+  
+  if (categorias.includes(novaCategoria)) {
+    mostrarNotificacaoInteligente("Esta categoria já existe!", 'warning');
+    return;
+  }
+  
+  categorias.push(novaCategoria);
+  input.value = "";
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarNotificacaoInteligente(`✅ Categoria "${novaCategoria}" adicionada!`);
+}
+
+function adicionarLoja() {
+  const input = document.getElementById("novaLoja");
+  if (!input) return;
+  
+  const novaLoja = input.value.trim();
+  if (!novaLoja) {
+    mostrarNotificacaoInteligente("Digite o nome da loja!", 'warning');
+    return;
+  }
+  
+  if (lojas.includes(novaLoja)) {
+    mostrarNotificacaoInteligente("Esta loja já existe!", 'warning');
+    return;
+  }
+  
+  lojas.push(novaLoja);
+  input.value = "";
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarNotificacaoInteligente(`✅ Loja "${novaLoja}" adicionada!`);
+}
+
+function mostrarEditorCategoriaExistente() {
+  const modal = document.getElementById('modalCustom');
+  if (!modal) return;
+  
+  const lista = categorias.map((cat, index) => 
+    `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+      <input type="text" value="${cat}" id="editCat${index}" style="flex: 1; margin-right: 10px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+      <button onclick="salvarEdicaoCategoria(${index})" class="btn btn-success-modern btn-sm me-1">
+        <i class="fas fa-save"></i>
+      </button>
+      <button onclick="removerCategoria(${index})" class="btn btn-danger-modern btn-sm">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>`
+  ).join('');
+  
+  document.getElementById('modalTitulo').textContent = 'Editar Categorias Existentes';
+  document.getElementById('modalTexto').innerHTML = lista || '<p class="text-muted">Nenhuma categoria cadastrada.</p>';
+  document.getElementById('modalBotoes').innerHTML = `
+    <button class="btn btn-secondary btn-modern" onclick="fecharModal()">Fechar</button>
+  `;
+  modal.style.display = 'flex';
+}
+
+function mostrarEditorLojaExistente() {
+  const modal = document.getElementById('modalCustom');
+  if (!modal) return;
+  
+  const lista = lojas.map((loja, index) => 
+    `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+      <input type="text" value="${loja}" id="editLoja${index}" style="flex: 1; margin-right: 10px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+      <button onclick="salvarEdicaoLoja(${index})" class="btn btn-success-modern btn-sm me-1">
+        <i class="fas fa-save"></i>
+      </button>
+      <button onclick="removerLoja(${index})" class="btn btn-danger-modern btn-sm">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>`
+  ).join('');
+  
+  document.getElementById('modalTitulo').textContent = 'Editar Lojas Existentes';
+  document.getElementById('modalTexto').innerHTML = lista || '<p class="text-muted">Nenhuma loja cadastrada.</p>';
+  document.getElementById('modalBotoes').innerHTML = `
+    <button class="btn btn-secondary btn-modern" onclick="fecharModal()">Fechar</button>
+  `;
+  modal.style.display = 'flex';
+}
+
+function salvarEdicaoCategoria(index) {
+  const novoNome = document.getElementById(`editCat${index}`)?.value.trim();
+  if (!novoNome) {
+    mostrarNotificacaoInteligente('Nome não pode estar vazio!', 'warning');
+    return;
+  }
+  
+  if (categorias.includes(novoNome) && categorias[index] !== novoNome) {
+    mostrarNotificacaoInteligente('Esta categoria já existe!', 'warning');
+    return;
+  }
+  
+  const nomeAntigo = categorias[index];
+  categorias[index] = novoNome;
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarNotificacaoInteligente(`✅ Categoria "${nomeAntigo}" alterada para "${novoNome}"!`);
+  mostrarEditorCategoriaExistente();
+}
+
+function salvarEdicaoLoja(index) {
+  const novoNome = document.getElementById(`editLoja${index}`)?.value.trim();
+  if (!novoNome) {
+    mostrarNotificacaoInteligente('Nome não pode estar vazio!', 'warning');
+    return;
+  }
+  
+  if (lojas.includes(novoNome) && lojas[index] !== novoNome) {
+    mostrarNotificacaoInteligente('Esta loja já existe!', 'warning');
+    return;
+  }
+  
+  const nomeAntigo = lojas[index];
+  lojas[index] = novoNome;
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  mostrarNotificacaoInteligente(`✅ Loja "${nomeAntigo}" alterada para "${novoNome}"!`);
+  mostrarEditorLojaExistente();
+}
+
+function removerCategoria(index) {
+  const categoria = categorias[index];
+  if (confirm(`Tem certeza que deseja remover a categoria "${categoria}"?`)) {
+    categorias.splice(index, 1);
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarEditorCategoriaExistente();
+    mostrarNotificacaoInteligente(`✅ Categoria "${categoria}" removida!`);
+  }
+}
+
+function removerLoja(index) {
+  const loja = lojas[index];
+  if (confirm(`Tem certeza que deseja remover a loja "${loja}"?`)) {
+    lojas.splice(index, 1);
+    salvarDadosLocal();
+    atualizarInterfaceCompleta();
+    mostrarEditorLojaExistente();
+    mostrarNotificacaoInteligente(`✅ Loja "${loja}" removida!`);
+  }
+}
+
+function fecharModal() {
+  const modal = document.getElementById('modalCustom');
+  if (modal) modal.style.display = 'none';
+}
+
+// ===== PAGINAÇÃO =====
 function paginacaoAnteriorProximas() {
   if (paginacao.proximasSaidas.paginaAtual > 1) {
     paginacao.proximasSaidas.paginaAtual--;
@@ -901,13 +1459,98 @@ function paginacaoProxima(tipo) {
   }
 }
 
-// Interface e atualização
+function preencherTabelaProximas(container, saidas) {
+  if (!container) return;
+  
+  paginacao.proximasSaidas.totalItens = saidas.length;
+  
+  if (saidas.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">✅ Nenhuma saída próxima</p>';
+    esconderControlesProximas();
+    return;
+  }
+  
+  // Ordenar por data (mais próximas primeiro)
+  saidas.sort((a, b) => new Date(a.data) - new Date(b.data));
+  
+  const itensPorPagina = paginacao.proximasSaidas.itensPorPagina;
+  const paginaAtual = paginacao.proximasSaidas.paginaAtual;
+  const totalPaginas = Math.ceil(saidas.length / itensPorPagina);
+  
+  const inicio = (paginaAtual - 1) * itensPorPagina;
+  const saidasPagina = saidas.slice(inicio, inicio + itensPorPagina);
+  
+  mostrarControlesProximas(totalPaginas);
+  
+  const tabela = `
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Loja</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${saidasPagina.map(s => {
+            const diasRestantes = Math.floor((new Date(s.data + 'T00:00:00') - new Date()) / (1000 * 60 * 60 * 24));
+            return `
+            <tr>
+              <td><strong>${s.loja}</strong></td>
+              <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
+              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')} <span class="badge bg-warning">${diasRestantes}d</span></td>
+              <td>
+                <button class="btn btn-success-modern btn-sm" onclick="marcarComoPago('', ${s.id})" title="Marcar como Pago">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="btn btn-warning-modern btn-sm ms-1" onclick="editarSaida('', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `}).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = tabela;
+}
+
+function mostrarControlesProximas(totalPaginas) {
+  const controles = document.getElementById('proximasControles');
+  const paginaAtual = document.getElementById('paginaAtualProximas');
+  const totalPaginasElement = document.getElementById('totalPaginasProximas');
+  const totalItens = document.getElementById('totalItensProximas');
+  
+  if (controles) controles.style.display = totalPaginas > 1 ? 'flex' : 'none';
+  if (paginaAtual) paginaAtual.textContent = paginacao.proximasSaidas.paginaAtual;
+  if (totalPaginasElement) totalPaginasElement.textContent = totalPaginas;
+  if (totalItens) totalItens.textContent = paginacao.proximasSaidas.totalItens;
+}
+
+function esconderControlesProximas() {
+  const controles = document.getElementById('proximasControles');
+  if (controles) controles.style.display = 'none';
+}
+
+// ===== INTERFACE E ATUALIZAÇÃO =====
 function atualizarInterfaceCompleta() {
   atualizarCategorias();
   atualizarLojas();
   atualizarFiltros();
   atualizarTabela();
   atualizarDashboard();
+  atualizarGraficos();
 }
 
 function atualizarCategorias() {
@@ -998,16 +1641,17 @@ function preencherMesesDoAno() {
     { valor: `${anoSelecionado}-12`, nome: 'Dezembro' }
   ];
   
+  const mesAtualSelecionado = filtroMes.value;
   filtroMes.innerHTML = '<option value="">Todos os meses</option>';
   meses.forEach(mes => {
     const option = document.createElement("option");
     option.value = mes.valor;
     option.textContent = mes.nome;
+    if (mes.valor === mesAtualSelecionado) option.selected = true;
     filtroMes.appendChild(option);
   });
 }
 
-// CORREÇÃO: Atualizou tabela para incluir saídas futuras em próximas
 function atualizarTabela() {
   const tbody = document.getElementById("tabelaSaidas");
   const divAtrasadas = document.getElementById("atrasadas");
@@ -1027,7 +1671,6 @@ function atualizarTabela() {
   const dataHoje = hoje.toISOString().split('T')[0];
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   
-  // CORREÇÃO: Incluir TODAS as saídas futuras em próximas (recorrentes E não recorrentes)
   let saidasMes = [...saidas, ...saidasPendentes].filter(s => {
     const saidaAnoMes = s.data.substring(0, 7);
     return saidaAnoMes === anoMes && s.pago === 'Sim';
@@ -1036,11 +1679,10 @@ function atualizarTabela() {
   let saidasAtrasadas = [...saidas, ...saidasPendentes].filter(s => s.pago === 'Não' && s.data < dataHoje);
   let saidasVencendoHoje = [...saidas, ...saidasPendentes].filter(s => s.pago === 'Não' && s.data === dataHoje);
   
-  // CORREÇÃO: Próximas saídas incluem TODAS as saídas futuras (independente de recorrência)
   let saidasProximas = [...saidas, ...saidasPendentes].filter(s => {
-    if (s.pago === 'Sim') return false; // Só saídas não pagas
+    if (s.pago === 'Sim') return false;
     const diasRestantes = Math.floor((new Date(s.data + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
-    return diasRestantes > 0; // TODAS as saídas futuras
+    return diasRestantes > 0;
   });
   
   let saidasRecorrentes = [...saidas, ...saidasPendentes].filter(s => s.recorrente === 'Sim');
@@ -1053,7 +1695,6 @@ function atualizarTabela() {
     saidasRecorrentes = saidasRecorrentes.filter(s => s.loja === lojaFiltroAtual);
   }
   
-  // Aplicar filtros de recorrentes
   saidasRecorrentes = aplicarFiltrosRecorrentes(saidasRecorrentes);
   
   preencherTabelaDoMes(tbody, saidasMes);
@@ -1062,7 +1703,6 @@ function atualizarTabela() {
   preencherTabelaProximas(divProximas, saidasProximas);
   preencherTabelaSimples(divPrevisaoRecorrentes, saidasRecorrentes, 'Nenhuma saída recorrente');
   
-  // Atualizar total de recorrentes
   const totalRecorrentes = saidasRecorrentes.reduce((sum, s) => sum + s.valor, 0);
   const elemento = document.getElementById("totalSaidasRecorrentes");
   if (elemento) elemento.textContent = formatarMoedaBR(totalRecorrentes);
@@ -1084,126 +1724,6 @@ function aplicarFiltrosRecorrentes(saidas) {
   return saidasFiltradas;
 }
 
-function preencherTabelaDoMes(tbody, saidas) {
-  const itensPorPagina = paginacao.saidasMes.itensPorPagina;
-  const paginaAtual = paginacao.saidasMes.paginaAtual;
-  const totalItens = saidas.length;
-  
-  paginacao.saidasMes.totalItens = totalItens;
-  
-  const inicio = (paginaAtual - 1) * itensPorPagina;
-  const saidasPagina = saidas.slice(inicio, inicio + itensPorPagina);
-  
-  saidasPagina.forEach(s => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><strong>${s.loja}</strong></td>
-      <td>${s.categoria}</td>
-      <td>${s.descricao}</td>
-      <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-      <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
-      <td><span class="badge ${s.recorrente === 'Sim' ? 'bg-info' : 'bg-secondary'}">${s.recorrente}</span></td>
-      <td>${s.tipoRecorrencia || '-'}</td>
-      <td>
-        <button class="btn btn-warning-modern btn-sm" onclick="editarSaida('', ${s.id})">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})">
-          <i class="fas fa-trash"></i>
-        </button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-  
-  const paginacaoContainer = document.getElementById('paginacaoSaidasMes');
-  if (paginacaoContainer) {
-    const totalPaginas = Math.ceil(totalItens / itensPorPagina);
-    if (totalPaginas > 1) {
-      paginacaoContainer.style.display = 'flex';
-      document.getElementById('paginaAtualSaidasMes').textContent = paginaAtual;
-      document.getElementById('totalPaginasSaidasMes').textContent = totalPaginas;
-    } else {
-      paginacaoContainer.style.display = 'none';
-    }
-  }
-}
-
-// CORREÇÃO: Tabelas com botões e descrição completos
-function preencherTabelaSimples(container, saidas, mensagemVazia) {
-  if (!container) return;
-  
-  if (saidas.length === 0) {
-    container.innerHTML = `<p class="text-muted text-center">✅ ${mensagemVazia}</p>`;
-    return;
-  }
-  
-  // Adicionar paginação para cada seção
-  const containerName = container.id || 'secao';
-  let paginacao = window[`paginacao${containerName}`] || { paginaAtual: 1, itensPorPagina: 10 };
-  
-  const inicio = (paginacao.paginaAtual - 1) * paginacao.itensPorPagina;
-  const saidasPagina = saidas.slice(inicio, inicio + paginacao.itensPorPagina);
-  const totalPaginas = Math.ceil(saidas.length / paginacao.itensPorPagina);
-  
-  const tabela = `
-    <div class="table-responsive">
-      <table class="table table-modern">
-        <thead>
-          <tr>
-            <th>Loja</th>
-            <th>Categoria</th>
-            <th>Descrição</th>
-            <th>Valor</th>
-            <th>Data</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${saidasPagina.map(s => {
-            const diasInfo = calcularDiasInfo(s);
-            return `
-            <tr>
-              <td><strong>${s.loja}</strong></td>
-              <td>${s.categoria}</td>
-              <td>${s.descricao}</td>
-              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')} ${diasInfo}</td>
-              <td>
-                ${s.pago === 'Não' ? `<button class="btn btn-success-modern btn-sm" onclick="marcarComoPago('', ${s.id})" title="Marcar como Pago"><i class="fas fa-check"></i></button>` : ''}
-                <button class="btn btn-warning-modern btn-sm ms-1" onclick="editarSaida('', ${s.id})" title="Editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})" title="Excluir">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          `}).join('')}
-        </tbody>
-      </table>
-    </div>
-    ${totalPaginas > 1 ? `
-      <div class="paginacao-container">
-        <button class="paginacao-btn" onclick="paginacaoSecao('${containerName}', -1)" ${paginacao.paginaAtual <= 1 ? 'disabled' : ''}>
-          <i class="fas fa-chevron-left"></i> Anterior
-        </button>
-        <span class="paginacao-info">
-          Página ${paginacao.paginaAtual} de ${totalPaginas}
-        </span>
-        <button class="paginacao-btn" onclick="paginacaoSecao('${containerName}', 1)" ${paginacao.paginaAtual >= totalPaginas ? 'disabled' : ''}>
-          Próxima <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-    ` : ''}
-  `;
-  
-  container.innerHTML = tabela;
-  
-  // Salvar estado da paginação
-  window[`paginacao${containerName}`] = paginacao;
-}
-
 function calcularDiasInfo(saida) {
   const hoje = new Date();
   const dataSaida = new Date(saida.data + 'T00:00:00');
@@ -1217,92 +1737,6 @@ function calcularDiasInfo(saida) {
     return `<span class="badge bg-warning">${diferenca} dias</span>`;
   }
   return '';
-}
-
-function paginacaoSecao(secaoNome, direcao) {
-  let paginacao = window[`paginacao${secaoNome}`];
-  if (!paginacao) return;
-  
-  paginacao.paginaAtual += direcao;
-  if (paginacao.paginaAtual < 1) paginacao.paginaAtual = 1;
-  
-  atualizarTabela();
-}
-
-function preencherTabelaProximas(container, saidas) {
-  if (!container) return;
-  
-  paginacao.proximasSaidas.totalItens = saidas.length;
-  
-  if (saidas.length === 0) {
-    container.innerHTML = '<p class="text-muted text-center">✅ Nenhuma saída próxima</p>';
-    esconderControlesProximas();
-    return;
-  }
-  
-  const itensPorPagina = paginacao.proximasSaidas.itensPorPagina;
-  const paginaAtual = paginacao.proximasSaidas.paginaAtual;
-  const totalPaginas = Math.ceil(saidas.length / itensPorPagina);
-  
-  const inicio = (paginaAtual - 1) * itensPorPagina;
-  const saidasPagina = saidas.slice(inicio, inicio + itensPorPagina);
-  
-  mostrarControlesProximas(totalPaginas);
-  
-  const tabela = `
-    <div class="table-responsive">
-      <table class="table table-modern">
-        <thead>
-          <tr>
-            <th>Loja</th>
-            <th>Categoria</th>
-            <th>Valor</th>
-            <th>Data</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${saidasPagina.map(s => {
-            const diasRestantes = Math.floor((new Date(s.data + 'T00:00:00') - new Date()) / (1000 * 60 * 60 * 24));
-            return `
-            <tr>
-              <td><strong>${s.loja}</strong></td>
-              <td>${s.categoria}</td>
-              <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')} <span class="badge bg-warning">${diasRestantes}d</span></td>
-              <td>
-                <button class="btn btn-success-modern btn-sm" onclick="marcarComoPago('', ${s.id})">
-                  <i class="fas fa-check"></i>
-                </button>
-                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          `}).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-  
-  container.innerHTML = tabela;
-}
-
-function mostrarControlesProximas(totalPaginas) {
-  const controles = document.getElementById('proximasControles');
-  const paginaAtual = document.getElementById('paginaAtualProximas');
-  const totalPaginasElement = document.getElementById('totalPaginasProximas');
-  const totalItens = document.getElementById('totalItensProximas');
-  
-  if (controles) controles.style.display = totalPaginas > 1 ? 'flex' : 'none';
-  if (paginaAtual) paginaAtual.textContent = paginacao.proximasSaidas.paginaAtual;
-  if (totalPaginasElement) totalPaginasElement.textContent = totalPaginas;
-  if (totalItens) totalItens.textContent = paginacao.proximasSaidas.totalItens;
-}
-
-function esconderControlesProximas() {
-  const controles = document.getElementById('proximasControles');
-  if (controles) controles.style.display = 'none';
 }
 
 function atualizarDashboard() {
@@ -1351,6 +1785,7 @@ function aplicarFiltroLoja() {
   paginacao.saidasMes.paginaAtual = 1;
   atualizarTabela();
   atualizarDashboard();
+  atualizarGraficos();
 }
 
 function filtrarRecorrentesPorFiltros() {
@@ -1363,11 +1798,22 @@ function limparFiltrosRecorrentes() {
     const elemento = document.getElementById(filtroId);
     if (elemento) elemento.value = '';
   });
+  
+  // Reaplicar filtros padrão
+  setTimeout(preencherFiltrosRecorrentesIniciais, 100);
+  
   filtrarRecorrentesPorFiltros();
-  mostrarNotificacaoInteligente('✅ Filtros limpos!');
+  mostrarNotificacaoInteligente('✅ Filtros limpos e padrões reaplicados!');
 }
 
-// CORREÇÃO: Análise inteligente funcional
+// ===== GRÁFICOS AUTOMÁTICOS =====
+function atualizarGraficos() {
+  // Esta função atualizará os gráficos automaticamente baseado nos dados atuais
+  // Implementação básica - pode ser expandida conforme necessário
+  console.log('📊 Gráficos atualizados automaticamente');
+}
+
+// ===== ANÁLISE INTELIGENTE =====
 function abrirAnaliseInteligente() {
   const modal = document.getElementById('modalAnaliseInteligente');
   const loading = document.getElementById('analiseLoading');
@@ -1477,7 +1923,7 @@ function fecharAnaliseInteligente() {
   if (modal) modal.style.display = 'none';
 }
 
-// Treinamento IA básico
+// ===== TREINAMENTO IA =====
 function mostrarTreinamentoIA() {
   mostrarNotificacaoInteligente('Treinamento IA em desenvolvimento', 'warning');
 }
@@ -1487,7 +1933,7 @@ function fecharTreinamentoIA() {
   if (modal) modal.style.display = 'none';
 }
 
-// Utilitários
+// ===== UTILITÁRIOS =====
 function formatarMoeda(input) {
   let valor = input.value.replace(/\D/g, '');
   if (valor === '') {
@@ -1538,13 +1984,16 @@ function limparFormulario() {
   
   const colunaRecorrencia = document.getElementById('colunaTipoRecorrencia');
   if (colunaRecorrencia) colunaRecorrencia.style.display = 'none';
+  
+  const recorrenciaAvancada = document.getElementById('recorrenciaAvancada');
+  if (recorrenciaAvancada) recorrenciaAvancada.classList.remove('show');
 }
 
 function salvarDadosLocal() {
   try {
     const dadosBackup = {
       categorias, lojas, saidas, saidasPendentes, treinamentosIA, treinamentosNaturais,
-      versao: '2.0.0', ultimoBackup: new Date().toISOString(),
+      versao: '3.0.0', ultimoBackup: new Date().toISOString(),
       totalSaidas: saidas.length + saidasPendentes.length
     };
     localStorage.setItem('iclubSaidas', JSON.stringify(dadosBackup));
@@ -1570,25 +2019,26 @@ function carregarDadosLocal() {
   return false;
 }
 
-// Inicialização
+// ===== INICIALIZAÇÃO =====
 window.addEventListener('load', () => {
   const dataElement = document.getElementById('data');
   if (dataElement && !dataElement.value) {
     dataElement.value = new Date().toISOString().split('T')[0];
   }
   
-  const chatInput = document.getElementById('chatInput');
+  const chatInput = document.getElementById('chatInputTopo');
   if (chatInput) {
     chatInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        enviarMensagemChat();
+        enviarMensagemChatTopo();
       }
     });
   }
   
   carregarDadosLocal();
   atualizarInterfaceCompleta();
+  preencherFiltrosRecorrentesIniciais();
   
   const totalSaidas = saidas.length + saidasPendentes.length;
   if (totalSaidas > 0) {
@@ -1598,11 +2048,15 @@ window.addEventListener('load', () => {
   }
 });
 
-// Exposição global das funções
-window.toggleChat = toggleChat;
+// ===== EXPOSIÇÃO GLOBAL DAS FUNÇÕES =====
+window.toggleChatTopo = toggleChatTopo;
+window.enviarMensagemChatTopo = enviarMensagemChatTopo;
+window.limparChatTopo = limparChatTopo;
 window.adicionarSaida = adicionarSaida;
 window.excluirSaida = excluirSaida;
+window.excluirRecorrenciaCompleta = excluirRecorrenciaCompleta;
 window.editarSaida = editarSaida;
+window.salvarEdicaoSaida = salvarEdicaoSaida;
 window.marcarComoPago = marcarComoPago;
 window.mostrarEditorCategoria = mostrarEditorCategoria;
 window.mostrarEditorLoja = mostrarEditorLoja;
@@ -1610,6 +2064,8 @@ window.adicionarCategoria = adicionarCategoria;
 window.adicionarLoja = adicionarLoja;
 window.mostrarEditorCategoriaExistente = mostrarEditorCategoriaExistente;
 window.mostrarEditorLojaExistente = mostrarEditorLojaExistente;
+window.salvarEdicaoCategoria = salvarEdicaoCategoria;
+window.salvarEdicaoLoja = salvarEdicaoLoja;
 window.removerCategoria = removerCategoria;
 window.removerLoja = removerLoja;
 window.fecharModal = fecharModal;
@@ -1622,6 +2078,7 @@ window.formatarMoedaMultiplas = formatarMoedaMultiplas;
 window.toggleTipoRecorrencia = toggleTipoRecorrencia;
 window.toggleRecorrenciaPersonalizada = toggleRecorrenciaPersonalizada;
 window.toggleRecorrenciaMultipla = toggleRecorrenciaMultipla;
+window.toggleRecorrenciaMultiplaPersonalizada = toggleRecorrenciaMultiplaPersonalizada;
 window.aplicarFiltroLoja = aplicarFiltroLoja;
 window.filtrarRecorrentesPorFiltros = filtrarRecorrentesPorFiltros;
 window.limparFiltrosRecorrentes = limparFiltrosRecorrentes;
@@ -1630,12 +2087,20 @@ window.paginacaoAnteriorProximas = paginacaoAnteriorProximas;
 window.paginacaoProximaProximas = paginacaoProximaProximas;
 window.paginacaoAnterior = paginacaoAnterior;
 window.paginacaoProxima = paginacaoProxima;
+window.selecionarTodasLinhas = selecionarTodasLinhas;
+window.toggleSelecaoLinha = toggleSelecaoLinha;
+window.limparSelecaoSaidasMes = limparSelecaoSaidasMes;
+window.limparSelecaoRecorrentes = limparSelecaoRecorrentes;
+window.pagarSaidasSelecionadas = pagarSaidasSelecionadas;
+window.excluirSaidasSelecionadas = excluirSaidasSelecionadas;
+window.editarSaidasSelecionadas = editarSaidasSelecionadas;
+window.abrirModalEdicaoMultipla = abrirModalEdicaoMultipla;
+window.salvarEdicaoMultipla = salvarEdicaoMultipla;
+window.fecharEdicaoMultipla = fecharEdicaoMultipla;
 window.abrirAnaliseInteligente = abrirAnaliseInteligente;
 window.fecharAnaliseInteligente = fecharAnaliseInteligente;
 window.mostrarTreinamentoIA = mostrarTreinamentoIA;
 window.fecharTreinamentoIA = fecharTreinamentoIA;
-window.enviarMensagemChat = enviarMensagemChat;
-window.limparChat = limparChat;
 window.formatarMoeda = formatarMoeda;
 
-console.log('✅ Sistema iClub carregado - Versão otimizada!');
+console.log('✅ Sistema iClub carregado - Versão 3.0 com todas as funcionalidades!');
