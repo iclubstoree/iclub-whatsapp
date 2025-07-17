@@ -1351,60 +1351,24 @@ function salvarEdicaoSaida(saidaId) {
   mostrarNotificacaoInteligente('✅ Saída editada com sucesso!');
 }
 
-function excluirRecorrenciaCompleta(saidaId) {
+function excluirSaidasRecorrentesFuturas(saidaId) {
   const saidaReferencia = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
   if (!saidaReferencia || saidaReferencia.recorrente !== 'Sim') {
     mostrarNotificacaoInteligente('Esta saída não é recorrente!', 'error');
     return;
   }
   
-  const modal = document.getElementById('modalCustom');
-  if (!modal) return;
-  
-  document.getElementById('modalTitulo').textContent = '🚫 Excluir Recorrência Completa';
-  document.getElementById('modalTexto').innerHTML = `
-    <div class="alert alert-danger">
-      <h6><i class="fas fa-exclamation-triangle"></i> <strong>ATENÇÃO: Ação Irreversível!</strong></h6>
-      <p>Você está prestes a excluir <strong>TODA a recorrência</strong> desta saída:</p>
-      <div style="background: #fff; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc2626;">
-        <strong>📄 Detalhes da Saída:</strong><br>
-        <strong>Loja:</strong> ${saidaReferencia.loja}<br>
-        <strong>Categoria:</strong> ${saidaReferencia.categoria}<br>
-        <strong>Descrição:</strong> ${saidaReferencia.descricao}<br>
-        <strong>Valor:</strong> ${formatarMoedaBR(saidaReferencia.valor)}<br>
-        <strong>Tipo:</strong> ${saidaReferencia.tipoRecorrencia}
-      </div>
-      <p><strong>⚠️ Isso irá remover todas as saídas futuras desta recorrência!</strong></p>
-    </div>
-  `;
-  
-  document.getElementById('modalBotoes').innerHTML = `
-    <button class="btn btn-danger-modern btn-modern" onclick="confirmarExclusaoRecorrencia(${saidaId})">
-      <i class="fas fa-ban"></i> SIM, Excluir TODA a Recorrência
-    </button>
-    <button class="btn btn-secondary btn-modern" onclick="fecharModal()">
-      <i class="fas fa-times"></i> Cancelar
-    </button>
-  `;
-  
-  modal.style.display = 'flex';
-}
-
-function confirmarExclusaoRecorrencia(saidaId) {
-  const saidaReferencia = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
-  if (!saidaReferencia) {
-    mostrarNotificacaoInteligente('Saída não encontrada!', 'error');
-    return;
-  }
+  if (!confirm('Excluir todas as saídas futuras desta recorrência?')) return;
   
   const chaveRecorrencia = `${saidaReferencia.loja}_${saidaReferencia.categoria}_${saidaReferencia.valor}_${saidaReferencia.tipoRecorrencia}`;
   
   let removidas = 0;
   const hoje = new Date().toISOString().split('T')[0];
   
+  // Remove saídas futuras não pagas
   saidas = saidas.filter(s => {
     const chaveAtual = `${s.loja}_${s.categoria}_${s.valor}_${s.tipoRecorrencia}`;
-    const remover = s.data >= hoje && s.recorrente === 'Sim' && chaveAtual === chaveRecorrencia;
+    const remover = s.data >= hoje && s.recorrente === 'Sim' && chaveAtual === chaveRecorrencia && s.pago === 'Não';
     if (remover) removidas++;
     return !remover;
   });
@@ -1419,11 +1383,9 @@ function confirmarExclusaoRecorrencia(saidaId) {
   if (removidas > 0) {
     salvarDadosLocal();
     atualizarInterfaceCompleta();
-    fecharModal();
-    mostrarNotificacaoInteligente(`✅ ${removidas} saída(s) recorrente(s) removida(s) de todos os meses futuros!`);
+    mostrarNotificacaoInteligente(`✅ ${removidas} saída(s) recorrente(s) futura(s) removida(s)!`);
   } else {
-    fecharModal();
-    mostrarNotificacaoInteligente('Nenhuma saída futura foi encontrada para remover.', 'warning');
+    mostrarNotificacaoInteligente('Nenhuma saída futura não paga foi encontrada para remover.', 'warning');
   }
 }
 
@@ -2206,6 +2168,8 @@ function preencherTabelaSimples(container, saidas, mensagemVazia) {
   
   saidas.sort((a, b) => new Date(a.data) - new Date(b.data));
   
+  const totalSaidas = saidas.reduce((sum, s) => sum + s.valor, 0);
+  
   const tabela = `
     <div class="table-responsive">
       <table class="table table-modern">
@@ -2245,6 +2209,9 @@ function preencherTabelaSimples(container, saidas, mensagemVazia) {
         </tbody>
       </table>
     </div>
+    <div class="total-saidas-destaque">
+      <strong>Valor total das saídas: ${formatarMoedaBR(totalSaidas)}</strong>
+    </div>
   `;
   
   container.innerHTML = tabela;
@@ -2271,6 +2238,8 @@ function preencherTabelaProximas(container, saidas) {
   const saidasPagina = saidas.slice(inicio, inicio + itensPorPagina);
   
   mostrarControlesProximas(totalPaginas);
+  
+  const totalSaidas = saidas.reduce((sum, s) => sum + s.valor, 0);
   
   const tabela = `
     <div class="table-responsive">
@@ -2317,6 +2286,9 @@ function preencherTabelaProximas(container, saidas) {
           `}).join('')}
         </tbody>
       </table>
+    </div>
+    <div class="total-saidas-destaque">
+      <strong>Valor total das saídas próximas: ${formatarMoedaBR(totalSaidas)}</strong>
     </div>
   `;
   
@@ -2377,11 +2349,8 @@ function preencherTabelaRecorrentes(container, saidas) {
                 <button class="btn btn-warning-modern btn-sm ms-1" onclick="editarSaida('', ${s.id})" title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})" title="Excluir Esta Saída">
+                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaidasRecorrentesFuturas(${s.id})" title="Excluir Todas as Futuras">
                   <i class="fas fa-trash"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-sm ms-1" onclick="excluirRecorrenciaCompleta(${s.id})" title="🚫 Excluir TODA a Recorrência" style="border: 2px solid #dc2626; background: #fef2f2;">
-                  <i class="fas fa-ban"></i> <small>TODOS</small>
                 </button>
               </td>
             </tr>
@@ -2572,11 +2541,16 @@ function atualizarGraficoCategoria() {
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
         }
       }
     }
@@ -2619,10 +2593,16 @@ function atualizarGraficoTipo() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
         }
       }
     }
@@ -2675,18 +2655,34 @@ function atualizarGraficoMes() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 9 : 11
+            },
             callback: function(value) {
               return formatarMoedaBR(value);
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 9 : 11
             }
           }
         }
@@ -2729,18 +2725,34 @@ function atualizarGraficoLojas() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 9 : 11
+            },
             callback: function(value) {
               return formatarMoedaBR(value);
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 9 : 11
             }
           }
         }
@@ -2791,18 +2803,34 @@ function atualizarGraficoCentrosCusto() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            font: {
+              size: window.innerWidth < 768 ? 10 : 12
+            }
+          }
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 9 : 11
+            },
             callback: function(value) {
               return formatarMoedaBR(value);
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: window.innerWidth < 768 ? 8 : 10
             }
           }
         }
@@ -2929,6 +2957,30 @@ function gerarAnaliseInteligente() {
   const totalMes = saidasMes.reduce((sum, s) => sum + s.valor, 0);
   const totalRecorrente = saidasMes.filter(s => s.recorrente === 'Sim').reduce((sum, s) => sum + s.valor, 0);
   const maiorGasto = saidasMes.length > 0 ? Math.max(...saidasMes.map(s => s.valor)) : 0;
+  const saidasPendentesAnalise = saidasMes.filter(s => s.pago === 'Não');
+  const totalPendente = saidasPendentesAnalise.reduce((sum, s) => sum + s.valor, 0);
+  
+  // Análise por categoria
+  const categoriaStats = {};
+  categorias.forEach(cat => {
+    const totalCat = saidasMes.filter(s => s.categoria === cat).reduce((sum, s) => sum + s.valor, 0);
+    if (totalCat > 0) categoriaStats[cat] = totalCat;
+  });
+  
+  // Análise por loja
+  const lojaStats = {};
+  lojas.forEach(loja => {
+    const totalLoja = saidasMes.filter(s => s.loja === loja).reduce((sum, s) => sum + s.valor, 0);
+    if (totalLoja > 0) lojaStats[loja] = totalLoja;
+  });
+  
+  const categoriaTop = Object.keys(categoriaStats).length > 0 
+    ? Object.keys(categoriaStats).reduce((a, b) => categoriaStats[a] > categoriaStats[b] ? a : b)
+    : 'Nenhuma';
+    
+  const lojaTop = Object.keys(lojaStats).length > 0 
+    ? Object.keys(lojaStats).reduce((a, b) => lojaStats[a] > lojaStats[b] ? a : b)
+    : 'Nenhuma';
   
   const resultado = document.getElementById('analiseResultado');
   resultado.innerHTML = `
@@ -2949,8 +3001,8 @@ function gerarAnaliseInteligente() {
           <div class="resumo-stat-label">Total Saídas</div>
         </div>
         <div class="resumo-stat">
-          <div class="resumo-stat-valor">${formatarMoedaBR(maiorGasto)}</div>
-          <div class="resumo-stat-label">Maior Gasto</div>
+          <div class="resumo-stat-valor">${formatarMoedaBR(totalPendente)}</div>
+          <div class="resumo-stat-label">Pendente</div>
         </div>
       </div>
     </div>
@@ -2959,42 +3011,71 @@ function gerarAnaliseInteligente() {
       <div class="insight-header">
         <div class="insight-icon tendencia"><i class="fas fa-chart-line"></i></div>
         <div>
-          <h6 class="insight-titulo">Tendência de Gastos</h6>
+          <h6 class="insight-titulo">Análise de Tendências</h6>
           <p class="insight-valor">${totalRecorrente > totalMes * 0.6 ? 'Gastos recorrentes dominam' : 'Gastos únicos predominam'}</p>
         </div>
       </div>
       <p class="insight-descricao">
         ${totalRecorrente > totalMes * 0.6 
-          ? 'Seus gastos recorrentes representam a maior parte do orçamento. Considere revisar contratos e assinaturas para possíveis economias.'
-          : 'Você tem flexibilidade nos gastos com predominância de despesas não-recorrentes. Mantenha controle sobre gastos variáveis.'}
-      </p>
-    </div>
-    
-    <div class="insight-card tipo-oportunidade">
-      <div class="insight-header">
-        <div class="insight-icon oportunidade"><i class="fas fa-lightbulb"></i></div>
-        <div>
-          <h6 class="insight-titulo">Oportunidade de Economia</h6>
-          <p class="insight-valor">Potencial: ${formatarMoedaBR(totalRecorrente * 0.1)}</p>
-        </div>
-      </div>
-      <p class="insight-descricao">
-        Revise gastos recorrentes regularmente. Uma economia de 10% nos gastos fixos pode gerar uma economia significativa no longo prazo.
+          ? 'Seus gastos recorrentes representam ' + Math.round((totalRecorrente / totalMes) * 100) + '% do orçamento. Considere revisar contratos e assinaturas para possíveis economias.'
+          : 'Você tem flexibilidade nos gastos com ' + Math.round(((totalMes - totalRecorrente) / totalMes) * 100) + '% de despesas não-recorrentes. Mantenha controle sobre gastos variáveis.'}
       </p>
     </div>
     
     <div class="insight-card tipo-insight">
       <div class="insight-header">
-        <div class="insight-icon insight"><i class="fas fa-brain"></i></div>
+        <div class="insight-icon insight"><i class="fas fa-store"></i></div>
         <div>
-          <h6 class="insight-titulo">Padrão Identificado</h6>
-          <p class="insight-valor">Análise Comportamental</p>
+          <h6 class="insight-titulo">Performance por Loja</h6>
+          <p class="insight-valor">Loja líder: ${lojaTop}</p>
         </div>
       </div>
       <p class="insight-descricao">
-        ${saidasMes.length > 20 
-          ? 'Você registra muitas transações, indicando bom controle financeiro. Continue monitorando!'
-          : 'Considere registrar mais detalhes das saídas para ter maior visibilidade financeira.'}
+        A loja "${lojaTop}" representa ${formatarMoedaBR(lojaStats[lojaTop] || 0)} em gastos este mês (${Math.round(((lojaStats[lojaTop] || 0) / totalMes) * 100)}% do total).
+      </p>
+    </div>
+    
+    <div class="insight-card tipo-insight">
+      <div class="insight-header">
+        <div class="insight-icon insight"><i class="fas fa-tags"></i></div>
+        <div>
+          <h6 class="insight-titulo">Categoria Dominante</h6>
+          <p class="insight-valor">${categoriaTop}</p>
+        </div>
+      </div>
+      <p class="insight-descricao">
+        A categoria "${categoriaTop}" consome ${formatarMoedaBR(categoriaStats[categoriaTop] || 0)} (${Math.round(((categoriaStats[categoriaTop] || 0) / totalMes) * 100)}% do orçamento mensal). 
+        ${categoriaStats[categoriaTop] > totalMes * 0.4 ? 'Este alto percentual merece atenção especial.' : 'Distribuição equilibrada entre categorias.'}
+      </p>
+    </div>
+    
+    ${totalPendente > 0 ? `
+    <div class="insight-card tipo-alerta">
+      <div class="insight-header">
+        <div class="insight-icon alerta"><i class="fas fa-exclamation-triangle"></i></div>
+        <div>
+          <h6 class="insight-titulo">Saídas Pendentes</h6>
+          <p class="insight-valor">${formatarMoedaBR(totalPendente)}</p>
+        </div>
+      </div>
+      <p class="insight-descricao">
+        Você tem ${saidasPendentesAnalise.length} saída(s) pendente(s) totalizando ${formatarMoedaBR(totalPendente)}. 
+        Isso representa ${Math.round((totalPendente / totalMes) * 100)}% do orçamento mensal.
+      </p>
+    </div>
+    ` : ''}
+    
+    <div class="insight-card tipo-oportunidade">
+      <div class="insight-header">
+        <div class="insight-icon oportunidade"><i class="fas fa-lightbulb"></i></div>
+        <div>
+          <h6 class="insight-titulo">Oportunidades de Economia</h6>
+          <p class="insight-valor">Potencial: ${formatarMoedaBR(totalRecorrente * 0.1)}</p>
+        </div>
+      </div>
+      <p class="insight-descricao">
+        Revise gastos recorrentes regularmente. Uma economia de 10% nos gastos fixos pode gerar ${formatarMoedaBR(totalRecorrente * 0.1 * 12)} anuais.
+        ${Object.keys(categoriaStats).length > 1 ? ' Diversifique ainda mais as categorias para melhor controle.' : ''}
       </p>
     </div>
     
@@ -3003,15 +3084,33 @@ function gerarAnaliseInteligente() {
       <div class="insight-header">
         <div class="insight-icon alerta"><i class="fas fa-exclamation-triangle"></i></div>
         <div>
-          <h6 class="insight-titulo">Atenção: Gasto Elevado</h6>
+          <h6 class="insight-titulo">Gasto Concentrado</h6>
           <p class="insight-valor">${formatarMoedaBR(maiorGasto)}</p>
         </div>
       </div>
       <p class="insight-descricao">
-        Um único gasto representa mais de 30% do total mensal. Verifique se este valor está dentro do planejado.
+        Um único gasto representa ${Math.round((maiorGasto / totalMes) * 100)}% do total mensal. 
+        Verifique se este valor está dentro do planejado e considere parcelamento se necessário.
       </p>
     </div>
     ` : ''}
+    
+    <div class="insight-card tipo-insight">
+      <div class="insight-header">
+        <div class="insight-icon insight"><i class="fas fa-brain"></i></div>
+        <div>
+          <h6 class="insight-titulo">Comportamento Financeiro</h6>
+          <p class="insight-valor">Análise Comportamental</p>
+        </div>
+      </div>
+      <p class="insight-descricao">
+        ${saidasMes.length > 30 
+          ? 'Alto volume de transações indica excelente controle financeiro. Continue o monitoramento detalhado!'
+          : saidasMes.length > 15 
+            ? 'Bom nível de detalhamento financeiro. Considere registrar mais categorias para análises aprofundadas.'
+            : 'Considere registrar mais detalhes das saídas para ter maior visibilidade e controle financeiro.'}
+      </p>
+    </div>
   `;
 }
 
@@ -3193,8 +3292,7 @@ window.salvarTreinamentoNatural = salvarTreinamentoNatural;
 window.salvarTreinamentoManual = salvarTreinamentoManual;
 window.adicionarSaida = adicionarSaida;
 window.excluirSaida = excluirSaida;
-window.excluirRecorrenciaCompleta = excluirRecorrenciaCompleta;
-window.confirmarExclusaoRecorrencia = confirmarExclusaoRecorrencia;
+window.excluirSaidasRecorrentesFuturas = excluirSaidasRecorrentesFuturas;
 window.editarSaida = editarSaida;
 window.salvarEdicaoSaida = salvarEdicaoSaida;
 window.marcarComoPago = marcarComoPago;

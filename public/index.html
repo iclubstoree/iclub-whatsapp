@@ -153,7 +153,7 @@
       border-radius: 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
       border: 2px solid #e5e7eb;
-      width: 280px;
+      width: 260px;
       z-index: 1000;
       opacity: 0;
       visibility: hidden;
@@ -171,19 +171,20 @@
     .config-menu-header {
       background: var(--ai-gradient);
       color: white;
-      padding: 20px;
+      padding: 15px;
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
 
     .config-menu-item {
-      padding: 15px 20px;
+      padding: 12px 15px;
       border-bottom: 1px solid #f1f5f9;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      font-size: 0.9rem;
     }
 
     .config-menu-item:hover {
@@ -196,28 +197,28 @@
     }
 
     .config-menu-item i {
-      width: 20px;
+      width: 16px;
       text-align: center;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
 
     .user-info {
       background: #f8fafc;
-      border-radius: 12px;
-      padding: 15px 20px;
-      margin: 15px 20px;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin: 10px 15px;
       border: 2px solid #e5e7eb;
     }
 
     .user-name {
       font-weight: 700;
       color: #10b981;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
 
     .user-role {
       color: #6b7280;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
     /* ===== CHAT FIXO NO TOPO ===== */
@@ -651,10 +652,10 @@
       background: var(--ai-gradient);
       color: white;
       border: none;
-      border-radius: 25px;
-      padding: 12px 25px;
-      font-weight: 700;
-      font-size: 0.9rem;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       transition: all 0.3s ease;
@@ -690,7 +691,7 @@
       top: 0;
       right: 0;
       display: flex;
-      gap: 15px;
+      gap: 12px;
       align-items: center;
     }
 
@@ -705,13 +706,11 @@
       background: rgba(0, 0, 0, 0.8);
       z-index: 2000;
       backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
     }
 
     .modal-analise-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       background: white;
       border-radius: 20px;
       width: 90%;
@@ -720,6 +719,7 @@
       overflow-y: auto;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
       animation: modalSlideIn 0.3s ease-out;
+      margin: auto;
     }
 
     @keyframes modalSlideIn {
@@ -1304,11 +1304,27 @@
       background: linear-gradient(135deg, #d4af37, #ffd700);
       color: #000000;
       font-weight: bold;
-      padding: 15px;
+      padding: 20px;
       border-radius: 12px;
       text-align: center;
       margin-top: 15px;
       box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);
+      border: 2px solid #b8860b;
+      font-size: 1.1rem;
+    }
+
+    /* ===== TOTAL DESTACADO ===== */
+    .total-saidas-destaque {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-weight: bold;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 15px;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      border: 2px solid #065f46;
+      font-size: 1.2rem;
     }
 
     .modal-overlay {
@@ -1461,8 +1477,9 @@
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 8px 16px;
+      padding: 6px 12px;
       font-weight: 600;
+      font-size: 0.8rem;
       transition: all 0.2s ease;
       cursor: pointer;
     }
@@ -1611,8 +1628,13 @@
       }
 
       .config-menu {
-        width: 260px;
+        width: 240px;
         right: -10px;
+      }
+
+      .btn-analise-inteligente {
+        padding: 6px 12px;
+        font-size: 0.75rem;
       }
 
       .table-modern {
@@ -1635,8 +1657,12 @@
 
       .chart-container canvas {
         width: 100% !important;
-        max-width: 350px !important;
-        height: auto !important;
+        max-width: 300px !important;
+        height: 250px !important;
+      }
+
+      .chart-container .d-flex > div {
+        height: 250px !important;
       }
 
       .comparativo-loja-stats {
@@ -1659,7 +1685,8 @@
       }
 
       .paginacao-btn {
-        padding: 10px 20px;
+        padding: 8px 16px;
+        font-size: 0.75rem;
       }
     }
 
@@ -1689,7 +1716,7 @@
       }
 
       .btn-modern {
-        padding: 8px 12px;
+        padding: 6px 12px;
         font-size: 0.75rem;
       }
 
@@ -1702,6 +1729,17 @@
       .form-select {
         padding: 10px 12px;
         font-size: 0.9rem;
+      }
+
+      .paginacao-btn {
+        padding: 6px 12px;
+        font-size: 0.7rem;
+      }
+
+      .chart-container canvas {
+        width: 100% !important;
+        max-width: 280px !important;
+        height: auto !important;
       }
     }
   </style>
@@ -1848,578 +1886,3 @@
           <div class="treinamento-natural">
             <h6>🎯 Treinamento Inteligente em Linguagem Natural</h6>
             <p style="color: #065f46; margin-bottom: 15px; font-size: 0.9rem;">
-              Ensine a IA com frases naturais. Ela vai aprender automaticamente!
-            </p>
-            <textarea id="treinamentoNatural" placeholder="Exemplo: 'Quando eu falar adicione cartão você vai adicionar ao centro de custos Cartões. Quando falar adicione tráfego pago você vai adicionar ao centro de custo Marketing.'"></textarea>
-            <div class="exemplo-treinamento">
-              <strong>💡 Exemplos:</strong><br>
-              • "Quando eu falar combustível, adicione na categoria Combustível"<br>
-              • "Quando eu falar uber, adicione na categoria Transporte"<br>
-              • "Quando eu falar conta de luz, adicione na categoria Energia"
-            </div>
-            <div style="text-align: center; margin-top: 15px;">
-              <button class="btn-analise-inteligente" onclick="salvarTreinamentoNatural()">
-                <i class="fas fa-brain"></i> Treinar IA
-              </button>
-            </div>
-          </div>
-
-          <!-- Treinamento Manual (Opcional) -->
-          <div class="treinamento-item">
-            <h6 style="color: #374151; margin-bottom: 15px;">📝 Treinamento Manual (Opcional)</h6>
-            <input type="text" id="treinamentoFrase" class="treinamento-input" 
-                   placeholder="Ex: Paguei R$ 500 de aluguel da loja centro hoje">
-            
-            <div class="row g-2 mt-3">
-              <div class="col-md-4">
-                <select id="treinamentoCategoria" class="treinamento-input">
-                  <option value="">Selecione categoria...</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <input type="text" id="treinamentoValor" class="treinamento-input" placeholder="500">
-              </div>
-              <div class="col-md-4">
-                <select id="treinamentoLoja" class="treinamento-input">
-                  <option value="">Selecione loja...</option>
-                </select>
-              </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 15px;">
-              <button class="btn btn-success btn-modern" onclick="salvarTreinamentoManual()">
-                <i class="fas fa-save"></i> Salvar Treinamento Manual
-              </button>
-            </div>
-          </div>
-
-          <div id="listaTreinamentos" style="margin-top: 25px;">
-            <!-- Lista de treinamentos será inserida aqui -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL ANÁLISE INTELIGENTE -->
-    <div id="modalAnaliseInteligente" class="modal-analise">
-      <div class="modal-analise-content">
-        <div class="modal-analise-header">
-          <h2 class="modal-analise-title">
-            <i class="fas fa-brain"></i>
-            Análise Inteligente de Dados
-          </h2>
-          <button class="modal-analise-close" onclick="fecharAnaliseInteligente()">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-analise-body">
-          <!-- Loading -->
-          <div id="analiseLoading" class="analise-loading">
-            <div class="spinner"></div>
-            <h4>🧠 Analisando seus dados...</h4>
-            <p>Nossa IA está processando padrões, tendências e insights</p>
-            <div class="progresso-analise">
-              <div id="progressoBarra" class="progresso-barra"></div>
-            </div>
-            <p id="etapaAnalise">Carregando dados...</p>
-          </div>
-
-          <!-- Resultado -->
-          <div id="analiseResultado" class="analise-resultado">
-            <!-- Conteúdo será inserido via JavaScript -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL EDIÇÃO MÚLTIPLA -->
-    <div id="modalEdicaoMultipla" class="modal-edicao-multipla">
-      <div class="modal-edicao-content">
-        <div class="modal-edicao-header">
-          <h3 class="modal-edicao-title">
-            <i class="fas fa-edit"></i>
-            Editar Múltiplas Saídas
-          </h3>
-          <button class="modal-edicao-close" onclick="fecharEdicaoMultipla()">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-edicao-body">
-          <div id="conteudoEdicaoMultipla">
-            <!-- Conteúdo será inserido via JavaScript -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Formulário de Cadastro -->
-    <div class="card-modern">
-      <h5 class="status-title">
-        Nova Saída
-      </h5>
-      
-      <div class="row g-3">
-        <div class="col-md-6 col-lg-2">
-          <label class="form-label fw-bold">Loja</label>
-          <select id="loja" class="form-select"></select>
-          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorLoja()">
-            <i class="fas fa-edit"></i> Editar Lojas
-          </button>
-        </div>
-        <div class="col-md-6 col-lg-2">
-          <label class="form-label fw-bold">Centro de custo</label>
-          <select id="categoria" class="form-select"></select>
-          <button class="btn btn-outline-secondary btn-sm-modern mt-2 w-100" onclick="mostrarEditorCategoria()">
-            <i class="fas fa-edit"></i> Editar Centros de custo
-          </button>
-        </div>
-        <div class="col-md-6 col-lg-2">
-          <label class="form-label fw-bold">Descrição</label>
-          <input type="text" id="descricao" class="form-control" placeholder="Digite a descrição"/>
-        </div>
-        <div class="col-md-6 col-lg-2">
-          <label class="form-label fw-bold">Valor (R$)</label>
-          <input type="text" id="valor" class="form-control" placeholder="R$ 0,00" oninput="formatarMoeda(this)"/>
-        </div>
-        <div class="col-md-6 col-lg-1">
-          <label class="form-label fw-bold">Data</label>
-          <input type="date" id="data" class="form-control"/>
-        </div>
-        <div class="col-md-6 col-lg-1">
-          <label class="form-label fw-bold">Recorrente?</label>
-          <select id="recorrente" class="form-select" onchange="toggleTipoRecorrencia()">
-            <option>Não</option>
-            <option>Sim</option>
-          </select>
-        </div>
-        <div class="col-md-6 col-lg-1" id="colunaTipoRecorrencia" style="display:none;">
-          <label class="form-label fw-bold">Tipo</label>
-          <select id="tipoRecorrencia" class="form-select" onchange="toggleRecorrenciaPersonalizada()">
-            <option disabled selected>Selecione</option>
-            <option>Diária</option>
-            <option>Semanal</option>
-            <option>Mensal</option>
-            <option>Anual</option>
-            <option>Personalizada</option>
-          </select>
-          <!-- NOVA RECORRÊNCIA AVANÇADA -->
-          <div id="recorrenciaAvancada" class="recorrencia-avancada">
-            <div class="row g-2">
-              <div class="col-6">
-                <label>A cada X dias:</label>
-                <input type="number" id="diasPersonalizado" placeholder="Ex: 15" min="1" max="365">
-              </div>
-              <div class="col-6">
-                <label>Meses:</label>
-                <select id="mesesRecorrencia" multiple style="height: 80px;">
-                  <option value="1">Janeiro</option>
-                  <option value="2">Fevereiro</option>
-                  <option value="3">Março</option>
-                  <option value="4">Abril</option>
-                  <option value="5">Maio</option>
-                  <option value="6">Junho</option>
-                  <option value="7">Julho</option>
-                  <option value="8">Agosto</option>
-                  <option value="9">Setembro</option>
-                  <option value="10">Outubro</option>
-                  <option value="11">Novembro</option>
-                  <option value="12">Dezembro</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <label>Ano da recorrência:</label>
-                <input type="number" id="anoRecorrencia" placeholder="Ex: 2025" min="2024" max="2030" value="2025">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 col-lg-1">
-          <label class="form-label fw-bold">Pago?</label>
-          <select id="pago" class="form-select">
-            <option>Sim</option>
-            <option>Não</option>
-          </select>
-        </div>
-        <div class="col-12">
-          <div class="btn-multiplas-container">
-            <button class="btn btn-success-modern btn-modern flex-fill" onclick="adicionarSaida()">
-              <i class="fas fa-plus"></i> Adicionar Saída
-            </button>
-            <button class="btn btn-success-modern btn-modern flex-fill" onclick="iniciarMultiplasSaidas()">
-              <i class="fas fa-clone"></i> Adicionar Múltiplas Saídas
-            </button>
-          </div>
-          <div id="mensagemSucesso" class="alert alert-success mt-3" style="display:none;">
-            ✅ Saída adicionada!
-          </div>
-        </div>
-      </div>
-
-      <!-- Editor Loja -->
-      <div id="editor-loja" class="editor-categoria" style="display:none">
-        <div class="input-group-modern">
-          <input type="text" id="novaLoja" placeholder="Nova loja" class="form-control"/>
-          <button class="btn btn-success-modern btn-modern" onclick="adicionarLoja()">
-            Adicionar
-          </button>
-          <button class="btn btn-warning btn-modern" onclick="mostrarEditorLojaExistente()">
-            <i class="fas fa-edit"></i> Editar Lista
-          </button>
-        </div>
-      </div>
-
-      <!-- Editor Categoria -->
-      <div id="editor-categoria" class="editor-categoria" style="display:none">
-        <div class="input-group-modern">
-          <input type="text" id="novaCategoria" placeholder="Novo centro de custo" class="form-control"/>
-          <button class="btn btn-success-modern btn-modern" onclick="adicionarCategoria()">
-            Adicionar
-          </button>
-          <button class="btn btn-warning btn-modern" onclick="mostrarEditorCategoriaExistente()">
-            <i class="fas fa-edit"></i> Editar Lista
-          </button>
-        </div>
-      </div>
-
-      <!-- Container para Múltiplas Saídas -->
-      <div id="multiplasSaidasContainer" class="multiplas-saidas-container">
-        <h6 class="mb-3" style="color: var(--success-color); font-weight: 700;">
-          <i class="fas fa-list"></i> Lista de Saídas para Adicionar
-        </h6>
-        <div id="errosMultiplas" style="margin-bottom: 15px;"></div>
-        <div id="listaSaidas"></div>
-        <div class="mt-3">
-          <button class="btn btn-success-modern btn-modern me-2" onclick="adicionarNovaLinha()">
-            <i class="fas fa-plus"></i> Adicionar Nova Linha
-          </button>
-          <button class="btn btn-success-modern btn-modern me-2" onclick="adicionarTodasSaidas()">
-            <i class="fas fa-save"></i> Adicionar Todas Saídas
-          </button>
-          <button class="btn btn-secondary btn-modern" onclick="cancelarMultiplasSaidas()">
-            <i class="fas fa-times"></i> Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filtro Global por Loja -->
-    <div class="card-modern">
-      <h5 class="status-title">
-        Filtros Gerais
-      </h5>
-      <div class="row g-2">
-        <div class="col-md-12">
-          <label class="form-label fw-bold">Visualizar loja:</label>
-          <select id="filtroLojaGlobal" class="form-select" onchange="aplicarFiltroLoja()">
-            <option value="">📊 Todas as lojas (Consolidado)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Seções de Status -->
-    <div class="status-section status-atrasadas">
-      <h5 class="status-title">
-        <i class="fas fa-exclamation-triangle"></i> Saídas Atrasadas
-      </h5>
-      <div id="atrasadas"></div>
-    </div>
-
-    <div class="status-section status-vencendo">
-      <h5 class="status-title">
-        <i class="fas fa-clock"></i> Saídas Vencendo Hoje
-      </h5>
-      <div id="vencendoHoje"></div>
-    </div>
-
-    <div class="status-section status-proximas">
-      <h5 class="status-title">
-        <i class="fas fa-calendar-alt"></i> Próximas Saídas
-      </h5>
-      <!-- BOTÕES DE AÇÃO MÚLTIPLA PARA PRÓXIMAS SAÍDAS -->
-      <div id="botoesAcaoProximas" class="botoes-multipla-acao">
-        <div class="contador-selecionados" id="contadorProximas">0 saídas selecionadas</div>
-        <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-success-modern btn-sm" onclick="pagarSaidasSelecionadas('proximas')">
-            <i class="fas fa-check"></i> Pagar Selecionadas
-          </button>
-          <button class="btn btn-warning-modern btn-sm" onclick="editarSaidasSelecionadas('proximas')">
-            <i class="fas fa-edit"></i> Editar Selecionadas
-          </button>
-          <button class="btn btn-danger-modern btn-sm" onclick="excluirSaidasSelecionadas('proximas')">
-            <i class="fas fa-trash"></i> Excluir Selecionadas
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="limparSelecaoProximas()">
-            <i class="fas fa-times"></i> Limpar Seleção
-          </button>
-        </div>
-      </div>
-      
-      <div id="proximasControles" class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex gap-2">
-          <button class="paginacao-btn" onclick="paginacaoAnteriorProximas()">
-            <i class="fas fa-chevron-left"></i> Anterior
-          </button>
-          <span class="paginacao-info">
-            Página <span id="paginaAtualProximas">1</span> de <span id="totalPaginasProximas">1</span>
-          </span>
-          <button class="paginacao-btn" onclick="paginacaoProximaProximas()">
-            Próxima <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-        <div>
-          <span class="badge bg-info">Total: <span id="totalItensProximas">0</span> saídas</span>
-        </div>
-      </div>
-      <div id="proximas"></div>
-    </div>
-
-    <div class="status-section status-recorrentes">
-      <h5 class="status-title">
-        <i class="fas fa-repeat"></i> Saídas Recorrentes
-      </h5>
-      <div class="row g-2 mb-3">
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Filtrar por loja:</label>
-          <select id="filtroLojaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
-            <option value="">Todas as lojas</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Filtrar por ano:</label>
-          <select id="filtroAnoRecorrentes" class="form-select" onchange="preencherMesesDoAno()">
-            <option value="">Todos os anos</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Filtrar por mês:</label>
-          <select id="filtroMesRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
-            <option value="">Todos os meses</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Filtrar por centro de custo:</label>
-          <div class="d-flex gap-2">
-            <select id="filtroCategoriaRecorrentes" class="form-select" onchange="filtrarRecorrentesPorFiltros()">
-              <option value="">Todos os centros de custo</option>
-            </select>
-            <button class="btn btn-limpar-filtros" onclick="limparFiltrosRecorrentes()" title="Limpar Filtros">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- BOTÕES DE AÇÃO MÚLTIPLA PARA RECORRENTES -->
-      <div id="botoesAcaoRecorrentes" class="botoes-multipla-acao">
-        <div class="contador-selecionados" id="contadorRecorrentes">0 saídas selecionadas</div>
-        <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-success-modern btn-sm" onclick="pagarSaidasSelecionadas('recorrentes')">
-            <i class="fas fa-check"></i> Pagar Selecionadas
-          </button>
-          <button class="btn btn-warning-modern btn-sm" onclick="editarSaidasSelecionadas('recorrentes')">
-            <i class="fas fa-edit"></i> Editar Selecionadas
-          </button>
-          <button class="btn btn-danger-modern btn-sm" onclick="excluirSaidasSelecionadas('recorrentes')">
-            <i class="fas fa-trash"></i> Excluir Selecionadas
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="limparSelecaoRecorrentes()">
-            <i class="fas fa-times"></i> Limpar Seleção
-          </button>
-        </div>
-      </div>
-
-      <!-- Paginação Recorrentes -->
-      <div id="recorrentesControles" class="d-flex justify-content-between align-items-center mb-3" style="display:none;">
-        <div class="d-flex gap-2">
-          <button class="paginacao-btn" onclick="paginacaoAnteriorRecorrentes()">
-            <i class="fas fa-chevron-left"></i> Anterior
-          </button>
-          <span class="paginacao-info">
-            Página <span id="paginaAtualRecorrentes">1</span> de <span id="totalPaginasRecorrentes">1</span>
-          </span>
-          <button class="paginacao-btn" onclick="paginacaoProximaRecorrentes()">
-            Próxima <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-        <div>
-          <span class="badge bg-info">Total: <span id="totalItensRecorrentes">0</span> saídas</span>
-        </div>
-      </div>
-      
-      <div id="previsaoRecorrentes"></div>
-      <div class="valor-total-dourado">
-        <strong>Valor total saídas: <span id="totalSaidasRecorrentes">R$ 0,00</span></strong>
-      </div>
-    </div>
-
-    <!-- Saídas do Mês -->
-    <div class="card-modern">
-      <h4 class="status-title">
-        Saídas do Mês
-      </h4>
-      
-      <!-- BOTÕES DE AÇÃO MÚLTIPLA PARA SAÍDAS DO MÊS -->
-      <div id="botoesAcaoSaidasMes" class="botoes-multipla-acao">
-        <div class="contador-selecionados" id="contadorSaidasMes">0 saídas selecionadas</div>
-        <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-success-modern btn-sm" onclick="pagarSaidasSelecionadas('saidasMes')">
-            <i class="fas fa-check"></i> Pagar Selecionadas
-          </button>
-          <button class="btn btn-warning-modern btn-sm" onclick="editarSaidasSelecionadas('saidasMes')">
-            <i class="fas fa-edit"></i> Editar Selecionadas
-          </button>
-          <button class="btn btn-danger-modern btn-sm" onclick="excluirSaidasSelecionadas('saidasMes')">
-            <i class="fas fa-trash"></i> Excluir Selecionadas
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="limparSelecaoSaidasMes()">
-            <i class="fas fa-times"></i> Limpar Seleção
-          </button>
-        </div>
-      </div>
-      
-      <div class="table-responsive">
-        <table class="table table-modern">
-          <thead>
-            <tr>
-              <th><input type="checkbox" id="selecionarTodasSaidasMes" onchange="selecionarTodasLinhas('saidasMes')"></th>
-              <th>Usuário</th>
-              <th>Loja</th>
-              <th>Centro de custo</th>
-              <th>Descrição</th>
-              <th>Valor</th>
-              <th>Data</th>
-              <th>Recorrente</th>
-              <th>Tipo</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaSaidas"></tbody>
-        </table>
-      </div>
-      
-      <!-- Paginação -->
-      <div id="paginacaoSaidasMes" class="paginacao-container" style="display:none;">
-        <button class="paginacao-btn" onclick="paginacaoAnterior('saidasMes')">
-          <i class="fas fa-chevron-left"></i> Anterior
-        </button>
-        <span class="paginacao-info">
-          Página <span id="paginaAtualSaidasMes">1</span> de <span id="totalPaginasSaidasMes">1</span>
-        </span>
-        <button class="paginacao-btn" onclick="paginacaoProxima('saidasMes')">
-          Próxima <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Dashboard -->
-    <div class="card-modern">
-      <h4 class="status-title">
-        Dashboard total saídas do mês
-      </h4>
-      <div class="dashboard-cards">
-        <div class="dashboard-card">
-          <div class="dashboard-value" id="totalMes">R$ 0,00</div>
-          <div class="dashboard-label">Total do Mês</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-value" id="totalRecorrente">R$ 0,00</div>
-          <div class="dashboard-label">Total Recorrente</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-value" id="maiorGasto">R$ 0,00</div>
-          <div class="dashboard-label">Maior Gasto</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-value" id="categoriaTopo">-</div>
-          <div class="dashboard-label">Centro de custo Topo</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-value" id="totalSaidas">0</div>
-          <div class="dashboard-label">Total de Saídas</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Comparativo entre Lojas -->
-    <div class="card-modern" id="comparativoLojas">
-      <h4 class="status-title">
-        📊 Comparativo entre Lojas
-      </h4>
-      <div id="tabelaComparativo"></div>
-      
-      <!-- Gráfico Comparativo de Lojas -->
-      <div class="chart-container mt-4">
-        <h4 class="chart-title">
-          Gráfico Comparativo por Loja
-        </h4>
-        <div class="d-flex justify-content-center align-items-center">
-          <div style="width: 600px; height: 400px;">
-            <canvas id="graficoLojas"></canvas>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Gráfico Centros de Custo por Loja -->
-      <div class="chart-container mt-4">
-        <h4 class="chart-title">
-          Gráfico de Centros de Custo por Loja
-        </h4>
-        <div class="d-flex justify-content-center align-items-center">
-          <div style="width: 700px; height: 400px;">
-            <canvas id="graficoCentrosCusto"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="chart-container">
-      <h4 class="chart-title">
-        Gráfico por Centro de custo
-      </h4>
-      <div class="d-flex justify-content-center align-items-center">
-        <div style="width: 400px; height: 400px;">
-          <canvas id="graficoCategoria"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h4 class="chart-title">
-        Gráfico por Tipo de Gasto
-      </h4>
-      <div class="d-flex justify-content-center align-items-center">
-        <div style="width: 400px; height: 400px;">
-          <canvas id="graficoTipo"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h4 class="chart-title">
-        Gráfico de Saídas por Mês
-      </h4>
-      <div class="d-flex justify-content-center align-items-center">
-        <div style="width: 600px; height: 400px;">
-          <canvas id="graficoMes"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal personalizado -->
-  <div id="modalCustom" class="modal-overlay" style="display: none;">
-    <div class="modal-content-custom">
-      <div class="modal-title-custom" id="modalTitulo">Título do Modal</div>
-      <div id="modalTexto" style="margin-bottom: 20px;"></div>
-      <div class="modal-buttons" id="modalBotoes">
-        <!-- Botões serão inseridos aqui -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Incluir o painel.js -->
-  <script src="painel.js"></script>
-</body>
-</html>
