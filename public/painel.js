@@ -585,6 +585,130 @@ function fecharModal() {
   if (modal) modal.style.display = 'none';
 }
 
+// CORREÇÃO: Editar saída completa
+function editarSaida(firestoreId, saidaId) {
+  const saida = [...saidas, ...saidasPendentes].find(s => s.id === saidaId);
+  
+  if (!saida) {
+    mostrarNotificacaoInteligente('Saída não encontrada!', 'error');
+    return;
+  }
+  
+  const modal = document.getElementById('modalCustom');
+  if (!modal) return;
+  
+  document.getElementById('modalTitulo').textContent = 'Editar Saída';
+  document.getElementById('modalTexto').innerHTML = `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Loja:</label>
+        <select id="editLoja" class="form-select">
+          ${lojas.map(loja => `<option value="${loja}" ${loja === saida.loja ? 'selected' : ''}>${loja}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Categoria:</label>
+        <select id="editCategoria" class="form-select">
+          ${categorias.map(cat => `<option value="${cat}" ${cat === saida.categoria ? 'selected' : ''}>${cat}</option>`).join('')}
+        </select>
+      </div>
+      <div class="col-md-12">
+        <label class="form-label fw-bold">Descrição:</label>
+        <input type="text" id="editDescricao" class="form-control" value="${saida.descricao}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Valor (R$):</label>
+        <input type="text" id="editValor" class="form-control" value="${formatarMoedaBR(saida.valor)}" oninput="formatarMoeda(this)">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Data:</label>
+        <input type="date" id="editData" class="form-control" value="${saida.data}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Recorrente:</label>
+        <select id="editRecorrente" class="form-select">
+          <option value="Não" ${saida.recorrente === 'Não' ? 'selected' : ''}>Não</option>
+          <option value="Sim" ${saida.recorrente === 'Sim' ? 'selected' : ''}>Sim</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Tipo:</label>
+        <select id="editTipoRecorrencia" class="form-select">
+          <option value="Diária" ${saida.tipoRecorrencia === 'Diária' ? 'selected' : ''}>Diária</option>
+          <option value="Semanal" ${saida.tipoRecorrencia === 'Semanal' ? 'selected' : ''}>Semanal</option>
+          <option value="Mensal" ${saida.tipoRecorrencia === 'Mensal' ? 'selected' : ''}>Mensal</option>
+          <option value="Anual" ${saida.tipoRecorrencia === 'Anual' ? 'selected' : ''}>Anual</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Status:</label>
+        <select id="editPago" class="form-select">
+          <option value="Sim" ${saida.pago === 'Sim' ? 'selected' : ''}>Pago</option>
+          <option value="Não" ${saida.pago === 'Não' ? 'selected' : ''}>Pendente</option>
+        </select>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modalBotoes').innerHTML = `
+    <button class="btn btn-success-modern btn-modern" onclick="salvarEdicaoSaida(${saidaId})">Salvar</button>
+    <button class="btn btn-secondary btn-modern" onclick="fecharModal()">Cancelar</button>
+  `;
+  
+  modal.style.display = 'flex';
+}
+
+function salvarEdicaoSaida(saidaId) {
+  const loja = document.getElementById('editLoja')?.value;
+  const categoria = document.getElementById('editCategoria')?.value;
+  const descricao = document.getElementById('editDescricao')?.value;
+  const valorInput = document.getElementById('editValor')?.value;
+  const valor = extrairValorNumerico(valorInput);
+  const data = document.getElementById('editData')?.value;
+  const recorrente = document.getElementById('editRecorrente')?.value;
+  const tipoRecorrencia = document.getElementById('editTipoRecorrencia')?.value;
+  const pago = document.getElementById('editPago')?.value;
+  
+  if (!loja || !categoria || !descricao || valor <= 0 || !data) {
+    mostrarNotificacaoInteligente('Preencha todos os campos obrigatórios!', 'warning');
+    return;
+  }
+  
+  let saidaEncontrada = saidas.find(s => s.id === saidaId);
+  if (!saidaEncontrada) {
+    saidaEncontrada = saidasPendentes.find(s => s.id === saidaId);
+  }
+  
+  if (!saidaEncontrada) {
+    mostrarNotificacaoInteligente('Saída não encontrada!', 'error');
+    return;
+  }
+  
+  saidas = saidas.filter(s => s.id !== saidaId);
+  saidasPendentes = saidasPendentes.filter(s => s.id !== saidaId);
+  
+  saidaEncontrada.loja = loja;
+  saidaEncontrada.categoria = categoria;
+  saidaEncontrada.descricao = descricao;
+  saidaEncontrada.valor = valor;
+  saidaEncontrada.data = data;
+  saidaEncontrada.recorrente = recorrente;
+  saidaEncontrada.tipoRecorrencia = recorrente === 'Sim' ? tipoRecorrencia : null;
+  saidaEncontrada.pago = pago;
+  saidaEncontrada.editadoEm = new Date().toISOString();
+  
+  if (pago === 'Sim') {
+    saidas.unshift(saidaEncontrada);
+  } else {
+    saidasPendentes.unshift(saidaEncontrada);
+  }
+  
+  salvarDadosLocal();
+  atualizarInterfaceCompleta();
+  fecharModal();
+  mostrarNotificacaoInteligente('✅ Saída editada com sucesso!');
+}
+
 // Chat IA básico
 function enviarMensagemChat() {
   const input = document.getElementById('chatInput');
@@ -883,6 +1007,7 @@ function preencherMesesDoAno() {
   });
 }
 
+// CORREÇÃO: Atualizou tabela para incluir saídas futuras em próximas
 function atualizarTabela() {
   const tbody = document.getElementById("tabelaSaidas");
   const divAtrasadas = document.getElementById("atrasadas");
@@ -902,17 +1027,22 @@ function atualizarTabela() {
   const dataHoje = hoje.toISOString().split('T')[0];
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   
+  // CORREÇÃO: Incluir TODAS as saídas futuras em próximas (recorrentes E não recorrentes)
   let saidasMes = [...saidas, ...saidasPendentes].filter(s => {
     const saidaAnoMes = s.data.substring(0, 7);
     return saidaAnoMes === anoMes && s.pago === 'Sim';
   });
   
-  let saidasAtrasadas = [...saidasPendentes].filter(s => s.data < dataHoje);
-  let saidasVencendoHoje = [...saidasPendentes].filter(s => s.data === dataHoje);
-  let saidasProximas = [...saidasPendentes].filter(s => {
+  let saidasAtrasadas = [...saidas, ...saidasPendentes].filter(s => s.pago === 'Não' && s.data < dataHoje);
+  let saidasVencendoHoje = [...saidas, ...saidasPendentes].filter(s => s.pago === 'Não' && s.data === dataHoje);
+  
+  // CORREÇÃO: Próximas saídas incluem TODAS as saídas futuras (independente de recorrência)
+  let saidasProximas = [...saidas, ...saidasPendentes].filter(s => {
+    if (s.pago === 'Sim') return false; // Só saídas não pagas
     const diasRestantes = Math.floor((new Date(s.data + 'T00:00:00') - hoje) / (1000 * 60 * 60 * 24));
-    return diasRestantes > 0 && diasRestantes <= 30;
+    return diasRestantes > 0; // TODAS as saídas futuras
   });
+  
   let saidasRecorrentes = [...saidas, ...saidasPendentes].filter(s => s.recorrente === 'Sim');
   
   if (lojaFiltroAtual) {
@@ -923,11 +1053,35 @@ function atualizarTabela() {
     saidasRecorrentes = saidasRecorrentes.filter(s => s.loja === lojaFiltroAtual);
   }
   
+  // Aplicar filtros de recorrentes
+  saidasRecorrentes = aplicarFiltrosRecorrentes(saidasRecorrentes);
+  
   preencherTabelaDoMes(tbody, saidasMes);
   preencherTabelaSimples(divAtrasadas, saidasAtrasadas, 'Nenhuma saída atrasada');
   preencherTabelaSimples(divVencendoHoje, saidasVencendoHoje, 'Nenhuma saída vencendo hoje');
   preencherTabelaProximas(divProximas, saidasProximas);
   preencherTabelaSimples(divPrevisaoRecorrentes, saidasRecorrentes, 'Nenhuma saída recorrente');
+  
+  // Atualizar total de recorrentes
+  const totalRecorrentes = saidasRecorrentes.reduce((sum, s) => sum + s.valor, 0);
+  const elemento = document.getElementById("totalSaidasRecorrentes");
+  if (elemento) elemento.textContent = formatarMoedaBR(totalRecorrentes);
+}
+
+function aplicarFiltrosRecorrentes(saidas) {
+  let saidasFiltradas = [...saidas];
+  
+  const filtroLoja = document.getElementById("filtroLojaRecorrentes")?.value;
+  const filtroAno = document.getElementById("filtroAnoRecorrentes")?.value;
+  const filtroMes = document.getElementById("filtroMesRecorrentes")?.value;
+  const filtroCategoria = document.getElementById("filtroCategoriaRecorrentes")?.value;
+  
+  if (filtroLoja) saidasFiltradas = saidasFiltradas.filter(s => s.loja === filtroLoja);
+  if (filtroAno) saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 4) === filtroAno);
+  if (filtroMes) saidasFiltradas = saidasFiltradas.filter(s => s.data.substring(0, 7) === filtroMes);
+  if (filtroCategoria) saidasFiltradas = saidasFiltradas.filter(s => s.categoria === filtroCategoria);
+  
+  return saidasFiltradas;
 }
 
 function preencherTabelaDoMes(tbody, saidas) {
@@ -975,6 +1129,7 @@ function preencherTabelaDoMes(tbody, saidas) {
   }
 }
 
+// CORREÇÃO: Tabelas com botões e descrição completos
 function preencherTabelaSimples(container, saidas, mensagemVazia) {
   if (!container) return;
   
@@ -983,6 +1138,14 @@ function preencherTabelaSimples(container, saidas, mensagemVazia) {
     return;
   }
   
+  // Adicionar paginação para cada seção
+  const containerName = container.id || 'secao';
+  let paginacao = window[`paginacao${containerName}`] || { paginaAtual: 1, itensPorPagina: 10 };
+  
+  const inicio = (paginacao.paginaAtual - 1) * paginacao.itensPorPagina;
+  const saidasPagina = saidas.slice(inicio, inicio + paginacao.itensPorPagina);
+  const totalPaginas = Math.ceil(saidas.length / paginacao.itensPorPagina);
+  
   const tabela = `
     <div class="table-responsive">
       <table class="table table-modern">
@@ -990,32 +1153,80 @@ function preencherTabelaSimples(container, saidas, mensagemVazia) {
           <tr>
             <th>Loja</th>
             <th>Categoria</th>
+            <th>Descrição</th>
             <th>Valor</th>
             <th>Data</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          ${saidas.slice(0, 10).map(s => `
+          ${saidasPagina.map(s => {
+            const diasInfo = calcularDiasInfo(s);
+            return `
             <tr>
               <td><strong>${s.loja}</strong></td>
               <td>${s.categoria}</td>
+              <td>${s.descricao}</td>
               <td><span class="valor-dourado">${formatarMoedaBR(s.valor)}</span></td>
-              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td>${new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR')} ${diasInfo}</td>
               <td>
-                ${s.pago === 'Não' ? `<button class="btn btn-success-modern btn-sm" onclick="marcarComoPago('', ${s.id})"><i class="fas fa-check"></i></button>` : ''}
-                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})">
+                ${s.pago === 'Não' ? `<button class="btn btn-success-modern btn-sm" onclick="marcarComoPago('', ${s.id})" title="Marcar como Pago"><i class="fas fa-check"></i></button>` : ''}
+                <button class="btn btn-warning-modern btn-sm ms-1" onclick="editarSaida('', ${s.id})" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger-modern btn-sm ms-1" onclick="excluirSaida('', ${s.id})" title="Excluir">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
             </tr>
-          `).join('')}
+          `}).join('')}
         </tbody>
       </table>
     </div>
+    ${totalPaginas > 1 ? `
+      <div class="paginacao-container">
+        <button class="paginacao-btn" onclick="paginacaoSecao('${containerName}', -1)" ${paginacao.paginaAtual <= 1 ? 'disabled' : ''}>
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="paginacao-info">
+          Página ${paginacao.paginaAtual} de ${totalPaginas}
+        </span>
+        <button class="paginacao-btn" onclick="paginacaoSecao('${containerName}', 1)" ${paginacao.paginaAtual >= totalPaginas ? 'disabled' : ''}>
+          Próxima <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    ` : ''}
   `;
   
   container.innerHTML = tabela;
+  
+  // Salvar estado da paginação
+  window[`paginacao${containerName}`] = paginacao;
+}
+
+function calcularDiasInfo(saida) {
+  const hoje = new Date();
+  const dataSaida = new Date(saida.data + 'T00:00:00');
+  const diferenca = Math.floor((dataSaida - hoje) / (1000 * 60 * 60 * 24));
+  
+  if (diferenca < 0) {
+    return `<span class="badge bg-danger">${Math.abs(diferenca)} dias atrasado</span>`;
+  } else if (diferenca === 0) {
+    return `<span class="badge bg-warning">Vence hoje</span>`;
+  } else if (diferenca <= 30) {
+    return `<span class="badge bg-warning">${diferenca} dias</span>`;
+  }
+  return '';
+}
+
+function paginacaoSecao(secaoNome, direcao) {
+  let paginacao = window[`paginacao${secaoNome}`];
+  if (!paginacao) return;
+  
+  paginacao.paginaAtual += direcao;
+  if (paginacao.paginaAtual < 1) paginacao.paginaAtual = 1;
+  
+  atualizarTabela();
 }
 
 function preencherTabelaProximas(container, saidas) {
@@ -1156,9 +1367,109 @@ function limparFiltrosRecorrentes() {
   mostrarNotificacaoInteligente('✅ Filtros limpos!');
 }
 
-// Análise inteligente básica
+// CORREÇÃO: Análise inteligente funcional
 function abrirAnaliseInteligente() {
-  mostrarNotificacaoInteligente('Análise inteligente em desenvolvimento', 'warning');
+  const modal = document.getElementById('modalAnaliseInteligente');
+  const loading = document.getElementById('analiseLoading');
+  const resultado = document.getElementById('analiseResultado');
+  
+  if (!modal) {
+    mostrarNotificacaoInteligente('Modal de análise não encontrado', 'error');
+    return;
+  }
+  
+  modal.style.display = 'block';
+  if (loading) loading.style.display = 'block';
+  if (resultado) resultado.style.display = 'none';
+  
+  setTimeout(() => {
+    if (loading) loading.style.display = 'none';
+    if (resultado) {
+      resultado.style.display = 'block';
+      resultado.innerHTML = gerarAnaliseSimples();
+    }
+  }, 2000);
+}
+
+function gerarAnaliseSimples() {
+  const totalSaidas = saidas.length + saidasPendentes.length;
+  const valorTotal = [...saidas, ...saidasPendentes].reduce((sum, s) => sum + s.valor, 0);
+  const saidasPendentesCount = saidasPendentes.length;
+  const valorPendente = saidasPendentes.reduce((sum, s) => sum + s.valor, 0);
+  
+  const categoriaCount = {};
+  [...saidas, ...saidasPendentes].forEach(s => {
+    categoriaCount[s.categoria] = (categoriaCount[s.categoria] || 0) + s.valor;
+  });
+  
+  const categoriaTopo = Object.keys(categoriaCount).length > 0 
+    ? Object.keys(categoriaCount).reduce((a, b) => categoriaCount[a] > categoriaCount[b] ? a : b)
+    : 'N/A';
+  
+  return `
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px; padding: 25px; margin-bottom: 30px; text-align: center;">
+      <h4 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 15px;">📊 Resumo Executivo Inteligente</h4>
+      <p>Análise completa baseada em ${totalSaidas} saídas processadas</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-top: 20px;">
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 15px;">
+          <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 5px;">${formatarMoedaBR(valorTotal)}</div>
+          <div style="font-size: 0.85rem; opacity: 0.9;">Valor Total</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 15px;">
+          <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 5px;">${totalSaidas}</div>
+          <div style="font-size: 0.85rem; opacity: 0.9;">Total Saídas</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 15px;">
+          <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 5px;">${categoriaTopo}</div>
+          <div style="font-size: 0.85rem; opacity: 0.9;">Categoria Top</div>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 15px;">
+          <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 5px;">${saidasPendentesCount}</div>
+          <div style="font-size: 0.85rem; opacity: 0.9;">Pendentes</div>
+        </div>
+      </div>
+    </div>
+    
+    ${saidasPendentesCount > 0 ? `
+    <div style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+        <div style="width: 40px; height: 40px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div>
+          <h6 style="font-size: 1.1rem; font-weight: 700; color: #1f2937; margin: 0;">Alto Volume de Pendências</h6>
+          <p style="font-size: 0.9rem; color: #6b7280; margin: 0;">${formatarMoedaBR(valorPendente)}</p>
+        </div>
+      </div>
+      <div style="color: #374151; line-height: 1.6; margin-bottom: 15px;">
+        Você tem ${saidasPendentesCount} saídas pendentes totalizando ${formatarMoedaBR(valorPendente)}. Isso pode impactar seu fluxo de caixa.
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <span style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; color: #374151; font-size: 0.85rem; font-weight: 600;">Priorizar pagamentos críticos</span>
+        <span style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; color: #374151; font-size: 0.85rem; font-weight: 600;">Renegociar prazos</span>
+      </div>
+    </div>
+    ` : ''}
+    
+    <div style="background: #f8fafc; border: 2px solid #8b5cf6; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+        <div style="width: 40px; height: 40px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div>
+          <h6 style="font-size: 1.1rem; font-weight: 700; color: #1f2937; margin: 0;">Categoria Dominante</h6>
+          <p style="font-size: 0.9rem; color: #6b7280; margin: 0;">${categoriaTopo}</p>
+        </div>
+      </div>
+      <div style="color: #374151; line-height: 1.6; margin-bottom: 15px;">
+        A categoria "${categoriaTopo}" é sua principal categoria de gastos. Monitore regularmente para identificar oportunidades de otimização.
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <span style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; color: #374151; font-size: 0.85rem; font-weight: 600;">Analisar fornecedores</span>
+        <span style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; color: #374151; font-size: 0.85rem; font-weight: 600;">Monitorar tendências</span>
+      </div>
+    </div>
+  `;
 }
 
 function fecharAnaliseInteligente() {
